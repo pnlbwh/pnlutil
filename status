@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+set -eu
+
+HELP_TEXT="
+Usage:
+        
+$(basename $0) <CASELIST> <filepattern1> <filepattern2> ... <filepatternN>
+
+    Prints a summary of what files have been computed
+    and which ones are left for each case in <CASELIST>.
+"
+
+usage() {
+    retcode=${1:-0}
+    echo -e "${HELP_TEXT}";
+    exit $retcode;
+}
+    
+completed() {
+    local case=$1
+    [[ -f $SCRIPT_DIR/$case.wmparc-in-dwi.nrrd ]]
+}
+
+[ -n "${1-}" ] && [[ $1 == '-h' || $1 == '--help' ]] && usage 0
+[ $# < 2 ] && usage 1
+caselist=$1
+shift
+filepatterns=$*
+
+notdone=""
+num_notdone=0
+while read case; do
+    completed $case || { notdone="${notdone}$case\n"; num_notdone=$((num_notdone+1)); }
+done < $CASELIST
+
+total=$(wc -l < $CASELIST)
+num_done=$((total - num_notdone))
+echo "$num_done/$total ($(echo "scale=1; ($num_done * 100)/$total" | bc )%) done"
