@@ -2,13 +2,12 @@
 
 set -eu
 
-HELP_TEXT="
-Usage:
+HELP_TEXT="Usage:
         
-$(basename $0) <CASELIST> <filepattern1> <filepattern2> ... <filepatternN>
+    $(basename $0) <CASELIST> <filepattern1> <filepattern2> ... <filepatternN>
 
-    Prints a summary of what files have been computed
-    and which ones are left for each case in <CASELIST>.
+Prints a summary of which files exist (e.g. generated) and which ones remain to
+be computed for each case in the <CASELIST> text file.
 "
 
 usage() {
