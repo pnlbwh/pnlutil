@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eu
+#set -eu
 
 HELP_TEXT="Usage:
         
@@ -16,11 +16,31 @@ usage() {
     exit $retcode;
 }
 
+test_remote() {
+    local test_flag=$1
+    local target=$2
+    IFS=":" read -r server path <<<"$target"
+    ssh -n "$server" "test $test_flag $path"
+}
+
+is_target_remote() {
+    IFS=":" read -r server path <<<"$1"
+    retvalue="false"
+    test -n "$path"
+}
+
 completed() {
     local case=$1 && shift
     local filepatterns="$@"
     for filepattern in $filepatterns; do
-        [ ! -f ${filepattern//\$case/$case} ] && return 1
+        filepath=${filepattern//\$case/$case}
+        test_fn="test"
+        if is_target_remote "$filepath"; then 
+            test_fn="test_remote"
+        fi
+        if ! $test_fn -e "$filepath"; then
+            return 1
+        fi
     done
     return 0
 }
@@ -37,13 +57,13 @@ caselist=$1 && [ -f "$caselist" ] || { echo "'$caselist' doesn't exist"; usage 1
 shift && filepatterns="$@"
 
 num_completed=0
-$summary || printf "%-10s %-20s\n" Case Status
+$summary || printf "%-15s %-15s\n" Case Status
 while read case; do
     if completed $case $filepatterns; then 
         num_completed=$((num_completed+1))
-        $summary || printf "%-10s done\n" $case
+        $summary || printf "%-15s %-15s\n" $case "done"
     else
-        $summary || printf "%-10s incomplete\n" $case
+        $summary || printf "%-15s %-15s\n" $case "incomplete"
     fi
 done < $caselist
 
