@@ -69,4 +69,4 @@ done < $caselist
 
 total=$(wc -l < $caselist)
 $summary || echo -e "\nProgress:"
-printf "%i/%s  %s%%\n" $num_completed $total $(ratio_percent $num_completed $total)
+printf "%i/%s, %s%%\n" $num_completed $total $(ratio_percent $num_completed $total)
