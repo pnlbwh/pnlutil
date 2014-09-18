@@ -1,0 +1,108 @@
+#!/bin/bash 
+
+set -e
+set -u
+SCRIPT_DIR="$(cd "$( dirname "$0")" && pwd )" 
+source "$SCRIPT_DIR/util.sh"
+
+HELP_TEXT="
+Copies a file or directory to a target path, creating folder path if needed,
+if and only if the target path does not already exist.
+    
+Usage:
+   
+   $(basename $0) <file|dir> [user@pnl-t55-9.bwh.harvard.edu:]/a/path  # target is '/a/path'
+   $(basename $0) <file|dir> [user@pnl-t55-9.bwh.harvard.edu:]/a/path/ # target is '/a/path/<file|dir>' 
+
+   If the destination path has a trailing slash, it will be treated as a directory where <file|dir>
+   will be installed.  
+
+Examples:
+    $(basename $0) /pipeline/dwi.nrrd /data/diff/     # target will be file /data/diff/dwi.nrrd
+    $(basename $0) /pipeline/dwi.nrrd /data/diff      # target will be file /data/diff
+    $(basename $0) /pipeline/subject.dir /data/strct  # target will be directory /data/strct
+    $(basename $0) /pipeline/subject.dir /data/strct/ # target will be directory /data/strct/subject.freesurfer
+" 
+
+diff_and_exit() {
+    if diff -q "$1" "$2" >/dev/null; then
+        echo ""$2" already exists (they are the identitcal)"
+    else
+        echo ""$2" already exists, not overwriting (they differ)"
+    fi
+    exit 0
+}
+
+remote_diff_and_exit() {
+    log "Checking to see whether they differ ('$1' and '$2')"
+    local src=$1
+    local target=$2
+    [ -d "$src" ] && [[ ! $src == */ ]] && src=${src}/ # rsync needs a trailing slash
+    output=$(run rsync --out-format="%n%L" -ar -cn -e ssh "$src" "$target" || log_error "rsync failed")
+    if [ -n "$output" ]; then
+        log "They differ:"
+        echo -e "$output" >&2
+    else
+        log "They are identical"
+    fi
+    exit 0
+}
+
+install_remote() {
+    local src=$1
+    local target=$2
+    IFS=":" read -r server path <<<"$target"
+    #[ -d "$src" ] && src=${src%/} # remove trailing slash if directory
+    run ssh "$server" "mkdir -p $(dirname "$path")"
+    [ -d "$src" ] && [[ ! $src == */ ]] && src=${src}/ # rsync needs a trailing slash
+    run rsync -arv --ignore-existing -e ssh "$src" "$target"
+}
+
+test_remote() {
+    local test_flag=$1
+    local target=$2
+    IFS=":" read -r server path <<<"$target"
+    ssh $server "test $test_flag $path"
+}
+
+is_target_remote() {
+    IFS=":" read -r server path <<<"$1"
+    retvalue="false"
+    test -n "$path" && retvalue="true"
+    echo $retvalue
+}
+
+[ -n "${1-}" ] && [[ $1 == "-h"  ||  $1 == "--help" ]] && usage 0
+[[ $# < 2 || $# > 3 ]] && usage 1
+
+src=${1%/}  # remove trailing slash if it has one
+dest=$2
+
+[[ -f "$src" || -d "$1" ]] || { log_error ""$src" is neither an existing file nor directory, can't install."; exit 1; }
+[[ $2 == */ ]] && dest="${2}$(basename $src)"  # Transform a dir destination into a concreate file name
+is_remote=$(is_target_remote "$dest")
+
+log "Going to install '$src' --> '$dest'"
+
+log "Checking if target exists ('$dest')"
+test_func=test
+$is_remote && test_func=test_remote
+[ -f "$src" ] && $test_func -d "$dest"  && { log_warning ""$dest" is an existing directory, not installing."; exit 1; }
+[ -d "$src" ] && $test_func -f "$dest"  && { log_warning ""$dest" is an exisitng file, not installing."; exit 1; }
+if $test_func -e "$dest"; then
+    log_warning "'$dest' already exists, not overwriting"
+    if $is_remote; then 
+        remote_diff_and_exit "$src" "$dest"
+    else
+        diff_and_exit "$src" "$dest"
+    fi
+fi
+
+log "Target doesn't exist, going to install"
+if $is_remote; then
+    install_remote "$src" "$dest"
+else
+    run mkdir -p "$(dirname "$dest")"
+    run cp -r "$src" "$dest"
+fi
+log_success "Installed '$src' --> '$dest'"
