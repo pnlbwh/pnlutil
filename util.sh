@@ -141,7 +141,7 @@ readconfigcase() {
 }
 
 antspath() {
-    ANTSCONFIG="$SCRIPT_DIR/../config/ANTS"
+    ANTSCONFIG="$SCRIPT_BASE_DIR/../config/ANTS"
     if [ -f "$ANTSCONFIG" ]; then
         readconfig retvalue "$ANTSCONFIG"
         retvalue="$retvalue/bin/$1"
