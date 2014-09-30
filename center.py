@@ -35,7 +35,7 @@ def get_sizes(s):
     for line in s.splitlines():
         if "sizes:" in line:
             words = line.split()
-            size_x, size_y, size_z = map(int, (words[1], words[2], words[3]))
+            size_x, size_y, size_z = map(float, (words[1], words[2], words[3]))
             return (size_x, size_y, size_z)
     return (None, None, None)
 
@@ -65,7 +65,7 @@ def centered_origin(hdr):
         dp = dot_product(sizes, dir)
         dp_abs = [abs(x) for x in dp]
         maxmin_elem = dp_abs.index(max(dp_abs))
-        new_origin.append(-dp[maxmin_elem]/2 + 1)
+        new_origin.append(-dp[maxmin_elem]/2 + (dp[maxmin_elem]/abs(dp[maxmin_elem]))*0.5)
     print "new origin: " + str(new_origin)
     return new_origin
 
