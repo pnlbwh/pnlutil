@@ -136,7 +136,8 @@ readconfigcase() {
     local case=$3
     local pattern
     readconfig pattern $config
-    filename=$(cd $(dirname $config) && readlink -f ${pattern/\$case/$case})
+    filename=$(cd $(dirname $config) && readlink -m ${pattern/\$case/$case})
+    [ ! -f $filename ] && { log_error "From '$config': '$filename' does not exist"; exit 1; }
     eval "$var=$filename"
 }
 
