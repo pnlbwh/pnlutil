@@ -68,7 +68,7 @@ log() {
     local log_level="${2:-"INFO"}"
     local log_color="${3:-"$LOG_INFO_COLOR"}"
 
-    echo -e "${log_color}[$(date +"%Y-%m-%d %H:%M:%S %Z")] [${log_level}] [$SCRIPT_NAME] ${log_text} ${LOG_DEFAULT_COLOR}" >&2;
+    echo -e "${log_color}[$(date +"%Y-%m-%d %H:%M:%S %Z")] [${log_level}] [$SCRIPT_NAME] [$PWD] ${log_text} ${LOG_DEFAULT_COLOR}" >&2;
     return 0;
 }
 
@@ -122,6 +122,11 @@ base() {
     echo ${filename%.*}
 }
 
+is_target_remote() {
+    IFS=":" read -r server path <<<"$1"
+    test -n "$path"
+}
+
 readconfig() {
     local var=$1
     local config=$2
@@ -136,8 +141,19 @@ readconfigcase() {
     local case=$3
     local pattern
     readconfig pattern $config
-    filename=$(cd $(dirname $config) && readlink -m ${pattern/\$case/$case})
-    [ ! -f $filename ] && { log_error "From '$config': '$filename' does not exist"; exit 1; }
+    pathinstance=${pattern/\$case/$case}
+    if is_target_remote $pathinstance; then
+        mkdir -p remote_files
+        rsync -arv -e ssh "$pathinstance" remote_files
+        if [[ $pathinstance = *nhdr ]]; then  # if .nhdr get .raw file as well
+            rsync -arv -e ssh "${pathinstance%.*}.raw.gz" remote_files
+        fi
+        filename=$(readlink -m remote_files/$(basename $pathinstance))
+        [ ! -f $filename ] && { log_error "From '$config': Failed to get remote file '$pathinstance'; exit 1; }
+    else
+        filename=$(cd $(dirname $config) && readlink -m $pathinstance)
+        [ ! -f $filename ] && { log_error "From '$config': '$filename' does not exist"; exit 1; }
+    fi
     eval "$var=$filename"
 }
 
