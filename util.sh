@@ -149,10 +149,10 @@ readconfigcase() {
             rsync -arv -e ssh "${pathinstance%.*}.raw.gz" remote_files
         fi
         filename=$(readlink -m remote_files/$(basename $pathinstance))
-        [ ! -f $filename ] && { log_error "From '$config': Failed to get remote file '$pathinstance'"; exit 1; }
+        [ ! -e $filename ] && { log_error "From '$config': Failed to get remote file '$pathinstance'"; exit 1; }
     else
         filename=$(cd $(dirname $config) && readlink -m $pathinstance)
-        [ ! -f $filename ] && { log_error "From '$config': '$filename' does not exist"; exit 1; }
+        [ ! -e $filename ] && { log_error "From '$config': '$filename' does not exist"; exit 1; }
     fi
     eval "$var=$filename"
 }
