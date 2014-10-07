@@ -167,3 +167,12 @@ antspath() {
     fi
     echo $retvalue
 }
+
+assert_exists() {
+    for var in "$@"; do
+        [ -z "${!var}" ] && { log_error "'$var' not set in input.cfg"; exit 1; }
+        local filepath=${!var}
+        [ ! -e "$filepath" ] && { log_error "'$filepath' doesn't exist (from variable '$var' in 'input.cfg')"; exit 1; }
+    done
+    return 0
+}
