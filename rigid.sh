@@ -33,7 +33,7 @@ pre=$(mktemp -d)/$(base $outrigid)
 #run $(antspath antsRegistration) -d 3 -o $pre -t Rigid -m MI[$fixed,$moving,1,32] $DOFAST
 
 RIGID="--rigid-affine true  --affine-gradient-descent-option  0.5x0.95x1.e-4x1.e-4"
-run $(antspath ANTS) 3 -m MI[${fixed},${fixed},1,32] -o ${pre} -i 0 --use-Histogram-Matching --number-of-affine-iterations 10000x10000x10000x10000x10000 $RIGID
+run $(antspath ANTS) 3 -m MI[${fixed},${moving},1,32] -o ${pre} -i 0 --use-Histogram-Matching --number-of-affine-iterations 10000x10000x10000x10000x10000 $RIGID
 
 mv ${pre}Affine.txt "$outrigid"
 log_success "Made $outrigid"
