@@ -67,7 +67,11 @@ log() {
     local log_level="${2:-"INFO"}"
     local log_color="${3:-"$LOG_INFO_COLOR"}"
 
-    echo -e "${log_color}[$(date +"%Y-%m-%d %H:%M:%S %Z")] [${log_level}] [$SCRIPT_NAME] [$PWD] ${log_text} ${LOG_DEFAULT_COLOR}" >&2;
+    if [[ $log_level == "INFO" ]]; then
+        echo -e "${log_color}[$(date +"%Y-%m-%d %H:%M:%S %Z")] [${log_level}] [$SCRIPT_NAME] [$PWD] ${LOG_WARN_COLOR} ${log_text} ${LOG_DEFAULT_COLOR}" >&2;
+    else
+        echo -e "${log_color}[$(date +"%Y-%m-%d %H:%M:%S %Z")] [${log_level}] [$SCRIPT_NAME] [$PWD] ${log_text} ${LOG_DEFAULT_COLOR}" >&2;
+    fi
     return 0;
 }
 
