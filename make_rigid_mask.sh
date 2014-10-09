@@ -19,11 +19,19 @@ moving=$2
 fixed=$3
 out=$4
 
-tmpmoving=$(mktemp -d)/$(base $moving).nrrd
+tmp=$(mktemp -d)
+
+tmpmoving=$tmp/$(base $moving).nrrd
 run $SCRIPTDIR/center.py -i $moving -o $tmpmoving
-tmpfixed=$(mktemp -d)/$(base $fixed).nrrd
+
+tmpfixed=$tmp/$(base $fixed).nrrd
 run $SCRIPTDIR/center.py -i $fixed -o $tmpfixed
 
-transform="$(base $moving)-to-$(base $fixed)-rigid.txt"
+tmplabelmap=$tmp/$(base $labelmap).nrrd
+run $SCRIPTDIR/center.py -i $labelmap -o $tmplabelmap
+
+transform=$tmp/"$(base $moving)-to-$(base $fixed)-rigid.txt"
+
 run $SCRIPTDIR/rigid.sh $tmpmoving $tmpfixed $transform
-run $(antspath antsApplyTransforms) -d 3 -i $labelmap -r $tmpfixed -n NearestNeighbor -t $transform -o $out
+
+run $(antspath antsApplyTransforms) -d 3 -i $tmplabelmap -r $tmpfixed -n NearestNeighbor -t $transform -o $out
