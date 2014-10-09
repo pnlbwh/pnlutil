@@ -1,10 +1,5 @@
 #!/usr/bin/env bash
-#--------------------------------------------------------------------------------------------------
-# log4bash - Makes logging in Bash scripting suck less
-# Copyright (c) Fred Palmer
-# Licensed under the MIT license
-# http://github.com/fredpalmer/log4bash
-#--------------------------------------------------------------------------------------------------
+
 set -e  # Fail on first error
 
 # Useful global variables that users may wish to reference
@@ -14,7 +9,6 @@ SCRIPT_NAME="${SCRIPT_NAME#\./}"
 SCRIPT_NAME="${SCRIPT_NAME##/*/}"
 SCRIPT_BASE_DIR="$(cd "$( dirname "$0")" && pwd )"
 
-# This should probably be the right way - didn't have time to experiment though
 # declare -r INTERACTIVE_MODE="$([ tty --silent ] && echo on || echo off)"
 #declare -r INTERACTIVE_MODE=$([ "$(uname)" == "Darwin" ] && echo "on" || echo "off")
 declare -r INTERACTIVE_MODE="on"
@@ -22,13 +16,18 @@ declare -r INTERACTIVE_MODE="on"
 #--------------------------------------------------------------------------------------------------
 # Begin Help Section
 
+HELP=""
 HELP_TEXT=""
 
-# This function is called in the event of an error.
-# Scripts which source this script may override by defining their own "usage" function
 usage() {
     retcode=${1:-0}
-    echo -e "${HELP_TEXT}";
+    if [ -n "$HELP" ]; then
+        echo -e "${HELP}";
+    elif [ -n "$HELP_TEXT" ]; then
+        echo -e "$HELP_TEXT"
+    else
+        echo ""
+    fi
     exit $retcode;
 }
 
@@ -68,7 +67,11 @@ log() {
     local log_level="${2:-"INFO"}"
     local log_color="${3:-"$LOG_INFO_COLOR"}"
 
-    echo -e "${log_color}[$(date +"%Y-%m-%d %H:%M:%S %Z")] [${log_level}] [$SCRIPT_NAME] [$PWD] ${log_text} ${LOG_DEFAULT_COLOR}" >&2;
+    if [[ $log_level == "INFO" ]]; then
+        echo -e "${log_color}[$(date +"%Y-%m-%d %H:%M:%S %Z")] [${log_level}] [$SCRIPT_NAME] [$PWD] ${LOG_WARN_COLOR} ${log_text} ${LOG_DEFAULT_COLOR}" >&2;
+    else
+        echo -e "${log_color}[$(date +"%Y-%m-%d %H:%M:%S %Z")] [${log_level}] [$SCRIPT_NAME] [$PWD] ${log_text} ${LOG_DEFAULT_COLOR}" >&2;
+    fi
     return 0;
 }
 

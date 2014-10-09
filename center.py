@@ -90,10 +90,10 @@ def main():
     if not nrrd_is_valid(image_in):
         print image_in + ' is not a valid nrrd'
         sys.exit(1)
-    if exists(args.outfile):
-        print args.outfile + ' already exists.'
-        print 'Delete it first.'
-        sys.exit(1)
+    #if exists(args.outfile):
+        #print args.outfile + ' already exists.'
+        #print 'Delete it first.'
+        #sys.exit(1)
 
     new_origin = centered_origin(get_hdr(image_in))
     t('unu save -e gzip -f nrrd -i %s -o %s' % (image_in, image_out))
