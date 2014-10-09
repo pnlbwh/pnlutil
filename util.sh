@@ -171,11 +171,25 @@ antspath() {
     echo $retvalue
 }
 
-assert_exists() {
+assert_vars_are_set() {
     for var in "$@"; do
         [ -z "${!var}" ] && { log_error "'$var' not set in input.cfg"; exit 1; }
-        local filepath=${!var}
-        [ ! -e "$filepath" ] && { log_error "'$filepath' doesn't exist (from variable '$var' in 'input.cfg')"; exit 1; }
     done
     return 0
+}
+
+redo_ifchange_remote() {
+    assert_vars_are_set "$@"
+    local local_deps=""
+    for var in "$@"; do
+        if [[ ${!var} == *:* ]]; then # is remote
+            local server remotepath
+            IFS=":" read -r server remotepath <<<"${!var}"
+            log "Updating remote file: '${!var}'"
+            ssh $server "redo-ifchange "$remotepath""
+        else
+            local_deps="$local_deps ${!var}"
+        fi
+    done
+    redo-ifchange $local_deps
 }
