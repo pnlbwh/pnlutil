@@ -7,7 +7,7 @@ SCRIPT_ARGS="$@"
 SCRIPT_NAME="$0"
 SCRIPT_NAME="${SCRIPT_NAME#\./}"
 SCRIPT_NAME="${SCRIPT_NAME##/*/}"
-SCRIPT_BASE_DIR="$(cd "$( dirname "$0")" && pwd )"
+SCRIPT_NAME_DIR="$(cd "$( dirname "$0")" && pwd )"
 
 # declare -r INTERACTIVE_MODE="$([ tty --silent ] && echo on || echo off)"
 #declare -r INTERACTIVE_MODE=$([ "$(uname)" == "Darwin" ] && echo "on" || echo "off")
@@ -69,6 +69,8 @@ log() {
 
     if [[ $log_level == "INFO" ]]; then
         echo -e "${log_color}[$(date +"%Y-%m-%d %H:%M:%S %Z")] [${log_level}] [$SCRIPT_NAME] [$PWD] ${LOG_WARN_COLOR} ${log_text} ${LOG_DEFAULT_COLOR}" >&2;
+    elif [[ $log_level == "SUCCESS" ]]; then
+        echo -e "${LOG_INFO_COLOR}[$(date +"%Y-%m-%d %H:%M:%S %Z")] [${log_level}] [$SCRIPT_NAME] [$PWD] ${LOG_SUCCESS_COLOR} ${log_text} ${LOG_DEFAULT_COLOR}" >&2;
     else
         echo -e "${log_color}[$(date +"%Y-%m-%d %H:%M:%S %Z")] [${log_level}] [$SCRIPT_NAME] [$PWD] ${log_text} ${LOG_DEFAULT_COLOR}" >&2;
     fi
@@ -133,9 +135,7 @@ is_target_remote() {
 readconfig() {
     local var=$1
     local config=$2
-    local firstline
-    read firstline < $config && [ -n "$firstline" ] || { log_error "Error getting path from $config, see README.md"; exit 1; }
-    eval "$var="$firstline""
+    read $var < $config && [ -n "$var" ] || { log_error "Error getting path from $config, see README.md"; exit 1; }
 }
 
 readconfigcase() {
@@ -160,6 +160,28 @@ readconfigcase() {
     eval "$var=$filename"
 }
 
+get_remotes() {
+    log "Check that inputs exist and if any are remote"
+    for var in "$@"; do
+        IFS=":" read -r server remotepath <<<"${!var}"
+        if [ -n "$remotepath" ]; then # is remote
+            log "<$var> is remote, fetch '${!var}'"
+            mkdir -p remote_files
+            run rsync -arv -e ssh "${!var}" remote_files
+            if [[ $remotepath == *nhdr ]]; then  # if .nhdr get .raw file as well
+                run rsync -arv -e ssh "${!var%.*}.raw.gz" remote_files
+            fi
+            filename="$(readlink -m remote_files/$(basename $remotepath))"
+            [ ! -e $filename ] && { log_error "$var: Failed to get remote file '${!var}'"; exit 1; }
+            eval "$var="$filename""
+            log_success "Uploaded remote <$var>: '$filename'"
+        else
+            [ ! -e ${!var} ] && { log_error "<$var>:'${!var}' does not exist"; exit 1; }
+            log_success "<$var>:'${!var}' is local and exists"
+        fi
+    done
+}
+
 antspath() {
     ANTSCONFIG="$SCRIPT_BASE_DIR/../config/ANTS"
     if [ -f "$ANTSCONFIG" ]; then
@@ -173,12 +195,13 @@ antspath() {
 
 assert_vars_are_set() {
     for var in "$@"; do
-        [ -z "${!var}" ] && { log_error "'$var' not set in input.cfg"; exit 1; }
+        [ -z "${!var-}" ] && { log_error "'$var' not set in input.cfg"; exit 1; }
     done
     return 0
 }
 
 redo_ifchange_remote() {
+    log "Check/update dependencies: $*"
     assert_vars_are_set "$@"
     local local_deps=""
     for var in "$@"; do
@@ -192,4 +215,64 @@ redo_ifchange_remote() {
         fi
     done
     redo-ifchange $local_deps
+    log_success "Dependencies up to date"
 }
+
+set_antssrc() {
+    if [ -f "$SCRIPTDIR/ANTSSRC" ]; then
+        readconfig ANTSSRC "$SCRIPTDIR/ANTSSRC"
+        ANTSRC=${ANTSRC%/}/  # add trailing slash
+    else
+        log_error "Please set '$SCRIPTDIR/ANTSSRC' to point to your ANTS source directory (that has Scripts/)"
+        exit 1
+    fi
+}
+
+set_antspath() {
+    if [ -f "$SCRIPTDIR/ANTSPATH" ]; then
+        readconfig ANTSPATH "$SCRIPTDIR/ANTSPATH"
+        export ANTSPATH=${ANTSPATH%/}/ # needed by antsIntroduction.sh
+    elif [ -z "${ANTSPATH-}" ]; then
+        log_error "\$ANTSPATH and '$SCRIPTDIR/ANTSPATH' not set.  Set one of them to point to your ANTS binaries (See util/README.md)."
+        exit 1
+    fi
+}
+
+set_freesurfer_home() {
+    if [ -f "$SCRIPTDIR/FREESURFER_HOME" ]; then
+        readconfig FREESURFER_HOME "$SCRIPTDIR/FREESURFER_HOME"
+        FREESURFER_HOME=${FREESURFER_HOME%/}/
+    elif [ -z "${FREESURFER_HOME-}" ]; then
+        log_error "\$FREESURFER_HOME and '$SCRIPTDIR/FREESURFER_HOME' not set.  Set one of them first (See util/README.md)."
+        exit 1
+    fi
+    export SUBJECTS_DIR=
+}
+
+mask() {
+    local img=$1
+    local mask=$2
+    local _out=$(basename $img)
+    _out="${_out%.*}-masked.nrrd"
+    run ConvertBetweenFileFormats $img $_out >/dev/null
+    run "unu 3op ifelse $mask $_out 0 -w 1 | unu save -e gzip -f nrrd -o "$_out""
+    run $SCRIPTDIR/center.py -i "$_out" -o "$_out"
+    eval "$3="$_out""
+}
+
+rigid() {
+    local moving=$1
+    local fixed=$2
+    local prefix=$3
+    [ -z "${ANTSPATH-}" ] && set_antspath
+    run ${ANTSPATH}ANTS 3 -m MI[$fixed,$moving,1,32] -i 0 -o $prefix --do-rigid
+}
+
+warp() {
+    local moving=$1
+    local fixed=$2
+    local prefix=$3
+    [ -z "${ANTSSRC-}" ] && set_antssrc
+    run $ANTSSRC/Scripts/antsIntroduction.sh -d 3 -i $moving -r $fixed -o $prefix -s MI 
+}
+
