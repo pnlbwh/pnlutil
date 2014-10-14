@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eu
+set -eux
 SCRIPT=$(readlink -m $(type -p $0))
 SCRIPTDIR=$(dirname $SCRIPT)
 source "$SCRIPTDIR/util.sh"
@@ -34,8 +34,9 @@ run $FREESURFER_HOME/bin/mri_vol2vol --mov $mri/brain.mgz --targ $mri/brain.mgz 
 run $FREESURFER_HOME/bin//mri_label2vol --seg $mri/wmparc.mgz --temp $mri/brain.mgz --o wmparc.nii.gz --regheader $mri/wmparc.mgz
 
 log "Create masked baseline"
-bse=`basename ${dwi%%.*}-bse.nrrd`
-maskedbse=`basename ${bse%%.*}-masked.nrrd`
+bse=$(basename "$dwi")
+bse="${bse%%.*}-bse.nrrd"
+maskedbse=$(basename ${bse%%.*}-masked.nrrd)
 unu slice -a 3 -p 0 -i $dwi | unu 3op ifelse $dwi_mask - 0 -o $maskedbse
 log_success "Made masked baseline: '$maskedbse'"
 
@@ -55,6 +56,7 @@ log_success "Created 'wmparc-in-bse-1mm.nii.gz'"
 log "Downsample wmparc-in-bse-1mm.nii.gz to DWI's resolution"
 new_size=$(unu head $maskedbse | grep "sizes:" | sed 's/sizes:\s*//')
 run "unu resample -k cheap -s $new_size -i wmparc-in-bse-1mm.nrrd | unu save -e gzip -f nrrd -o wmparc-in-bse.nrrd"
+ConvertBetweenFileFormats wmparc-in-bse.nrrd wmparc-in-bse.nrrd short
 
 popd
 log_success "Made '$(readlink -f "$output_dir"/wmparc-in-bse.nrrd)'"

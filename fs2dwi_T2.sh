@@ -42,7 +42,8 @@ mask "$t1" "$t1_mask" maskedt1
 log_success "Created masked T1: '$maskedt1'"
 
 log "Create masked baseline"
-bse=$(basename ${dwi%%.*}-bse.nrrd)
+bse=$(basename "$dwi")
+bse="${bse%%.*}-bse.nrrd"
 maskedbse=$(basename ${bse%%.*}-masked.nrrd)
 run "unu slice -a 3 -p 0 -i $dwi | unu 3op ifelse $dwi_mask - 0 -o $maskedbse"
 $SCRIPTDIR/center.py -i "$maskedbse" -o "$maskedbse"
@@ -59,6 +60,7 @@ run mv t2-to-bse-deformed.nii.gz t2-in-bse.nii.gz
 
 log "Apply transformations to wmparc.nii.gz to create wmparc-in-bse.nii.gz"
 run $ANTSPATH/antsApplyTransforms -d 3 -i wmparc.nii.gz -o wmparc-in-bse.nrrd -r "$maskedbse" -n NearestNeighbor -t t2-to-bse-Warp.nii.gz t2-to-bse-Affine.txt t1-to-t2-Affine.txt fs-to-t1-Affine.txt
+ConvertBetweenFileFormats wmparc-in-bse.nrrd wmparc-in-bse.nrrd short
 
 popd
 log_success "Made '$(readlink -f "$output_dir"/wmparc-in-bse.nrrd)'"

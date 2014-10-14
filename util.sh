@@ -256,6 +256,7 @@ redo_ifchange_vars() {
             log "Updating remote file: '${!var}'"
             run ssh $server "redo-ifchange "$remotepath""
         else
+            eval "$var="$(readlink -m ${!var})""
             local_deps="$local_deps ${!var}"
         fi
     done
