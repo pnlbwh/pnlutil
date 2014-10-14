@@ -68,12 +68,13 @@ log() {
     local log_color="${3:-"$LOG_INFO_COLOR"}"
 
     if [[ $log_level == "INFO" ]]; then
-        echo -e "${log_color}[$(date +"%Y-%m-%d %H:%M:%S %Z")] [${log_level}] [$SCRIPT_NAME] [$PWD] ${LOG_WARN_COLOR} ${log_text} ${LOG_DEFAULT_COLOR}" >&2;
+        log_text_color=$LOG_WARN_COLOR
     elif [[ $log_level == "SUCCESS" ]]; then
-        echo -e "${LOG_INFO_COLOR}[$(date +"%Y-%m-%d %H:%M:%S %Z")] [${log_level}] [$SCRIPT_NAME] [$PWD] ${LOG_SUCCESS_COLOR} ${log_text} ${LOG_DEFAULT_COLOR}" >&2;
+        log_text_color=$LOG_SUCCESS_COLOR
     else
-        echo -e "${log_color}[$(date +"%Y-%m-%d %H:%M:%S %Z")] [${log_level}] [$SCRIPT_NAME] [$PWD] ${log_text} ${LOG_DEFAULT_COLOR}" >&2;
+        log_text_color=$log_color
     fi
+    echo -e "${LOG_INFO_COLOR}[$(date +"%Y-%m-%d %H:%M:%S %Z")] [${log_level}] [$PWD] [$SCRIPT_NAME] ${log_text_color} ${log_text} ${LOG_DEFAULT_COLOR}" >&2;
     return 0;
 }
 
@@ -193,60 +194,16 @@ antspath() {
     echo $retvalue
 }
 
-assert_vars_are_set() {
+check_set_vars() {
+    local var
+    config="$SCRIPTDIR/env.cfg"
+    [ -f "$config" ] && source "$config"
     for var in "$@"; do
-        [ -z "${!var-}" ] && { log_error "'$var' not set in input.cfg"; exit 1; }
-    done
-    return 0
-}
-
-redo_ifchange_remote() {
-    log "Check/update dependencies: $*"
-    assert_vars_are_set "$@"
-    local local_deps=""
-    for var in "$@"; do
-        if [[ ${!var} == *:* ]]; then # is remote
-            local server remotepath
-            IFS=":" read -r server remotepath <<<"${!var}"
-            log "Updating remote file: '${!var}'"
-            ssh $server "redo-ifchange "$remotepath""
-        else
-            local_deps="$local_deps ${!var}"
+        if [ -z "${!var-}" ]; then 
+            log_error "Set '${var}' either in your bash environment or '$SCRIPTDIR/env.cfg'"
+            exit 1
         fi
     done
-    redo-ifchange $local_deps
-    log_success "Dependencies up to date"
-}
-
-set_antssrc() {
-    if [ -f "$SCRIPTDIR/ANTSSRC" ]; then
-        readconfig ANTSSRC "$SCRIPTDIR/ANTSSRC"
-        ANTSRC=${ANTSRC%/}/  # add trailing slash
-    else
-        log_error "Please set '$SCRIPTDIR/ANTSSRC' to point to your ANTS source directory (that has Scripts/)"
-        exit 1
-    fi
-}
-
-set_antspath() {
-    if [ -f "$SCRIPTDIR/ANTSPATH" ]; then
-        readconfig ANTSPATH "$SCRIPTDIR/ANTSPATH"
-        export ANTSPATH=${ANTSPATH%/}/ # needed by antsIntroduction.sh
-    elif [ -z "${ANTSPATH-}" ]; then
-        log_error "\$ANTSPATH and '$SCRIPTDIR/ANTSPATH' not set.  Set one of them to point to your ANTS binaries (See util/README.md)."
-        exit 1
-    fi
-}
-
-set_freesurfer_home() {
-    if [ -f "$SCRIPTDIR/FREESURFER_HOME" ]; then
-        readconfig FREESURFER_HOME "$SCRIPTDIR/FREESURFER_HOME"
-        FREESURFER_HOME=${FREESURFER_HOME%/}/
-    elif [ -z "${FREESURFER_HOME-}" ]; then
-        log_error "\$FREESURFER_HOME and '$SCRIPTDIR/FREESURFER_HOME' not set.  Set one of them first (See util/README.md)."
-        exit 1
-    fi
-    export SUBJECTS_DIR=
 }
 
 mask() {
@@ -264,15 +221,51 @@ rigid() {
     local moving=$1
     local fixed=$2
     local prefix=$3
-    [ -z "${ANTSPATH-}" ] && set_antspath
-    run ${ANTSPATH}ANTS 3 -m MI[$fixed,$moving,1,32] -i 0 -o $prefix --do-rigid
+    check_set_vars ANTSPATH
+    run ${ANTSPATH}/ANTS 3 -m MI[$fixed,$moving,1,32] -i 0 -o $prefix --do-rigid
+    log_success "Created rigid transform: '${prefix}Affine.txt'"
 }
 
 warp() {
     local moving=$1
     local fixed=$2
     local prefix=$3
-    [ -z "${ANTSSRC-}" ] && set_antssrc
+    check_set_vars ANTSSRC ANTSPATH && export ANTSPATH=$ANTSPATH
     run $ANTSSRC/Scripts/antsIntroduction.sh -d 3 -i $moving -r $fixed -o $prefix -s MI 
+    log_success "Created non-linear warp: '${prefix}Affine.txt', '${prefix}Warp.nii.gz'"
 }
 
+# ---------------
+# .do script helpers
+
+assert_vars_are_set() {
+    for var in "$@"; do
+        [ -z "${!var-}" ] && { log_error "'$var' not set in input.cfg"; exit 1; }
+    done
+    return 0
+}
+
+redo_ifchange_vars() {
+    log "Check/update dependencies: $*"
+    assert_vars_are_set "$@"
+    local local_deps=""
+    for var in "$@"; do
+        if [[ ${!var} == *:* ]]; then # is remote
+            local server remotepath
+            IFS=":" read -r server remotepath <<<"${!var}"
+            log "Updating remote file: '${!var}'"
+            run ssh $server "redo-ifchange "$remotepath""
+        else
+            local_deps="$local_deps ${!var}"
+        fi
+    done
+    redo-ifchange $local_deps input.cfg
+    log_success "Dependencies up to date"
+}
+
+export_vars() {
+    assert_vars_are_set "$@"
+    for var in "$@"; do
+        export $var=${!var%/}/
+    done
+}
