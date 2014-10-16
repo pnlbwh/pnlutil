@@ -125,7 +125,11 @@ run() {
 
 base() {
     filename=$(basename $1)
-    echo ${filename%.*}
+    if [[ $filename == *.gz ]]; then
+        echo ${filename%.*.gz}
+    else
+        echo ${filename%.*}
+    fi
 }
 
 is_target_remote() {
@@ -223,6 +227,9 @@ rigid() {
     local prefix=$3
     check_set_vars ANTSPATH
     run ${ANTSPATH}/ANTS 3 -m MI[$fixed,$moving,1,32] -i 0 -o $prefix --do-rigid
+    # from antsaffine.sh:
+    #RIGID="--rigid-affine true  --affine-gradient-descent-option  0.5x0.95x1.e-4x1.e-4"
+    #run $(antspath ANTS) 3 -m MI[${fixed},${moving},1,32] -o ${pre} -i 0 --use-Histogram-Matching --number-of-affine-iterations 10000x10000x10000x10000x10000 $RIGID
     log_success "Created rigid transform: '${prefix}Affine.txt'"
 }
 

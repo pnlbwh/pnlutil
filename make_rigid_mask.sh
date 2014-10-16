@@ -6,32 +6,43 @@ SCRIPT=$(readlink -m $(type -p $0))
 SCRIPTDIR=$(dirname $SCRIPT)
 source $SCRIPTDIR/util.sh
 
-usage() {
-    echo "Usage: $(basename $SCRIPT) <moving_labelmap> <moving> <fixed> <out>"
-    exit $1
-}
+HELP="
+Creates new mask by rigid alignment.
+
+Usage:
+
+    $(basename $0) <labelmap> <moving> <fixed> <out>
+
+where <out> is the new labelmap in <fixed> space.
+"
 
 [ $# -lt 4 ] && usage 1
 [[ -n ${1-} ]] && [[ $1 == "-h" || $1 == "--help" ]] && usage 0
 
-labelmap=$1
-moving=$2
-fixed=$3
-out=$4
+input_vars="labelmap moving fixed out"
+read -r $input_vars <<<"$@"
+get_remotes ${input_vars% *}
 
 tmp=$(mktemp -d)
-
+log "First convert inputs to nrrd and center"
 tmpmoving=$tmp/$(base $moving).nrrd
-run $SCRIPTDIR/center.py -i $moving -o $tmpmoving
-
 tmpfixed=$tmp/$(base $fixed).nrrd
-run $SCRIPTDIR/center.py -i $fixed -o $tmpfixed
-
 tmplabelmap=$tmp/$(base $labelmap).nrrd
-run $SCRIPTDIR/center.py -i $labelmap -o $tmplabelmap
+ConvertBetweenFileFormats $moving $tmpmoving >/dev/null
+ConvertBetweenFileFormats $fixed $tmpfixed >/dev/null
+ConvertBetweenFileFormats $labelmap $tmplabelmap >/dev/null
+run $SCRIPTDIR/center.py -i $tmpmoving -o $tmpmoving
+run $SCRIPTDIR/center.py -i $tmpfixed -o $tmpfixed
+run $SCRIPTDIR/center.py -i $tmplabelmap -o $tmplabelmap
+log_success "Done centering inputs"
 
-transform=$tmp/"$(base $moving)-to-$(base $fixed)-rigid.txt"
-
-run $SCRIPTDIR/rigid.sh $tmpmoving $tmpfixed $transform
-
-run $(antspath antsApplyTransforms) -d 3 -i $tmplabelmap -r $tmpfixed -n NearestNeighbor -t $transform -o $out
+log "Compute rigid registration"
+pre=$tmp/"$(base $moving)-to-$(base $fixed)"
+rigid $tmpmoving $tmpfixed $pre
+run ${ANTSPATH}/antsApplyTransforms -d 3 -i $tmplabelmap -r $tmpfixed -n NearestNeighbor -t ${pre}Affine.txt -o $out
+[[ $out == *nrrd || $out == *nhdr ]] && run unu save -e gzip -f nrrd -i "$out" -o "$out"
+if [ -f "$out" ]; then  # need to check because ants does not exit with an error code
+    log_success "Created new mask: '$out'"
+else
+    log_fail "Failed to create '$out'"; exit 1
+fi
