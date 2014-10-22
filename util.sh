@@ -242,6 +242,14 @@ warp() {
     log_success "Created non-linear warp: '${prefix}Affine.txt', '${prefix}Warp.nii.gz'"
 }
 
+check_args() {
+    local min_args=$1
+    shift
+    [ -n "${1-}" ] && [[ $1 == "-h" || $1 == "--help" ]] && usage 0
+    [ $# -lt $min_args ] && usage 1
+    return 0
+}
+
 # ---------------
 # .do script helpers
 
