@@ -16,9 +16,10 @@ where <dwi> and <dwi_mask> are nrrd/nhdr files
 [ -n "${1-}" ] && [[ $1 == "-h" || $1 == "--help" ]] && usage 0
 [ $# -lt 8 ] && usage 1
 
-input_vars="mri dwi dwi_mask t2 t2_mask t1 t1_mask output_dir"
-read -r $input_vars <<<"$@"
-get_remotes ${input_vars% *}
+input_args="mri dwi dwi_mask t2 t2_mask t1 t1_mask output_dir"
+read -r $input_args <<<"$@"
+input_vars=${input_args% *}  # remove output_dir
+get_remotes $input_vars
 
 check_set_vars FREESURFER_HOME 
 export SUBJECTS_DIR=
@@ -63,4 +64,5 @@ run $ANTSPATH/antsApplyTransforms -d 3 -i wmparc.nii.gz -o wmparc-in-bse.nrrd -r
 ConvertBetweenFileFormats wmparc-in-bse.nrrd wmparc-in-bse.nrrd short
 
 popd
+clean_remotes $input_vars
 log_success "Made '$(readlink -f "$output_dir"/wmparc-in-bse.nrrd)'"
