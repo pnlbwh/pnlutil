@@ -11,7 +11,7 @@ usage() {
 
     mask.sh <img> <mask> <out>
 
-    Masks <img> (including DWI's) with <mask>.  Both must be in either nrrd or nifti format.
+    Masks <img> (including DWI's) with <mask>.
 EOF
 }
 
