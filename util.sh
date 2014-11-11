@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-set -e  # Fail on first error
+set -e # Fail on first error
+set -o pipefail  # fail if any command in a pipe fails
 
 # Useful global variables that users may wish to reference
 SCRIPT_ARGS="$@"
@@ -8,6 +9,9 @@ SCRIPT_NAME="$0"
 SCRIPT_NAME="${SCRIPT_NAME#\./}"
 SCRIPT_NAME="${SCRIPT_NAME##/*/}"
 SCRIPT_NAME_DIR="$(cd "$( dirname "$0")" && pwd )"
+
+SCRIPT=$(readlink -m $(type -p $0))
+SCRIPTDIR=$(dirname $SCRIPT)
 
 # declare -r INTERACTIVE_MODE="$([ tty --silent ] && echo on || echo off)"
 #declare -r INTERACTIVE_MODE=$([ "$(uname)" == "Darwin" ] && echo "on" || echo "off")
@@ -74,7 +78,7 @@ log() {
     else
         log_text_color=$log_color
     fi
-    echo -e "${LOG_INFO_COLOR}[$(date +"%Y-%m-%d %H:%M:%S %Z")] [${log_level}] [$PWD] [$SCRIPT_NAME] ${log_text_color} ${log_text} ${LOG_DEFAULT_COLOR}" >&2;
+    echo -e "${LOG_INFO_COLOR}[$(date +"%Y-%m-%d %H:%M:%S %Z")] [${log_level}] [$PWD] [$SCRIPTDIR/$SCRIPT_NAME] ${log_text_color} ${log_text} ${LOG_DEFAULT_COLOR}" >&2;
     return 0;
 }
 
@@ -98,7 +102,8 @@ log_speak()     {
 }
 
 log_success()   { log "$1" "SUCCESS" "${LOG_SUCCESS_COLOR}"; }
-log_error()     { log "$1" "ERROR" "${LOG_ERROR_COLOR}"; log_speak "$1"; }
+#log_error()     { log "$1" "ERROR" "${LOG_ERROR_COLOR}"; log_speak "$1"; }
+log_error()     { log "$1" "ERROR" "${LOG_ERROR_COLOR}"; }
 log_warning()   { log "$1" "WARNING" "${LOG_WARN_COLOR}"; }
 log_debug()     { log "$1" "DEBUG" "${LOG_DEBUG_COLOR}"; }
 log_captains()  {
@@ -166,7 +171,6 @@ readconfigcase() {
 }
 
 get_remotes() {
-    log "Check that inputs exist and if any are remote"
     for var in "$@"; do
         IFS=":" read -r server remotepath <<<"${!var}"
         if [ -n "$remotepath" ]; then # is remote
@@ -220,6 +224,13 @@ check_set_vars() {
             exit 1
         fi
     done
+}
+
+check_antspath() {
+    if [ -z "${ANTSPATH-}" ]; then
+        log_error "Set ANTSPATH to point to ANTS binary directory (in bash), e.g. export ANTSPATH=/projects/schiz/software/ANTS-git-build/bin/"
+        exit 1
+    fi
 }
 
 mask() {
@@ -291,6 +302,13 @@ redo_ifchange_vars() {
     log_success "Dependencies up to date"
 }
 
+print_vars() {
+    for var in "$@"; do
+        printf "%s=%s\n" $var ${!var}
+    done
+}
+
+# not needed
 export_vars() {
     assert_vars_are_set "$@"
     for var in "$@"; do
