@@ -278,7 +278,7 @@ check_args() {
 
 assert_vars_are_set() {
     for var in "$@"; do
-        [ -z "${!var-}" ] && { log_error "'$var' not set in input.cfg"; exit 1; }
+        [ -z "${!var-}" ] && { log_error "'$var' not set in ./data.sh"; exit 1; }
     done
     return 0
 }
