@@ -1,0 +1,20 @@
+#!/bin/bash -eu
+
+usage() {
+    echo "Gzips a nrrd if it's saved as raw."
+    echo "Usage: $(basename $0) nrrd"
+}
+
+[ -n "${1-}" ] || { usage; exit 1; }
+nrrd="$1"
+
+
+[ ! -f "$nrrd" ] && { echo "'$nrrd' doesn't exist."; usage; exit 1; }
+
+if grep -q "raw" "$nrrd"; then
+    echo "$nrrd is in raw format, gzipping.."
+    unu save -e gzip -f nrrd -i "$nrrd" -o "$nrrd"
+    echo "Done."
+else
+    echo "$nrrd is already gzipped."
+fi
