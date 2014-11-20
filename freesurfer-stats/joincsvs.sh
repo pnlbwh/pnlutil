@@ -13,9 +13,11 @@ Usage :
 
 check_args 2 $@
 
+tmpdir=$(mktemp -d)
+tmpcsv=$tmpdir/tmp.cv
+
 out=$1
 shift
-tmpcsv=$(mktemp -d)/tmp.cv
 cat $1 | cut -d, -f1 > $tmpcsv
 
 for csv in "$@"; do
@@ -23,4 +25,5 @@ for csv in "$@"; do
     cp $out $tmpcsv
 done
 
+rm -rf $tmpdir
 log_success "Made '$out'"
