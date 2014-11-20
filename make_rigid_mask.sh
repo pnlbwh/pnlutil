@@ -40,9 +40,9 @@ log "First convert inputs to nrrd and center"
 tmpmoving=$tmp/$(base $moving).nrrd
 tmpfixed=$tmp/$(base $fixed).nrrd
 tmplabelmap=$tmp/$(base $labelmap).nrrd
-ConvertBetweenFileFormats $moving $tmpmoving >/dev/null
-ConvertBetweenFileFormats $fixed $tmpfixed >/dev/null
-ConvertBetweenFileFormats $labelmap $tmplabelmap >/dev/null
+run ConvertBetweenFileFormats $moving $tmpmoving >/dev/null
+run ConvertBetweenFileFormats $fixed $tmpfixed >/dev/null
+run ConvertBetweenFileFormats $labelmap $tmplabelmap >/dev/null
 run $SCRIPTDIR/center.py -i $tmpmoving -o $tmpmoving
 run $SCRIPTDIR/center.py -i $tmpfixed -o $tmpfixed
 run $SCRIPTDIR/center.py -i $tmplabelmap -o $tmplabelmap
