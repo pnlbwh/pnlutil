@@ -13,19 +13,38 @@ Usage:
 
 "
 
+all() {
+    local var=$1; shift;
+    for i in "$@"; do
+        case="$i" && source ./data.sh
+        if [[ ${!var} == *:* ]]; then  # is remote
+            printf "%s " ${!var##*:}
+        else
+            printf "%s " "${!var}"
+        fi
+    done
+}
+
+# check args and ./data.sh
 [[ $# -lt 1 || $1 == "-h" || $1 == "--help" ]] && usage 1
 [ -f ./data.sh ] || { echo "Run in directory with 'data.sh'"; usage 1; }
 var=$1
 
-case='*' && source ./data.sh
+# check var is set
+source ./data.sh
 [ -n "${!var}" ] || { echo "Set '$var' in data.sh"; exit 1; }
 [ -n "$caselist" ] || { echo "Set 'caselist' in data.sh"; exit 1; }
 
-if [[ ${!var} == *:* ]]; then  # is remote
+# if var is remote 
+if [[ ${!var} == *:* ]]; then
     IFS=":" read -r server remotepath <<<"${!var}"
-    num_exist=$(ssh $server "echo $remotepath | wc -w")
-else
-    num_exist=$(echo ${!var} | wc -w)
+    files=$(all $var $caselist)
+    num_exist=$(ssh $server "for i in $files; do [ -e "\$i" ] && echo \$i; done | wc -l")
+    printf "%s/%s\n" $num_exist $(echo $caselist | wc -w)
+    exit 0
 fi
 
-printf "%s/%s\n" $num_exist $(echo $caselist | wc -w)
+# local
+files=$(all $var $caselist)
+num_exist=$(for i in $files; do [ -e "$i" ] && echo $i; done | wc -l)
+echo $num_exist/$(echo $caselist | wc -w)
