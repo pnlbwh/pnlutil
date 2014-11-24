@@ -1,0 +1,22 @@
+#!/bin/bash
+
+usage() {
+echo -e "
+Subtracts cases in 'caselist1.txt' from 'caselist2.txt' and prints result to
+terminal.
+
+Usage:
+
+    subtractlist caselist1.txt caselist2.txt
+"
+}
+
+subtract() { 
+    fgrep -vx "${1// /$'\n'}" <<< "${2// /$'\n'}" ; 
+} 
+
+[[ "$#" -lt 2 || $1 == "-h" ]] && { usage; exit 1; }
+
+set1=$(<$1)
+set2=$(<$2)
+subtract "$set1" "$set2"
