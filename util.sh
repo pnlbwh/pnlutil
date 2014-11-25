@@ -193,12 +193,12 @@ get_remotes() {
 }
 
 clean_remotes() {
-    log "Deleting any temporary remote files"
+    log "Delete any temporary remote files"
     for var in "$@"; do
         parent_dir=$(dirname ${!var} | xargs basename)
         if [[ $parent_dir == remote_files ]]; then
             log "${!var} is a temporary remote file, delete it"
-            run "rm ${!var}"
+            run "rm -rf ${!var}"
             [[ ${!var} == *nhdr ]] && run "rm ${!var%.nhdr}.raw*"
         fi
     done
