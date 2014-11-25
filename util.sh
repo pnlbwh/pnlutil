@@ -171,6 +171,7 @@ readconfigcase() {
 }
 
 get_remotes() {
+    local var
     for var in "$@"; do
         IFS=":" read -r server remotepath <<<"${!var}"
         if [ -n "$remotepath" ]; then # is remote
@@ -186,7 +187,7 @@ get_remotes() {
             log_success "Uploaded remote <$var>: '$filename'"
         else
             [ ! -e ${!var} ] && { log_error "<$var>:'${!var}' does not exist"; exit 1; }
-            log_success "<$var>:'${!var}' is local and exists"
+            log_success "Found <$var>:'${!var}'"
         fi
     done
 }
@@ -216,12 +217,12 @@ antspath() {
 
 check_set_vars() {
     local var
-    config="$SCRIPTDIR/env.cfg"
-    [ -f "$config" ] && source "$config"
     for var in "$@"; do
         if [ -z "${!var-}" ]; then 
-            log_error "Set '${var}' either in your bash environment or '$SCRIPTDIR/env.cfg'"
+            log_error "Set '${var}' in your shell environment (e.g. in your ~/.tcshrc or ~/.bashrc)"
             exit 1
+        else
+            log "Found $var=${!var}"
         fi
     done
 }
@@ -253,16 +254,16 @@ rigid() {
     # from antsaffine.sh:
     #RIGID="--rigid-affine true  --affine-gradient-descent-option  0.5x0.95x1.e-4x1.e-4"
     #run $(antspath ANTS) 3 -m MI[${fixed},${moving},1,32] -o ${pre} -i 0 --use-Histogram-Matching --number-of-affine-iterations 10000x10000x10000x10000x10000 $RIGID
-    log_success "Created rigid transform: '${prefix}Affine.txt'"
+    log_success "Made rigid transform: '${prefix}Affine.txt'"
 }
 
 warp() {
     local moving=$1
     local fixed=$2
     local prefix=$3
-    check_set_vars ANTSSRC ANTSPATH && export ANTSPATH=$ANTSPATH
+    check_set_vars ANTSSRC ANTSPATH
     run $ANTSSRC/Scripts/antsIntroduction.sh -d 3 -i $moving -r $fixed -o $prefix -s MI 
-    log_success "Created non-linear warp: '${prefix}Affine.txt', '${prefix}Warp.nii.gz'"
+    log_success "Made non-linear warp: '${prefix}Affine.txt', '${prefix}Warp.nii.gz'"
 }
 
 check_args() {
