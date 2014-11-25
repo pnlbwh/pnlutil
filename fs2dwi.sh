@@ -8,13 +8,13 @@ source "$SCRIPTDIR/util.sh"
 HELP="
 Usage: 
 
-   fs2bse.sh <dwi> <dwi_mask> <freesurfer_mri_dir> <output_dir>
+   ${0##*/} <dwi> <dwi_mask> <freesurfer_mri_dir> <output_dir>
 
 where <dwi> and <dwi_mask> are nrrd/nhdr files
 "
 
 [ -n "${1-}" ] && [[ $1 == "-h" || $1 == "--help" ]] && usage 0
-[ $# -lt 4 ] && usage 1
+[ $# -ne 4 ] && usage 1
 
 input_vars="dwi dwi_mask mri output_dir"
 read -r $input_vars <<<"$@"
