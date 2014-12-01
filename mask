@@ -8,7 +8,7 @@ source "$SCRIPTDIR/util.sh"
 usage() {
 echo -e "Usage:
 
-    mask.sh <img> <mask> <out>
+    mask <img> <mask> <out>
 
 Masks <img> (including DWI's) with <mask>.
 "
