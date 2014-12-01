@@ -316,3 +316,15 @@ export_vars() {
         export $var=${!var%/}/
     done
 }
+
+all() {
+    local var=$1; shift;
+    for i in "$@"; do
+        case="$i" && source ./data.sh
+        if [[ ${!var} == *:* ]]; then  # is remote
+            printf "%s " ${!var##*:}  # strip server prefix
+        else
+            printf "%s " "${!var}"
+        fi
+    done
+}

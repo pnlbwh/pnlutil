@@ -19,7 +19,7 @@ case='*' && source ./data.sh
 [ -n "${!1}" ] || { echo "Set '$1' in data.sh"; exit 1; }
 [ -n "$caselist" ] || { echo "Set 'caselist' in data.sh"; exit 1; }
 
-for c in $caselist; do
-    case=$c && source ./data.sh
+for case in $caselist; do
+    source ./data.sh
     printf "%s " ${!1}
 done

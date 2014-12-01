@@ -13,18 +13,6 @@ Usage:
 
 "
 
-all() {
-    local var=$1; shift;
-    for i in "$@"; do
-        case="$i" && source ./data.sh
-        if [[ ${!var} == *:* ]]; then  # is remote
-            printf "%s " ${!var##*:}
-        else
-            printf "%s " "${!var}"
-        fi
-    done
-}
-
 # check args and ./data.sh
 [[ $# -lt 1 || $1 == "-h" || $1 == "--help" ]] && usage 1
 [ -f ./data.sh ] || { echo "Run in directory with 'data.sh'"; usage 1; }
