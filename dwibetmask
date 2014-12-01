@@ -1,0 +1,38 @@
+#!/bin/bash -eu
+
+SCRIPT=$(readlink -m $(type -p $0))
+SCRIPTDIR=${SCRIPT%/*}
+source "$SCRIPTDIR/util.sh"
+
+usage () {
+echo -e "
+Creates a dwi mask using 'bet'.
+
+Usage:
+        
+    ${0##*/} <dwi> <outmask>
+
+where <dwi> must be a nrrd volume."
+}
+
+[[ $# -ne 2 ]] || [[ $1 == "-h" || $1 == "--help"  ]] && { usage; exit 1; }
+read -r dwi outmask <<<"$@"
+get_remotes dwi
+
+tmpdir=$(mktemp -d)
+run pushd $tmpdir
+dwi=$(readlink -f "$dwi")
+outmask=$(readlink -f "$outmask")
+
+tmpbse="${dwi##*/}"
+tmpbse="${tmpbse%.*}-bse.nrrd"
+run unu slice -a 3 -p 0 -i "$dwi" -o "$tmpbse"
+
+run "ConvertBetweenFileFormats $tmpbse $tmpbse.nii.gz >/dev/null"
+case=00
+run bet "$tmpbse.nii.gz" $case -m -n
+run "ConvertBetweenFileFormats ${case}_mask.nii.gz $outmask >/dev/null"
+
+run popd
+run rm -rf "$tmpdir"
+log_success "Made '$outmask'"
