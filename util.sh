@@ -129,7 +129,7 @@ run() {
 # Helper functions
 
 base() {
-    filename=$(basename $1)
+    filename=${1##*/}
     if [[ $filename == *.gz ]]; then
         echo ${filename%.*.gz}
     else
@@ -172,22 +172,23 @@ readconfigcase() {
 
 get_remotes() {
     local var
+    tmpdir="$(mktemp -d)/remote_files" && mkdir -p "$tmpdir"
     for var in "$@"; do
         IFS=":" read -r server remotepath <<<"${!var}"
         if [ -n "$remotepath" ]; then # is remote
-            log "<$var> is remote, fetch '${!var}'"
-            mkdir -p remote_files
-            run rsync -arv -e ssh "${!var}" remote_files
+            log "$var is remote, fetch '${!var}'"
+            mkdir -p "$tmpdir"
+            run rsync -arv -e ssh "${!var}" "$tmpdir"
             if [[ $remotepath == *nhdr ]]; then  # if .nhdr get .raw file as well
-                run rsync -arv -e ssh "${!var%.*}.raw.gz" remote_files
+                run rsync -arv -e ssh "${!var%.*}.raw.gz" "$tmpdir"
             fi
-            filename="$(readlink -m remote_files/$(basename $remotepath))"
+            filename="$(readlink -m "$tmpdir"/$(basename $remotepath))"
             [ ! -e $filename ] && { log_error "$var: Failed to get remote file '${!var}'"; exit 1; }
             eval "$var="$filename""
-            log_success "Uploaded remote <$var>: '$filename'"
+            log_success "Uploaded remote $var: '$filename'"
         else
-            [ ! -e ${!var} ] && { log_error "<$var>:'${!var}' does not exist"; exit 1; }
-            log_success "Found <$var>:'${!var}'"
+            [ ! -e ${!var} ] && { log_error "$var:'${!var}' does not exist"; exit 1; }
+            log_success "Found $var:'${!var}'"
         fi
     done
 }
@@ -241,7 +242,7 @@ mask() {
     _out="${_out%.*}-masked.nrrd"
     run ConvertBetweenFileFormats $img $_out >/dev/null
     run "unu 3op ifelse $mask $_out 0 -w 1 | unu save -e gzip -f nrrd -o "$_out""
-    run $SCRIPTDIR/center.py -i "$_out" -o "$_out"
+    run center.py -i "$_out" -o "$_out"
     eval "$3="$_out""
 }
 
