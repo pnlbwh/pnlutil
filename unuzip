@@ -5,10 +5,8 @@ usage() {
     echo "Usage: $(basename $0) nrrd"
 }
 
-[ -n "${1-}" ] || { usage; exit 1; }
+[ $# -ne 1 ] || [[ $1 == "-h" || $1 == "--help"  ]] && { usage; exit 1; }
 nrrd="$1"
-
-
 [ ! -f "$nrrd" ] && { echo "'$nrrd' doesn't exist."; usage; exit 1; }
 
 if grep -q "raw" "$nrrd"; then
