@@ -12,10 +12,11 @@ Usage:
 EOF
 "
 
-[ -n "${1-}" ] && [[ $1 == "-h" || $1 == "--help" ]] || [ $# -lt 2 ] && usage 1
+[ $# -ne 2 ] || [[ $1 == "-h" || $1 == "--help" ]]  && usage 1
 
 stats_dir=$1
 case_id=$2
+get_remotes stats_dir
 
 aseg=$stats_dir/aseg.stats
 wmparc=$stats_dir/wmparc.stats
