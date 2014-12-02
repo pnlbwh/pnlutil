@@ -4,14 +4,10 @@ set -e # Fail on first error
 set -o pipefail  # fail if any command in a pipe fails
 
 # Useful global variables that users may wish to reference
-SCRIPT_ARGS="$@"
-SCRIPT_NAME="$0"
-SCRIPT_NAME="${SCRIPT_NAME#\./}"
+SCRIPT_NAME="${0#\./}"
 SCRIPT_NAME="${SCRIPT_NAME##/*/}"
-SCRIPT_NAME_DIR="$(cd "$( dirname "$0")" && pwd )"
-
-SCRIPT=$(readlink -m $(type -p $0))
-SCRIPTDIR=$(dirname $SCRIPT)
+SCRIPT=$(readlink -m "$0")
+SCRIPTDIR=${SCRIPT%/*}
 
 # declare -r INTERACTIVE_MODE="$([ tty --silent ] && echo on || echo off)"
 #declare -r INTERACTIVE_MODE=$([ "$(uname)" == "Darwin" ] && echo "on" || echo "off")
@@ -142,34 +138,6 @@ is_target_remote() {
     test -n "$path"
 }
 
-readconfig() {
-    local var=$1
-    local config=$2
-    read $var < $config && [ -n "$var" ] || { log_error "Error getting path from $config, see README.md"; exit 1; }
-}
-
-readconfigcase() {
-    local var=$1
-    local config=$2
-    local case=$3
-    local pattern
-    readconfig pattern $config
-    pathinstance=${pattern/\$case/$case}
-    if is_target_remote $pathinstance; then
-        mkdir -p remote_files
-        rsync -arv -e ssh "$pathinstance" remote_files
-        if [[ $pathinstance = *nhdr ]]; then  # if .nhdr get .raw file as well
-            rsync -arv -e ssh "${pathinstance%.*}.raw.gz" remote_files
-        fi
-        filename=$(readlink -m remote_files/$(basename $pathinstance))
-        [ ! -e $filename ] && { log_error "From '$config': Failed to get remote file '$pathinstance'"; exit 1; }
-    else
-        filename=$(cd $(dirname $config) && readlink -m $pathinstance)
-        [ ! -e $filename ] && { log_error "From '$config': '$filename' does not exist"; exit 1; }
-    fi
-    eval "$var=$filename"
-}
-
 get_remotes() {
     local var
     tmpdir="$(mktemp -d)/remote_files" && mkdir -p "$tmpdir"
@@ -205,17 +173,6 @@ clean_remotes() {
     done
 }
 
-antspath() {
-    ANTSCONFIG="$SCRIPT_BASE_DIR/../config/ANTS"
-    if [ -f "$ANTSCONFIG" ]; then
-        readconfig retvalue "$ANTSCONFIG"
-        retvalue="$retvalue/bin/$1"
-    else
-        retvalue=$(type -P $1)
-    fi
-    echo $retvalue
-}
-
 check_set_vars() {
     local var
     for var in "$@"; do
@@ -226,13 +183,6 @@ check_set_vars() {
             log "Found $var=${!var}"
         fi
     done
-}
-
-check_antspath() {
-    if [ -z "${ANTSPATH-}" ]; then
-        log_error "Set ANTSPATH to point to ANTS binary directory (in bash), e.g. export ANTSPATH=/projects/schiz/software/ANTS-git-build/bin/"
-        exit 1
-    fi
 }
 
 mask() {
@@ -307,14 +257,6 @@ redo_ifchange_vars() {
 print_vars() {
     for var in "$@"; do
         printf "%s=%s\n" $var ${!var}
-    done
-}
-
-# not needed
-export_vars() {
-    assert_vars_are_set "$@"
-    for var in "$@"; do
-        export $var=${!var%/}/
     done
 }
 
