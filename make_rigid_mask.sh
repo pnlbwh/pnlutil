@@ -19,7 +19,7 @@ where <out> is the new labelmap in <fixed> space.
 # Check args are ok
 [ $# -lt 4 ] && usage 1
 [[ -n ${1-} ]] && [[ $1 == "-h" || $1 == "--help" ]] && usage 0
-check_antspath
+[ -n "ANTSPATH" ] || { log_error "ANTSPATH not set"; exit 1; }
 
 # Start piping output to a log file
 tmp="$(mktemp -d)"
