@@ -257,15 +257,21 @@ print_vars() {
 }
 
 filter_remote() {
-    local server=$1; shift
-    local pred=$1; shift
-    remote_cmd="for i in $@; do [[ $pred "\$i" ]] && echo \$i; done"
+    local pred="$1"; shift
+    IFS=":" read -r server remotepath <<<"$1"
+    files=$(echo $@ | tr ' ' '\n' | cut -d":" -f2 | tr '\n' ' ')
+    remote_cmd="for i in $files; do [ $pred "\$i" ] && echo \$i; done"
     ssh $server 'bash -s' <<<"$remote_cmd"
+    exit
 }
 
 filter() {
     local pred="$1"; shift
-    for i in $@; do
-        [ $pred "$i" ] && echo "$i"
-    done
+    if [[ ${1} == *:* ]]; then
+        filter_remote "$pred" $@
+    else
+        for i in $@; do
+            [ $pred "$i" ] && echo "$i"
+        done
+    fi
 }

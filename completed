@@ -6,32 +6,24 @@ source $SCRIPTDIR/util.sh
 
 HELP="
 Prints files that exist for for <var>.
-Run in directory with 'data.sh' that sets <var> file path
-and 'caselist'.
+Run in directory with 'data.sh' that sets <var> file path and 'caselist'
+(Or supply [caselist.txt])
 
 Usage:
 
-    $SCRIPT <var>
+    $SCRIPT <var> [caselist.txt]
 
 "
 
 # check args and ./data.sh
-[[ $# -lt 1 || $1 == "-h" || $1 == "--help" ]] && usage 1
+[[ $# -lt 1 || $# -gt 2 || $1 == "-h" || $1 == "--help" ]] && usage 1
 [ -f ./data.sh ] || { echo "Run in directory with 'data.sh'"; usage 1; }
 var=$1
 
 # check vars are set
 source ./data.sh
 [ -n "${!var}" ] || { echo "Set '$var' in data.sh"; exit 1; }
-[ -n "$caselist" ] || { echo "Set 'caselist' in data.sh"; exit 1; }
+[[ -n "$2" ||  -n "$caselist" ]] || { echo "Set 'caselist' in data.sh" or supply [caselist.txt]; usage 1; }
 
 pred="-e"
-
-if [[ ${!var} == *:* ]]; then  # if remote
-    IFS=":" read -r server remotepath <<<"${!var}"
-    files=$($SCRIPTDIR/all $var | cut -d":" -f2) 
-    filter_remote $server "! -e" $files
-    exit 0
-fi
-
-filter "$pred" $($SCRIPTDIR/all $var)
+filter "$pred" $($SCRIPTDIR/all $var $2)
