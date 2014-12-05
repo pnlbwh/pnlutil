@@ -1,6 +1,8 @@
 #!/bin/bash -e
 
-source util.sh
+SCRIPT=$(readlink -m $(type -p $0))
+SCRIPTDIR=${SCRIPT%/*}      
+source $SCRIPTDIR/util.sh
 
 HELP="
 Run in directory with 'data.sh'.

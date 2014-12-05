@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-set -e # Fail on first error
 set -o pipefail  # fail if any command in a pipe fails
 
 # Useful global variables that users may wish to reference
@@ -225,9 +224,6 @@ check_args() {
     return 0
 }
 
-# ---------------
-# .do script helpers
-
 assert_vars_are_set() {
     for var in "$@"; do
         [ -z "${!var-}" ] && { log_error "'$var' not set in ./data.sh"; exit 1; }
@@ -260,14 +256,16 @@ print_vars() {
     done
 }
 
-all() {
-    local var=$1; shift;
-    for i in "$@"; do
-        case="$i" && source ./data.sh
-        if [[ ${!var} == *:* ]]; then  # is remote
-            printf "%s " ${!var##*:}  # strip server prefix
-        else
-            printf "%s " "${!var}"
-        fi
+filter_remote() {
+    local server=$1; shift
+    local pred=$1; shift
+    remote_cmd="for i in $@; do [[ $pred "\$i" ]] && echo \$i; done"
+    ssh $server 'bash -s' <<<"$remote_cmd"
+}
+
+filter() {
+    local pred="$1"; shift
+    for i in $@; do
+        [ $pred "$i" ] && echo "$i"
     done
 }
