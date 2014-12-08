@@ -152,7 +152,7 @@ get_remotes() {
             filename="$(readlink -m "$tmpdir"/$(basename $remotepath))"
             [ ! -e $filename ] && { log_error "$var: Failed to get remote file '${!var}'"; exit 1; }
             eval "$var="$filename""
-            log_success "Uploaded remote $var: '$filename'"
+            log_success "Downloaded remote $var: '$filename'"
         else
             [ ! -e ${!var} ] && { log_error "$var:'${!var}' does not exist"; exit 1; }
             log_success "Found $var:'${!var}'"
