@@ -23,7 +23,7 @@ source ./data.sh
 
 cases=$caselist
 if [ -n "$2" ]; then
-    cases=$(cat "$2") || { echo "Failed to read '$2'"; usage 1; }
+    cases=$(cat "$2" | awk '{print $1}') || { echo "Failed to read '$2'"; usage 1; }
 fi
 
 for case in $cases; do
