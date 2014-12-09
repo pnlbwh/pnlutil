@@ -16,7 +16,7 @@ EOF
 
 stats_dir=$1
 case_id=$2
-get_remotes stats_dir
+get_remotes stats_dir >/dev/null
 
 aseg=$stats_dir/aseg.stats
 wmparc=$stats_dir/wmparc.stats
