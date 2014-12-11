@@ -1,8 +1,8 @@
 #!/bin/bash -eu
 
 # Check ./data.sh exists and source it
-[ ! -f "./data.sh" ] && { echo "Run in directory with 'data.sh'"; exit 1; }
-case='*' && source ./data.sh
+[ ! -f "$PWD/data.sh" ] && { echo "Run in directory with 'data.sh'"; exit 1; }
+case='*' && source "$PWD/data.sh"
 
 # Check caselist and status_vars set
 [[ -n ${status_vars-} ]] || { echo "First set 'status_vars' variable in 'data.sh'"; exit 1; }
@@ -14,7 +14,7 @@ for var in $status_vars; do
 done
 
 # if logfile doesn't exist, create it with header
-logfile="./status.log"
+logfile="./statuslog.csv"
 if [ ! -f "$logfile" ]; then
     header="datetime,"
     for var in $status_vars; do
