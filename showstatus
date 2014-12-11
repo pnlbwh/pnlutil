@@ -1,0 +1,9 @@
+#!/bin/bash -eu
+
+logfile="./statuslog.csv"
+if [ ! -f "$logfile" ]; then
+    echo "Run in directory with '$logfile'"
+    exit 1
+fi
+
+cat "$logfile" | sed -n '1p;$p' | transpose | column -t -s','

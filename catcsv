@@ -1,0 +1,5 @@
+#!/bin/bash -eu
+
+read -r firstcsv _ <<<$(ls "$@")
+head -n 1 "$firstcsv"
+cat "$@" | grep -v case
