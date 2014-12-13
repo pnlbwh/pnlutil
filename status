@@ -11,7 +11,7 @@ and 'caselist'.
 
 Usage:
 
-    $SCRIPT <var>
+    ${0##*/} <var>
 
 "
 

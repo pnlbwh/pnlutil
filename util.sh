@@ -2,14 +2,7 @@
 
 set -o pipefail  # fail if any command in a pipe fails
 
-# Useful global variables that users may wish to reference
-SCRIPT_NAME="${0#\./}"
-SCRIPT_NAME="${SCRIPT_NAME##/*/}"
-SCRIPT=$(readlink -m "$0")
-SCRIPTDIR=${SCRIPT%/*}
-
-# declare -r INTERACTIVE_MODE="$([ tty --silent ] && echo on || echo off)"
-#declare -r INTERACTIVE_MODE=$([ "$(uname)" == "Darwin" ] && echo "on" || echo "off")
+#declare -r INTERACTIVE_MODE="$([ tty --silent ] && echo on || echo off)"
 declare -r INTERACTIVE_MODE="on"
 
 #--------------------------------------------------------------------------------------------------
