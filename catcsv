@@ -2,4 +2,4 @@
 
 read -r firstcsv _ <<<$(ls "$@")
 head -n 1 "$firstcsv"
-cat "$@" | grep -v case
+cat "$@" | grep -iv case
