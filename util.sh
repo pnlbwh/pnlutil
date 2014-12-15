@@ -5,6 +5,12 @@ set -o pipefail  # fail if any command in a pipe fails
 #declare -r INTERACTIVE_MODE="$([ tty --silent ] && echo on || echo off)"
 declare -r INTERACTIVE_MODE="on"
 
+if [ -z "${SCRIPTDIR-}" ]; then
+    SCRIPT_NAME=$(readlink -m "$0")
+    SCRIPT_NAME=${SCRIPT_NAME##*/}
+    SCRIPTDIR=${SCRIPT_NAME%/*}
+fi
+
 #--------------------------------------------------------------------------------------------------
 # Begin Help Section
 

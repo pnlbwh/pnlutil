@@ -5,28 +5,32 @@ SCRIPTDIR=${SCRIPT%/*}
 source $SCRIPTDIR/util.sh
 
 HELP="
-Run in directory with 'data.sh'.
-Prints all <var> files for \$caselist or 'caselist.txt'.
+Run in directory with 'data.sh'.  Prints all <var> files for \$caselist or
+'caselist.txt' or a list of case id's.
 
 Usage:
 
-    $SCRIPT <var> [caselist.txt]
+    ${0##*/} <var> [caselist.txt | case1 case2 ... caseN]
 
 "
 
-[[ $# -lt 1 || $# -gt 2 || $1 == "-h" || $1 == "--help" ]] && usage 1
 [ -f ./data.sh ] || { echo "Run in directory with 'data.sh'"; usage 1; }
-
 source ./data.sh
-[ -n "${!1}" ] || { echo "Set '$1' in data.sh"; exit 1; }
-[[ -n "$2" || -n "$caselist" ]] || { echo "Set 'caselist' in data.sh, or give [caselis.txt] argument"; usage 1; }
 
-cases=$caselist
-if [ -n "$2" ]; then
-    cases=$(cat "$2" | awk '{print $1}') || { echo "Failed to read '$2'"; usage 1; }
+[[ $# -lt 1 || $1 == "-h" || $1 == "--help" ]] && usage 1
+var=$1; shift
+if [[ $# -gt 1 ]]; then
+    cases=$@
+elif [[ $# -eq 1 ]]; then
+    cases=$(cat "$1" | awk '{print $1}') || { echo "Failed to read '$1'"; usage 1; }
+else
+    cases=$caselist
+    [[ -n "$cases" ]] || { echo "Set 'caselist' in data.sh, or give a 'caselist.txt' or list of case id's as an argument"; usage 1; }
 fi
+
+[ -n "${!var}" ] || { echo "Set '$var' in data.sh"; exit 1; }
 
 for case in $cases; do
     source ./data.sh
-    printf "%s\n" ${!1}
+    printf "%s\n" ${!var}
 done
