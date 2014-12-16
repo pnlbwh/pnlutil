@@ -8,7 +8,7 @@ declare -r INTERACTIVE_MODE="on"
 if [ -z "${SCRIPTDIR-}" ]; then
     SCRIPT_NAME=$(readlink -m "$0")
     SCRIPT_NAME=${SCRIPT_NAME##*/}
-    SCRIPTDIR=${SCRIPT_NAME%/*}
+    SCRIPTDIR=$(dirname "$0")
 fi
 
 #--------------------------------------------------------------------------------------------------
