@@ -5,8 +5,9 @@ SCRIPTDIR=${SCRIPT%/*}
 source $SCRIPTDIR/util.sh
 
 HELP="
-Run in directory with 'data.sh'.  Prints all <var> files for \$caselist or
-'caselist.txt' or a list of case id's.
+Run in directory with 'data.sh', or set DATADIR with file path that contains
+one.  Prints all <var> files for \$caselist or 'caselist.txt' or a list of case
+id's.
 
 Usage:
 
@@ -14,8 +15,11 @@ Usage:
 
 "
 
-[ -f ./data.sh ] || { echo "Run in directory with 'data.sh'"; usage 1; }
-source ./data.sh
+datash="data.sh"
+[ -n "${DATADIR-}" ] && datash="$DATADIR/data.sh"
+
+[ -f "$datash" ] || { echo "Run in directory with 'data.sh' or source it first, e.g. 'setenv DATADIR=/path/to/proj or 'source /path/to/my/project/data.sh'"; usage 1; }
+source "$datash"
 
 [[ $# -lt 1 || $1 == "-h" || $1 == "--help" ]] && usage 1
 var=$1; shift
@@ -31,6 +35,6 @@ fi
 [ -n "${!var}" ] || { echo "Set '$var' in data.sh"; exit 1; }
 
 for case in $cases; do
-    source ./data.sh
+    source "$datash"
     printf "%s\n" ${!var}
 done
