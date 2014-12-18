@@ -286,7 +286,7 @@ checkset_SetUpData() {
     if [ -f SetUpData.sh ]; then 
         SetUpData=SetUpData.sh
     elif [[ -n "${DATADIR-}" && -f "$DATADIR/SetUpData.sh" ]]; then
-        SetUpData=SetUpData.sh
+        SetUpData=${DATADIR}/SetUpData.sh
     else
         echo "Run in directory with 'SetUpData.sh' or setenv DATADIR /path/to/SetUpData/"
         usage 1
