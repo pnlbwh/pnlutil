@@ -4,37 +4,36 @@ SCRIPT=$(readlink -m $(type -p $0))
 SCRIPTDIR=${SCRIPT%/*}      
 source $SCRIPTDIR/util.sh
 
-HELP="
-Run in directory with 'data.sh', or set DATADIR with file path that contains
-one.  Prints all <var> files for \$caselist or 'caselist.txt' or a list of case
-id's.
+HELP="Prints all <var> file paths. 
+
+$standard_var_help
 
 Usage:
 
-    ${0##*/} <var> [caselist.txt | case1 case2 ... caseN]
+${0##*/} [-f caselist.txt] <var> [case1 case2 ... caseN]
 
+-f caselist.txt         Uses case id's from caselist.txt
+[case1 case2 ..caseN]   Use these case id's instead of a caselist file
 "
 
-datash="data.sh"
-[ -n "${DATADIR-}" ] && datash="$DATADIR/data.sh"
+# flags
+while getopts "hf:" flag; do
+    case "$flag" in
+        h) usage 1;;
+        f) caselist=$OPTARG;;
+    esac
+done
+shift $((OPTIND-1))
 
-[ -f "$datash" ] || { echo "Run in directory with 'data.sh' or source it first, e.g. 'setenv DATADIR=/path/to/proj or 'source /path/to/my/project/data.sh'"; usage 1; }
-source "$datash"
+# get positional arguments
+IFS=" " read var cases <<<"$@"
+[ -n "${var-}" ] || { echo -e "Specify variable <var>\n"; usage 1; }
 
-[[ $# -lt 1 || $1 == "-h" || $1 == "--help" ]] && usage 1
-var=$1; shift
-if [[ $# -gt 1 ]]; then
-    cases=$@
-elif [[ $# -eq 1 ]]; then
-    cases=$(cat "$1" | awk '{print $1}') || { echo "Failed to read '$1'"; usage 1; }
-else
-    cases=$caselist
-    [[ -n "$cases" ]] || { echo "Set 'caselist' in data.sh, or give a 'caselist.txt' or list of case id's as an argument"; usage 1; }
-fi
-
-[ -n "${!var}" ] || { echo "Set '$var' in data.sh"; exit 1; }
+# check input is ok
+checkset_SetUpData $var
+checkset_cases
 
 for case in $cases; do
-    source "$datash"
+    source "$SetUpData"
     printf "%s\n" ${!var}
 done

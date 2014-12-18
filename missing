@@ -1,28 +1,47 @@
-#!/bin/bash
+#!/bin/bash -e
 
 SCRIPT=$(readlink -m $(type -p $0))
 SCRIPTDIR=${SCRIPT%/*}      
 source $SCRIPTDIR/util.sh
 
-HELP="
-Run in directory with 'data.sh'.
-Prints all <var> files that don't exist for \$caselist or 'caselist.txt'.
+HELP="Run in directory with 'SetUpData.sh' or with environment variable
+DATADIR set to path containing one.  Prints all <var> files that don't exist
+for \$caselist, 'caselist.txt', or [case1 case2 .. caseN].  Usage:
 
-Usage:
+${0##*/} [-c] [-f caselist.txt] <var>  [case1 case2 .. caseN]
 
-    ${0##*/} <var> [caselist.txt]
-
+-c                      Prints case id's, not file paths
+-f caselist.txt         Uses case id's from caselist.txt
+[case1 case2 ..caseN]   Use these case id's instead of a caselist file
 "
 
-# check args and ./data.sh
-[[ $# -lt 1 || $# -gt 2 || $1 == "-h" || $1 == "--help" ]] && usage 1
-[ -f ./data.sh ] || { echo "Run in directory with 'data.sh'"; usage 1; }
-var=$1
+# flags
+printcases=false
+while getopts "hcf:" flag; do
+    case "$flag" in
+        h) usage 1;;
+        c) printcases=true;;
+        f) caselist=$OPTARG;;
+    esac
+done
+shift $((OPTIND-1))
 
-# check var is set
-source ./data.sh
-[ -n "${!var}" ] || { echo "Set '$1' in data.sh"; exit 1; }
-[[ -n "$2" ||  -n "$caselist" ]] || { echo "Set 'caselist' in data.sh" or supply [caselist.txt]; usage 1; }
+# get positional arguments
+IFS=" " read var cases <<<"$@"
+[ -n "${var-}" ] || { echo -e "Specify variable <var>.\n"; usage 1; }
 
-pred="! -e"
-filter "$pred" $($SCRIPTDIR/all $var $2)
+# check input is ok
+checkset_SetUpData $var
+checkset_cases
+
+if $printcases; then
+    case_if_not_exists() {
+        local case=$1
+        source $SetUpData
+        [ -e "${!var}" ] || echo $case
+    }
+    map "case_if_not_exists" $cases
+else
+    pred="! -e"
+    filter "$pred" $($SCRIPTDIR/all $var $cases)
+fi

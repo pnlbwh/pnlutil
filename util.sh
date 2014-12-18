@@ -225,7 +225,7 @@ check_args() {
 
 assert_vars_are_set() {
     for var in "$@"; do
-        [ -z "${!var-}" ] && { log_error "'$var' not set in ./data.sh"; exit 1; }
+        [ -z "${!var-}" ] && { log_error "'$var' not set in ./SetUpData.sh"; exit 1; }
     done
     return 0
 }
@@ -274,3 +274,56 @@ filter() {
         done
     fi
 }
+
+map() {
+    local fn="$1"; shift
+    for i in $@; do
+        eval "$fn $i"
+    done
+}
+
+checkset_SetUpData() {
+    if [ -f SetUpData.sh ]; then 
+        SetUpData=SetUpData.sh
+    elif [[ -n "${DATADIR-}" && -f "$DATADIR/SetUpData.sh" ]]; then
+        SetUpData=SetUpData.sh
+    else
+        echo "Run in directory with 'SetUpData.sh' or setenv DATADIR /path/to/SetUpData/"
+        usage 1
+    fi
+
+    source $SetUpData
+
+    # check vars are set
+    for var in $@; do
+        if [ ! -n "${!var-}" ]; then
+            echo "Set $var in '$setup' first."
+            exit 1
+        fi
+    done
+}
+
+checkset_cases() {
+    if [ -n "${cases-}" ]; then
+        return
+    fi
+
+    if [ ! -n "${caselist-}" ]; then
+        echo "Set 'caselist' in 'SetUpData.sh', or use '-f caselist.txt'"
+        usage 1
+    fi
+     
+    if [ ! -f "$caselist" ]; then
+        echo "'$caselist' doesn't exist."
+        exit 1
+    fi
+
+    cases=$(cat "$caselist" | awk '{print $1}')
+}
+
+
+standard_var_help="\
+Run in directory with 'SetUpData.sh', or set DATADIR with file path that
+contains one, that sets <var>, e.g. myvar=/path/to/\$case-myt1.nrrd.  If you 
+don't supply a caselist as an argument, 'caselist' also needs to be set,
+pointing to a caselist file."

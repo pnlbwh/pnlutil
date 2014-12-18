@@ -1,13 +1,12 @@
-#!/bin/bash
+#!/bin/bash -e
 
 SCRIPT=$(readlink -m $(type -p $0))
 SCRIPTDIR=${SCRIPT%/*}      
 source $SCRIPTDIR/util.sh
 
-HELP="
-Prints progress ('done/total') for <var>.
-Run in directory with 'data.sh' that sets <var> file path
-and 'caselist'.
+HELP="Prints progress ('done/total') for <var>.  
+
+$standard_var_help
 
 Usage:
 
@@ -15,16 +14,10 @@ Usage:
 
 "
 
-# check args and ./data.sh
+# check args and ./SetUpData.sh
 [[ $# -lt 1 || $1 == "-h" || $1 == "--help" ]] && usage 1
-[ -f ./data.sh ] || { echo "Run in directory with 'data.sh'"; usage 1; }
 var=$1
 
-# check var is set
-source ./data.sh  # set $caselist
-[ -n "${!var}" ] || { echo "Set '$var' in data.sh"; exit 1; }
-[ -n "$caselist" ] || { echo "Set 'caselist' in data.sh"; exit 1; }
-
-done=$($SCRIPTDIR/completed $var | wc -l)
-total=$(echo $caselist | wc -w)
-echo "$done/$total"
+checkset_SetUpData "$var"
+checkset_cases
+echo $($SCRIPTDIR/completed $var | wc -l)/$(wc -w < $caselist)

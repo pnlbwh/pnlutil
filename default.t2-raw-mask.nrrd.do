@@ -3,7 +3,7 @@
 source util.sh
 
 case=${2##*/}
-source ./data.sh
+source ./SetUpData.sh
 inputvars="t2_raw t1_align t1_align_mask ANTSPATH" 
 assert_vars_are_set $inputvars
 export ANTSPATH
