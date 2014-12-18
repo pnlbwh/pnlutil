@@ -1,27 +1,18 @@
 #!/bin/bash -e
 
-# Check ./SetUpData.sh exists and source it
-[ ! -f "$PWD/SetUpData.sh" ] && { echo "Run in directory with 'SetUpData.sh'"; exit 1; }
-case='*' && source "$PWD/SetUpData.sh"
+SCRIPT=$(readlink -m $(type -p $0))
+SCRIPTDIR=${SCRIPT%/*}      
+source $SCRIPTDIR/util.sh
 
-# Check caselist and status_vars set
-[[ -n ${status_vars-} ]] || { echo "First set 'status_vars' variable in 'SetUpData.sh'"; exit 1; }
-[[ -n ${caselist-} ]] || { echo "First set 'caselist' variable in 'SetUpData.sh'"; exit 1; }
-
-# Check that each status variable is set
-for var in $status_vars; do
-    [[ -n ${!var-} ]] || { echo "Set '$var' in 'SetUpData.sh'"; exit 1; }
-done
+checkset_SetUpData status_vars
 
 # if logfile doesn't exist, create it with header
 logfile="./statuslog.csv"
-if [ ! -f "$logfile" ]; then
-    header="datetime,"
-    for var in $status_vars; do
-        header="$header,$var"
-    done
-    echo -e "$header,total" > "$logfile"
-fi
+header="datetime,"
+for var in $status_vars; do
+    header="$header,$var"
+done
+echo -e "$header,total" >> "$logfile"
 
 # add status row
 row="'$(date +"%Y-%m-%d %H:%M")'"
