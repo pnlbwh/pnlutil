@@ -245,7 +245,7 @@ redo_ifchange_vars() {
             local_deps="$local_deps ${!var}"
         fi
     done
-    redo-ifchange $local_deps input.cfg
+    redo-ifchange $local_deps
     log_success "Dependencies up to date"
 }
 
@@ -282,6 +282,25 @@ map() {
     done
 }
 
+checkset_local_SetUpData() {
+    if [ -f SetUpData.sh ]; then 
+        SetUpData=SetUpData.sh
+    else
+        echo "Run in directory with 'SetUpData.sh' or setenv DATADIR /path/to/SetUpData/"
+        usage 1
+    fi
+
+    source $SetUpData
+
+    # check vars are set
+    for var in $@; do
+        if [ ! -n "${!var-}" ]; then
+            echo "Set $var in '$SetUpData' first."
+            exit 1
+        fi
+    done
+}
+
 checkset_SetUpData() {
     if [ -f SetUpData.sh ]; then 
         SetUpData=SetUpData.sh
@@ -297,7 +316,7 @@ checkset_SetUpData() {
     # check vars are set
     for var in $@; do
         if [ ! -n "${!var-}" ]; then
-            echo "Set $var in '$setup' first."
+            echo "Set $var in '$SetUpData' first."
             exit 1
         fi
     done
@@ -320,6 +339,17 @@ checkset_cases() {
 
     cases=$(cat "$caselist" | awk '{print $1}')
 }
+
+
+diff_and_exit() {
+    if diff -q "$1" "$2" >/dev/null; then
+        log_error ""$2" already exists (they are identical)"
+    else
+        log_error ""$2" already exists, not overwriting (they differ)"
+    fi
+    exit 0
+}
+
 
 
 standard_var_help="\
