@@ -15,14 +15,15 @@ Usage:
 where <dwi> must be a nrrd volume."
 }
 
-[[ $# -ne 2 ]] || [[ $1 == "-h" || $1 == "--help"  ]] && { usage; exit 1; }
+[[ $# -ne 2 || $1 == "-h" || $1 == "--help"  ]] && { usage; exit 1; }
 read -r dwi outmask <<<"$@"
 get_remotes dwi
 
 tmpdir=$(mktemp -d)
+dwi=$(readlink -m "$dwi")
+outmask=$(readlink -m "$outmask")
+
 run pushd $tmpdir
-dwi=$(readlink -f "$dwi")
-outmask=$(readlink -f "$outmask")
 
 tmpbse="${dwi##*/}"
 tmpbse="${tmpbse%.*}-bse.nrrd"
