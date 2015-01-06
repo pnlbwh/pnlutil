@@ -26,7 +26,7 @@ Examples:
 
 diff_and_exit() {
     if diff -q "$1" "$2" >/dev/null; then
-        echo ""$2" already exists (they are the identitcal)"
+        echo ""$2" already exists (they are the identical)"
     else
         echo ""$2" already exists, not overwriting (they differ)"
     fi
