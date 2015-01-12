@@ -1,0 +1,31 @@
+#!/bin/bash -eu
+
+SCRIPT=$(readlink -m $(type -p $0))
+SCRIPTDIR=${SCRIPT%/*}      
+source $SCRIPTDIR/util.sh
+
+usage() {
+    echo -e "
+Lists variables defined in /path/to/data/SetUpData.sh
+
+Usage:
+    ${0##*/} path/to/data/
+
+e.g. 
+    ${0##*/} \$intrust
+    ${0##*/} \$szes
+    ${0##*/} \$nfl
+"
+}
+
+[[ $# -ne 1 || $1 == "-h" ]] && { usage; exit 1; }
+if [ -f $1/dataEnv.sh ]; then 
+    data="$1/dataEnv.sh"
+elif [ -f $1/SetUpData.sh ]; then 
+    data="$1/SetUpData.sh"
+else
+     echo "'$1/SetUpData.sh' or '$1/dataEnv.sh' doesn't exist." 
+     exit 1
+fi
+
+cat "$data" | grep "=" | column -s"=" -t
