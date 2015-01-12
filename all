@@ -20,17 +20,19 @@ ${0##*/} [-f caselist.txt] <var> [case1 case2 ... caseN]
 while getopts "hf:" flag; do
     case "$flag" in
         h) usage 1;;
-        f) caselist=$OPTARG;;
+        f) argcaselist=$OPTARG;;
     esac
 done
 shift $((OPTIND-1))
 
 # get positional arguments
-IFS=" " read var cases <<<"$@"
+IFS=" " read var argcases <<<"$@"
 [ -n "${var-}" ] || { echo -e "Specify variable <var>\n"; usage 1; }
 
 # check input is ok
 checkset_SetUpData $var
+[ ! -n "${argcaselist-}" ] || caselist=$argcaselist
+[ ! -n "${argcases-}" ] || cases=$argcases
 checkset_cases
 
 for case in $cases; do
