@@ -45,7 +45,7 @@ run source "$FREESURFER_HOME/FreeSurferEnv.sh"
 set -eu
 [ -n "$SUBJECTS_DIR" ] || { log_error "'SUBJECTS_DIR' not set by '$FREESURFER_HOME/FreeSurferEnv.sh'!"; exit 1; }
 
-get_remotes t1
+get_if_remote t1
 
 if [[ $t1 != *nii || $t1 != *nii.gz ]]; then
     tmpnii=/tmp/$(base "$t1").nii.gz

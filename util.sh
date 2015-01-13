@@ -136,7 +136,7 @@ is_target_remote() {
     test -n "$path"
 }
 
-get_remotes() {
+get_if_remote() {
     local var
     tmpdir="$(mktemp -d)/remote_files" && mkdir -p "$tmpdir"
     for var in "$@"; do
@@ -159,7 +159,7 @@ get_remotes() {
     done
 }
 
-clean_remotes() {
+rm_remotes() {
     log "Delete any temporary remote files"
     for var in "$@"; do
         parent_dir=$(dirname ${!var} | xargs basename)
@@ -171,7 +171,7 @@ clean_remotes() {
     done
 }
 
-check_set_vars() {
+check_vars() {
     local var
     for var in "$@"; do
         if [ -z "${!var-}" ]; then 
@@ -198,7 +198,7 @@ rigid() {
     local moving=$1
     local fixed=$2
     local prefix=$3
-    check_set_vars ANTSPATH
+    check_vars ANTSPATH
     run ${ANTSPATH}/ANTS 3 -m MI[$fixed,$moving,1,32] -i 0 -o $prefix --do-rigid
     # from antsaffine.sh:
     #RIGID="--rigid-affine true  --affine-gradient-descent-option  0.5x0.95x1.e-4x1.e-4"
@@ -210,7 +210,7 @@ warp() {
     local moving=$1
     local fixed=$2
     local prefix=$3
-    check_set_vars ANTSSRC ANTSPATH
+    check_vars ANTSSRC ANTSPATH
     run $ANTSSRC/Scripts/antsIntroduction.sh -d 3 -i $moving -r $fixed -o $prefix -s MI 
     log_success "Made non-linear warp: '${prefix}Affine.txt', '${prefix}Warp.nii.gz'"
 }
@@ -283,19 +283,11 @@ map() {
 }
 
 checkset_local_SetUpData() {
-    if [ -f SetUpData.sh ]; then 
-        SetUpData=SetUpData.sh
-    else
-        echo "Run in directory with 'SetUpData.sh' or setenv DATADIR /path/to/SetUpData/"
-        usage 1
-    fi
-
-    source $SetUpData
-
-    # check vars are set
+    [ ! -f SetUpData.sh ] && { echo "Run in directory with 'SetUpData.sh' or setenv DATADIR /path/to/SetUpData/"; usage; exit 1; } 
+    source SetUpData.sh
     for var in $@; do
         if [ ! -n "${!var-}" ]; then
-            echo "Set $var in '$SetUpData' first."
+            echo "Set $var in 'SetUpData.sh' first."
             exit 1
         fi
     done

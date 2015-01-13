@@ -16,12 +16,12 @@ where <dwi> and <dwi_mask> are nrrd/nhdr files
 [ -n "${1-}" ] && [[ $1 == "-h" || $1 == "--help" ]] && usage 0
 [ $# -ne 4 ] && usage 1
 
-check_set_vars FREESURFER_HOME ANTSPATH ANTSSRC
+check_vars FREESURFER_HOME ANTSPATH ANTSSRC
 export SUBJECTS_DIR=
 
 input_vars="dwi dwi_mask mri output_dir"
 read -r $input_vars <<<"$@"
-get_remotes ${input_vars% *}
+get_if_remote ${input_vars% *}
 
 log "Make and change to output directory"
 run mkdir $output_dir || { log_error "$output_dir already exists, delete it or choose another output folder name"; exit 1; }

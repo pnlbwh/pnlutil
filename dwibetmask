@@ -17,14 +17,14 @@ where <dwi> must be a nrrd volume."
 
 [[ $# -ne 2 || $1 == "-h" || $1 == "--help"  ]] && { usage; exit 1; }
 read -r dwi outmask <<<"$@"
-get_remotes dwi
+check_and_get_if_remote dwi
 
 tmpdir=$(mktemp -d)
 dwi=$(readlink -m "$dwi")
 outmask=$(readlink -m "$outmask")
 
+log=$(mktemp -d)/log && start_logging "$log"
 run pushd $tmpdir
-
 tmpbse="${dwi##*/}"
 tmpbse="${tmpbse%.*}-bse.nrrd"
 run unu slice -a 3 -p 0 -i "$dwi" -o "$tmpbse"
@@ -37,3 +37,4 @@ run "ConvertBetweenFileFormats ${case}_mask.nii.gz $outmask >/dev/null"
 run popd
 run rm -rf "$tmpdir"
 log_success "Made '$outmask'"
+mv "$log" "$outmask.log"

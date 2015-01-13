@@ -9,7 +9,8 @@ if [[ -f "$1" ]]; then
 fi
 
 case=${2##*/}
-inputvars="fs2dwi_dwi \
+inputvars="\
+    fs2dwi_dwi \
     fs2dwi_dwimask \
     fs2dwi_fssubjectdir"
 checkset_local_SetUpData $inputvars
@@ -34,4 +35,5 @@ else  # register t1 directly to dwi
 fi
 
 run "mv $outputdir/wmparc-in-bse.nrrd $3"
+mv "$outputdir/log" "$1.log"
 log_success "Made '$1'"

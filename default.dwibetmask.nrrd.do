@@ -8,6 +8,7 @@ if [[ -f "$1" ]]; then
     exit 0
 fi
 
+# Input
 case=${2##*/}
 inputvars="dwi"
 checkset_local_SetUpData $inputvars

@@ -16,13 +16,15 @@ where <dwi> and <dwi_mask> are nrrd/nhdr files
 [ -n "${1-}" ] && [[ $1 == "-h" || $1 == "--help" ]] && usage 0
 [ $# -ne 8 ] && usage 1
 
-check_set_vars FREESURFER_HOME ANTSPATH ANTSSRC
+log=$(mktemp -d)/log && start_logging "$log"
+
+check_vars FREESURFER_HOME ANTSPATH ANTSSRC
 export SUBJECTS_DIR=
 
 input_args="mri dwi dwi_mask t2 t2_mask t1 t1_mask output_dir"
 read -r $input_args <<<"$@"
 input_vars=${input_args% *}  # remove output_dir
-get_remotes $input_vars
+get_if_remote $input_vars
 
 log "Make and change to output directory"
 run "mkdir $output_dir" || { log_error "$output_dir already exists, delete it or choose another output folder name"; exit 1; }
@@ -67,5 +69,6 @@ ConvertBetweenFileFormats wmparc-in-bse.nrrd wmparc-in-bse.nrrd short
 log_success "Made 'wmparc-in-bse.nii.gz'"
 
 popd
-clean_remotes $input_vars
+rm_remotes $input_vars
 log_success "Made '$(readlink -f "$output_dir"/wmparc-in-bse.nrrd)'"
+mv "$log" "$output_dir/log"

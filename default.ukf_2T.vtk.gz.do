@@ -29,6 +29,7 @@ cmd="UKFTractography \
     --recordTensors \
     --tracts $vtkout"
 
+log=$(mktemp -d)/log && start_logging "$log"
 log "Run ukf tractography to make '$vtkout'"
 run "$cmd | tee $1.log"
 log "Made $vtkout"
@@ -36,3 +37,4 @@ log "Made $vtkout"
 log "Gzip '$3'"
 gzip "$vtkout"
 log_success "Made '$1'"
+mv "$log" "$1.log"

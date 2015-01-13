@@ -34,7 +34,7 @@ log "List input arguments"
 print_vars $input_vars
 
 log "Check that inputs exist and download any remote ones"
-get_remotes ${input_vars% *}
+get_if_remote ${input_vars% *}
 
 log "First convert inputs to nrrd and center"
 tmpmoving=$tmp/$(base $moving).nrrd

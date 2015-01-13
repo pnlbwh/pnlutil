@@ -12,13 +12,13 @@ case=${2##*/}
 case=${case%%.*}
 
 inputvars="atlas_target \
-    atlas_trainingstrcts \
+    atlas_trainingstructs \
     atlas_traininglabels"
 checkset_local_SetUpData $inputvars
 redo_ifchange_vars $inputvars
 
 log "Make '$1'"
-run mainANTSAtlasWeightedOutputProbability "$atlas_target" "$3" "$atlas_trainingstrcts" "$atlas_traininglabels"
+run mainANTSAtlasWeightedOutputProbability "$atlas_target" "$3" "$atlas_trainingstructs" "$atlas_traininglabels"
 log "Threshold the mask at 50"
 run unu 2op gt $3 50 | unu save -e gzip -f nrrd -o $3
 log_success "Made '$1'"
