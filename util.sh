@@ -350,7 +350,9 @@ diff_and_exit() {
     exit 0
 }
 
-
+start_logging() {
+    exec > >(tee "$1") 2>&1  # pipe stderr and stdout to logfile as well as console
+}
 
 standard_var_help="\
 Run in directory with 'SetUpData.sh', or set DATADIR with file path that
