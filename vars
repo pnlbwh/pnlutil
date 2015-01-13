@@ -5,27 +5,29 @@ SCRIPTDIR=${SCRIPT%/*}
 source $SCRIPTDIR/util.sh
 
 usage() {
-    echo -e "
-Lists variables defined in /path/to/data/SetUpData.sh
+    echo -e "\
+Lists variables defined in './SetUpData.sh ./dataEnv.sh' or
+'/path/to/data/{SetUpData.sh,dataEnv.sh}'
 
 Usage:
+    ${0##*/} 
     ${0##*/} path/to/data/
 
 e.g. 
+    ${0##*/} 
     ${0##*/} \$intrust
     ${0##*/} \$szes
     ${0##*/} \$nfl
 "
 }
 
-[[ $# -ne 1 || $1 == "-h" ]] && { usage; exit 1; }
-if [ -f $1/dataEnv.sh ]; then 
-    data="$1/dataEnv.sh"
-elif [ -f $1/SetUpData.sh ]; then 
-    data="$1/SetUpData.sh"
-else
-     echo "'$1/SetUpData.sh' or '$1/dataEnv.sh' doesn't exist." 
-     exit 1
+data="./SetUpData.sh ./dataEnv.sh"
+[[ ${1-} == "-h" || ${1-} == "--help" ]] && { usage; exit 1; }
+if [ -n "${1-}" ]; then
+    data="$1/SetUpData.sh $1/dataEnv.sh"
 fi
 
-cat "$data" | grep "=" | column -s"=" -t
+out=$(cat $data 2>/dev/null || true)
+[ -n "$out" ] || { echo "No output from '$data.sh', do they exist?"; usage; exit 1; }
+
+echo -e "$out" | grep "=" | column -s"=" -t
