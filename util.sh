@@ -153,7 +153,7 @@ get_if_remote() {
             eval "$var="$filename""
             log_success "Downloaded remote $var: '$filename'"
         else
-            [ ! -e ${!var} ] && { log_error "$var:'${!var}' does not exist"; exit 1; }
+            [ ! -e ${!var} ] && { log_error "The $var '${!var}' does not exist"; exit 1; }
             log_success "Found $var:'${!var}'"
         fi
     done
@@ -175,7 +175,8 @@ check_vars() {
     local var
     for var in "$@"; do
         if [ -z "${!var-}" ]; then 
-            log_error "Set '${var}' in your shell environment (e.g. in your ~/.tcshrc or ~/.bashrc)"
+            log_error "Set '${var}' in your shell environment (e.g. in your ~/.tcshrc or ~/.bashrc), \
+                or if running 'redo', set it in '/path/to/your/project/SetUpData.sh'."
             exit 1
         else
             log "Found $var=${!var}"
@@ -194,18 +195,6 @@ mask() {
     eval "$3="$_out""
 }
 
-rigid() {
-    local moving=$1
-    local fixed=$2
-    local prefix=$3
-    check_vars ANTSPATH
-    run ${ANTSPATH}/ANTS 3 -m MI[$fixed,$moving,1,32] -i 0 -o $prefix --do-rigid
-    # from antsaffine.sh:
-    #RIGID="--rigid-affine true  --affine-gradient-descent-option  0.5x0.95x1.e-4x1.e-4"
-    #run $(antspath ANTS) 3 -m MI[${fixed},${moving},1,32] -o ${pre} -i 0 --use-Histogram-Matching --number-of-affine-iterations 10000x10000x10000x10000x10000 $RIGID
-    log_success "Made rigid transform: '${prefix}Affine.txt'"
-}
-
 warp() {
     local moving=$1
     local fixed=$2
@@ -214,6 +203,7 @@ warp() {
     run $ANTSSRC/Scripts/antsIntroduction.sh -d 3 -i $moving -r $fixed -o $prefix -s MI 
     log_success "Made non-linear warp: '${prefix}Affine.txt', '${prefix}Warp.nii.gz'"
 }
+
 
 check_args() {
     local min_args=$1
@@ -231,7 +221,7 @@ assert_vars_are_set() {
 }
 
 redo_ifchange_vars() {
-    log "Check/update dependencies: $*"
+    log "Update dependencies (may be remote): $*"
     assert_vars_are_set "$@"
     local local_deps=""
     for var in "$@"; do

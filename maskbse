@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+set -eu
+SCRIPT=$(readlink -m $(type -p "$0"))
+SCRIPTDIR=$(dirname $SCRIPT)
+source "$SCRIPTDIR/util.sh"
+
+usage() {
+    cat <<EOF
+Extracts baseline of dwi and masks it.
+Usage:
+
+    $(basename $0) <dwi> <dwimask> [out]
+
+EOF
+}
+
+[[ $# -lt 2 || $1 == -h* || $1 == --help ]] && { usage; exit 1; }
+read dwi dwimask out <<<"$@"
+out=${out:-$(basename ${dwi%.*})-maskedbse.nrrd}
+get_if_remote dwi dwimask
+log "Extract and mask baseline of '$dwi' to make '$out'"
+run "unu slice -a 3 -p 0 -i "$dwi" | unu 3op ifelse "$dwimask" - 0 -o "$out""
+rm_remotes dwi dwimask
+log_success "Made '$out'"

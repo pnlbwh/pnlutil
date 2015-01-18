@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
 
 set -eu
-
 SCRIPT=$(readlink -m $(type -p $0))
-SCRIPT_DIR=$(dirname ${SCRIPT})      
-source "$SCRIPT_DIR/util.sh"
+PNLUTIL=$(dirname ${SCRIPT})      
+source "$PNLUTIL/util.sh"
 
 HELP_TEXT="
-Perform rigid registration using ANTS.
+Compute rigid transformation and transform <moving> to <fixed>
+space.  The transformation is not saved (Use 'rigidtrans' if you'd
+like to save the trasnforamtion).
 
 Usage:
-    $(basename $0) [-f |--fast] <moving> <fixed> [outrigid]
+    $(basename $0) [-f |--fast] <moving> <fixed> [out]
 
 where <moving> and <fixed> are 3D images. [-f | --fast] is mainly
 for debugging.
@@ -21,12 +22,15 @@ if [[ -n ${1-} ]]; then
     [[  $1 == "-h" || $1 == "--help" ]] && usage 0
     [[  $1 == "-f" || $1 == "--fast" ]] && { DOFAST="--number-of-affine-iterations 1"; shift; }
 fi
-[ $# -lt 3 ] && usage 1
+[ $# -lt 2 ] && usage 1
+moving=$1; fixed=$2; out=${3:-$(base $moving)_in_$(base $fixed)-rigid.nrrd}
 
-moving=$1
-fixed=$2
-outrigid=${3:-$(base $moving)_in_$(base $fixed)-rigid.txt}
-pre=$(mktemp -d)/$(base $outrigid)
-rigid $moving $fixed $pre
-mv ${pre}Affine.txt "$outrigid"
-log_success "Made $outrigid"
+log "First, compute rigid transformation from '$moving' to '$fixed'"
+tmp=$(mktemp -d) && transform=$tmp/$(base "$out").txt
+run $PNLUTIL/rigidtransform "$moving" "$fixed" "$transform"
+
+log "Second, use rigid transformation to warp '$moving' to '$out'"
+run WarpImageMultiTransform 3 "$moving" "$out" -R "$fixed" "$transform"  || log_error "Failed to make '$out'"
+
+rm -rf "$tmp"
+log_success "Made '$out'"
