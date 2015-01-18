@@ -16,6 +16,8 @@ where <dwi> and <dwi_mask> are nrrd/nhdr files
 [ -n "${1-}" ] && [[ $1 == "-h" || $1 == "--help" ]] && usage 0
 [ $# -ne 4 ] && usage 1
 
+log=$(mktemp -d)/log && start_logging "$log"
+
 check_vars FREESURFER_HOME ANTSPATH ANTSSRC
 export SUBJECTS_DIR=
 
@@ -62,3 +64,4 @@ log_success "Downsampled wmparc: 'wmparc-in-bse.nrrd'"
 
 popd
 log_success "Made '$(readlink -f "$output_dir"/wmparc-in-bse.nrrd)'"
+mv "$log" "$output_dir/log"
