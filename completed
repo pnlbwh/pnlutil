@@ -4,39 +4,14 @@ SCRIPT=$(readlink -m $(type -p $0))
 SCRIPTDIR=${SCRIPT%/*}      
 source $SCRIPTDIR/util.sh
 
-HELP="Run in directory with 'SetUpData.sh' or with environment variable
-DATADIR set to path containing one.  Prints all <var> files that  exist
-for \$caselist, 'caselist.txt', or [case1 case2 .. caseN].  Usage:
+HELP="
+${0##*/}: Prints all <var> filepaths that exist for a given set of cases.
 
-${0##*/} [-c] [-f caselist.txt] <var>  [case1 case2 .. caseN]
+$queryscript_helpmsg"
 
--c                      Prints case id's, not file paths
--f caselist.txt         Uses case id's from caselist.txt
-[case1 case2 ..caseN]   Use these case id's instead of a caselist file
-"
+queryscript_parseargs "$@"
 
-# flags
-printcases=false
-while getopts "hcf:" flag; do
-    case "$flag" in
-        h) usage 1;;
-        c) printcases=true;;
-        f) argcaselist=$OPTARG;;
-    esac
-done
-shift $((OPTIND-1))
-
-# get positional arguments
-IFS=" " read var cases <<<"$@"
-[ -n "${var-}" ] || { echo -e "Specify variable <var>.\n"; usage 1; }
-
-# check input is ok
-checkset_SetUpData $var
-[ ! -n "${argcaselist-}" ] || caselist=$argcaselist
-[ ! -n "${argcases-}" ] || cases=$argcases
-checkset_cases
-
-if $printcases; then
+if $selectcases; then # doesn't work on remote file paths
     case_if_exists() {
         local case=$1
         source $SetUpData
@@ -44,6 +19,6 @@ if $printcases; then
     }
     map "case_if_exists" $cases
 else
-    pred="-e"
-    filter "$pred" $($SCRIPTDIR/all $var $cases)
+    mypred() { test -e "$1" -o -L "$1"; }
+    filter "mypred" $($SCRIPTDIR/all $var $cases)
 fi

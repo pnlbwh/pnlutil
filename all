@@ -4,38 +4,18 @@ SCRIPT=$(readlink -m $(type -p $0))
 SCRIPTDIR=${SCRIPT%/*}      
 source $SCRIPTDIR/util.sh
 
-HELP="Prints all <var> file paths. 
+HELP="
+${0##*/}: Prints all <var> file paths. 
 
-$standard_var_help
+$queryscript_helpmsg"
 
-Usage:
-
-${0##*/} [-f caselist.txt] <var> [case1 case2 ... caseN]
-
--f caselist.txt         Uses case id's from caselist.txt
-[case1 case2 ..caseN]   Use these case id's instead of a caselist file
-"
-
-# flags
-while getopts "hf:" flag; do
-    case "$flag" in
-        h) usage 1;;
-        f) argcaselist=$OPTARG;;
-    esac
-done
-shift $((OPTIND-1))
-
-# get positional arguments
-IFS=" " read var argcases <<<"$@"
-[ -n "${var-}" ] || { echo -e "Specify variable <var>\n"; usage 1; }
-
-# check input is ok
-checkset_SetUpData $var
-[ ! -n "${argcaselist-}" ] || caselist=$argcaselist
-[ ! -n "${argcases-}" ] || cases=$argcases
-checkset_cases
+queryscript_parseargs "$@"
 
 for case in $cases; do
-    source "$SetUpData"
-    printf "%s\n" ${!var}
+    if $selectcases; then
+        echo $case
+    else
+        source "$SetUpData"
+        printf "%s\n" ${!var}
+    fi
 done

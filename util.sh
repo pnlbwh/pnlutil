@@ -247,9 +247,10 @@ print_vars() {
 
 filter_remote() {
     local pred="$1"; shift
-    IFS=":" read -r server remotepath <<<"$1"
+    IFS=":" read -r server _ <<<"$1"
     files=$(echo $@ | tr ' ' '\n' | cut -d":" -f2 | tr '\n' ' ')
-    remote_cmd="for i in $files; do [ $pred "\$i" ] && echo \$i; done"
+    remote_cmd="`declare -f $pred`; for i in $files; do  $pred "\$i"  && echo \$i; done"
+    #echo $remote_cmd
     ssh $server 'bash -s' <<<"$remote_cmd"
     exit
 }
@@ -260,7 +261,7 @@ filter() {
         filter_remote "$pred" $@
     else
         for i in $@; do
-            [ $pred "$i" ] && echo "$i"
+            $pred "$i" && echo "$i"
         done
     fi
 }
@@ -310,7 +311,7 @@ checkset_cases() {
     fi
 
     if [ ! -n "${caselist-}" ]; then
-        echo "Set 'caselist' in 'SetUpData.sh', or use '-f caselist.txt'"
+        echo -e "Set variable 'caselist' (a text file) or 'cases' (a string of case ids) in 'SetUpData.sh', \nor pass them as arguments on the commandline."
         usage 1
     fi
      
@@ -336,8 +337,45 @@ start_logging() {
     exec > >(tee "$1") 2>&1  # pipe stderr and stdout to logfile as well as console
 }
 
-standard_var_help="\
-Run in directory with 'SetUpData.sh', or set DATADIR with file path that
-contains one, that sets <var>, e.g. myvar=/path/to/\$case-myt1.nrrd.  If you 
-don't supply a caselist as an argument, 'caselist' also needs to be set,
-pointing to a caselist file."
+#####
+# Query script functions/helpers
+
+queryscript_parseargs() {
+    selectcases=false
+    while getopts "hcf:" flag; do
+        case "$flag" in
+            h) usage 1;;
+            c) selectcases=true;;
+            f) argcaselist=$OPTARG;;
+        esac
+    done
+    shift $((OPTIND-1))
+
+    # get positional arguments
+    IFS=" " read var argcases <<<"$@"
+    [ -n "${var-}" ] || { echo -e "Specify variable <var>."; usage 1; }
+
+    # check input is ok
+    checkset_SetUpData $var
+    [ ! -n "${argcaselist-}" ] || caselist=$argcaselist
+    [ ! -n "${argcases-}" ] || cases=$argcases
+    checkset_cases
+}
+
+queryscript_helpmsg="\
+Run in directory with 'SetUpData.sh' that has '<var>=/path/to/\$case-file'
+defined in it.  The set of cases must either be defined in SetUpData.sh (e.g.
+as caselist=mycaselist.txt or cases=\"case1 case2.. caseN\"), or on the
+commandline (see below).
+
+${0##*/} [-c] [-f <caselist>] <var>  [case1 case2 .. caseN]
+
+-c                      Prints case id's, not file paths
+-f <caselist>           Uses case id's from <caselist> (one per line, but can include comments)
+[case1 case2 ..caseN]   Use these case id's instead of a caselist file
+
+Examples:
+    missing -c t1
+    all -f caselist_qc.txt dwi
+    completed ukf 01009 01010 01012 01243
+"
