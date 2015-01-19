@@ -18,6 +18,6 @@ if $selectcases; then
     }
     map "case_if_not_exists" $cases
 else
-    mypred() { test ! -e "$1" -a ! -L "$!"; }
+    mypred() { test ! -e "$1" -a ! -L "$1"; }
     filter "mypred" $($SCRIPTDIR/all $var $cases)
 fi
