@@ -22,12 +22,14 @@ if [[ -n ${1-} ]]; then
     [[  $1 == "-f" || $1 == "--fast" ]] && { DOFAST="--number-of-affine-iterations 1"; shift; }
 fi
 [ $# -lt 3 ] && usage 1
-
-moving=$1; fixed=$2; outrigid=${3:-$(base $moving)_in_$(base $fixed)-rigid.txt}
+moving=$1 
+fixed=$2 
+outrigid=${3:-$(base $moving)_in_$(base $fixed)-rigid.txt}
 check_vars ANTSPATH
 
 log "Compute the rigid registration from '$moving' to '$fixed' to make '$outrigid'"
-tmp=$(mktemp -d) && pre=$tmp/$(base $outrigid)
+tmp=$(mktemp -d) 
+pre=$tmp/$(base $outrigid)
 run ${ANTSPATH}/ANTS 3 -m MI[$fixed,$moving,1,32] -i 0 -o $pre --do-rigid $DOFAST
 # from antsaffine.sh:
 #RIGID="--rigid-affine true  --affine-gradient-descent-option  0.5x0.95x1.e-4x1.e-4"

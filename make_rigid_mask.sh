@@ -23,8 +23,7 @@ where <out> is the new labelmap in <fixed> space.
 
 # Start piping output to a log file
 tmp="$(mktemp -d)"
-log="$tmp/log"
-exec > >(tee "$log") 2>&1  # pipe stderr and stdout to logfile as well as console
+start_logging $tmp/log
 
 # Read in args
 input_vars="labelmap moving fixed out"
@@ -50,13 +49,16 @@ log_success "Done centering inputs"
 
 log "Compute rigid registration"
 pre=$tmp/"$(base $moving)-to-$(base $fixed)"
-rigid $tmpmoving $tmpfixed $pre
+run $SCRIPTDIR/rigidtransform $tmpmoving $tmpfixed $pre.txt
+log "Apply rigid transformation to mask/labelmap"
 run ${ANTSPATH}/antsApplyTransforms -d 3 -i $tmplabelmap -r $tmpfixed -n NearestNeighbor -t ${pre}Affine.txt -o $out
-[[ $out == *nrrd || $out == *nhdr ]] && run unu save -e gzip -f nrrd -i "$out" -o "$out"
+if [[ $out == *nrrd || $out == *nhdr ]] 
+    run unu save -e gzip -f nrrd -i "$out" -o "$out"
+fi
 if [ -f "$out" ]; then  # need to check because ants does not exit with an error code
     log_success "Created new mask: '$out'"
 else
     log_error "Failed to create '$out'"; exit 1
 fi
 
-mv "$log" "$out.log"
+mv "$tmp/log" "$out.log"

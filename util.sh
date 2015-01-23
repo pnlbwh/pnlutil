@@ -176,23 +176,12 @@ check_vars() {
     for var in "$@"; do
         if [ -z "${!var-}" ]; then 
             log_error "Set '${var}' in your shell environment (e.g. in your ~/.tcshrc or ~/.bashrc), \
-                or if running 'redo', set it in '/path/to/your/project/SetUpData.sh'."
+or if running 'redo', set it in '/path/to/your/project/SetUpData.sh'."
             exit 1
         else
             log "Found $var=${!var}"
         fi
     done
-}
-
-mask() {
-    local img=$1
-    local mask=$2
-    local _out=$(basename $img)
-    _out="${_out%.*}-masked.nrrd"
-    run ConvertBetweenFileFormats $img $_out >/dev/null
-    run "unu 3op ifelse $mask $_out 0 -w 1 | unu save -e gzip -f nrrd -o "$_out""
-    run center.py -i "$_out" -o "$_out"
-    eval "$3="$_out""
 }
 
 warp() {

@@ -5,10 +5,10 @@ SCRIPT=$(readlink -m $(type -p $0))
 PNLUTIL=$(dirname ${SCRIPT})      
 source "$PNLUTIL/util.sh"
 
-HELP_TEXT="
+HELP="
 Compute rigid transformation and transform <moving> to <fixed>
 space.  The transformation is not saved (Use 'rigidtrans' if you'd
-like to save the trasnforamtion).
+like to save the trasnformation).
 
 Usage:
     $(basename $0) [-f |--fast] <moving> <fixed> [out]
@@ -26,11 +26,12 @@ fi
 moving=$1; fixed=$2; out=${3:-$(base $moving)_in_$(base $fixed)-rigid.nrrd}
 
 log "First, compute rigid transformation from '$moving' to '$fixed'"
-tmp=$(mktemp -d) && transform=$tmp/$(base "$out").txt
+tmp=$(mktemp -d) 
+transform=$tmp/$(base "$out").txt
 run $PNLUTIL/rigidtransform "$moving" "$fixed" "$transform"
 
 log "Second, use rigid transformation to warp '$moving' to '$out'"
-run WarpImageMultiTransform 3 "$moving" "$out" -R "$fixed" "$transform"  || log_error "Failed to make '$out'"
+run WarpImageMultiTransform 3 "$moving" "$out" -R "$fixed" "$transform" 
 
 rm -rf "$tmp"
 log_success "Made '$out'"
