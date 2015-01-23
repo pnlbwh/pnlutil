@@ -48,11 +48,11 @@ run $SCRIPTDIR/center.py -i $tmplabelmap -o $tmplabelmap
 log_success "Done centering inputs"
 
 log "Compute rigid registration"
-pre=$tmp/"$(base $moving)-to-$(base $fixed)"
-run $SCRIPTDIR/rigidtransform $tmpmoving $tmpfixed $pre.txt
+rigidtransform=$tmp/"$(base $moving)-to-$(base $fixed).txt"
+run $SCRIPTDIR/rigidtransform $tmpmoving $tmpfixed $rigidtransform
 log "Apply rigid transformation to mask/labelmap"
-run ${ANTSPATH}/antsApplyTransforms -d 3 -i $tmplabelmap -r $tmpfixed -n NearestNeighbor -t ${pre}Affine.txt -o $out
-if [[ $out == *nrrd || $out == *nhdr ]] 
+run ${ANTSPATH}/antsApplyTransforms -d 3 -i $tmplabelmap -r $tmpfixed -n NearestNeighbor -t $rigidtransform -o $out
+if [[ $out == *nrrd || $out == *nhdr ]]; then
     run unu save -e gzip -f nrrd -i "$out" -o "$out"
 fi
 if [ -f "$out" ]; then  # need to check because ants does not exit with an error code
