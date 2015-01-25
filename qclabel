@@ -1,0 +1,21 @@
+#!/bin/bash -eu
+
+usage() {
+    echo -e "\
+Saves a slice of an image and its labelmap to see if they
+are aligned correctly (in pixel space).
+
+Usage:
+
+    ${0##/} <img> <labelmap> <out.png>
+"
+}
+
+[[ $# -ne 3 || $1 == "-h*" ]] && { usage; exit 1; }
+
+tmp=$(mktemp -d)
+img2d="$tmp/img.nrrd"
+lbl2d="$tmp/lbl.nrrd"
+unu project -a 2 -m mean -i $1 -o $img2d
+unu project -a 2 -m max -i $2 | unu 3op ifelse - 1000 0 -o $lbl2d
+unu 2op + $img2d $lbl2d | unu quantize -b 8 -o $3
