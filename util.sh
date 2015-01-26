@@ -166,7 +166,7 @@ rm_remotes() {
         if [[ $parent_dir == remote_files ]]; then
             log "${!var} is a temporary remote file, delete it"
             run "rm -rf ${!var}"
-            [[ ${!var} == *nhdr ]] && run "rm ${!var%.nhdr}.raw*"
+            [[ ! ${!var} == *nhdr ]] || run "rm ${!var%.nhdr}.raw*"
         fi
     done
 }

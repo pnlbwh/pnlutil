@@ -8,20 +8,21 @@ source "$SCRIPTDIR/util.sh"
 HELP="
 Usage: 
 
-   ${0##*/} <freesurfer_mri_folder> <dwi> <dwi_mask> <T2> <T2_mask> <T1> <T1_mask> <output_dir>
+   ${0##*/} <freesurfer_mri_folder> <dwi> <dwimask> <T2> <T2mask> <T1> <T1mask> <output_dir>
 
-where <dwi> and <dwi_mask> are nrrd/nhdr files
+where <dwi> and <dwimask> are nrrd/nhdr files
 "
 
 [ -n "${1-}" ] && [[ $1 == "-h" || $1 == "--help" ]] && usage 0
 [ $# -ne 8 ] && usage 1
 
-log=$(mktemp -d)/log && start_logging "$log"
+tmplog=$(mktemp)
+start_logging "$tmplog"
 
 check_vars FREESURFER_HOME ANTSPATH ANTSSRC
 export SUBJECTS_DIR=
 
-input_args="mri dwi dwi_mask t2 t2_mask t1 t1_mask output_dir"
+input_args="mri dwi dwimask t2 t2mask t1 t1mask output_dir"
 read -r $input_args <<<"$@"
 input_vars=${input_args% *}  # remove output_dir
 get_if_remote $input_vars
@@ -38,37 +39,39 @@ run $FREESURFER_HOME/bin//mri_label2vol --seg $mri/wmparc.mgz --temp $mri/brain.
 log_success "Made 'brain.nii.gz' and 'wmparc.nii.gz'"
 
 log "Make masked T2"
-mask "$t2" "$t2_mask" maskedt2
+maskedt2=$(base $t2)-masked.nrrd
+run mask "$t2" "$t2mask" $maskedt2
 log_success "Made masked T2: '$maskedt2'"
 
 log "Make masked T1"
-mask "$t1" "$t1_mask" maskedt1
+maskedt1=$(base $t1)-masked.nrrd
+run mask "$t1" "$t1mask" $maskedt1
 log_success "Made masked T1: '$maskedt1'"
 
 log "Make masked baseline"
 bse=$(basename "$dwi")
 bse="${bse%%.*}-bse.nrrd"
 maskedbse=$(basename ${bse%%.*}-masked.nrrd)
-run "unu slice -a 3 -p 0 -i $dwi | unu 3op ifelse $dwi_mask - 0 -o $maskedbse"
+run "unu slice -a 3 -p 0 -i $dwi | unu 3op ifelse $dwimask - 0 -o $maskedbse"
 $SCRIPTDIR/center.py -i "$maskedbse" -o "$maskedbse"
 log_success "Made masked baseline: '$maskedbse'"
 
 log "Compute rigid transformation from brain.nii.gz to T1"
-rigid brain.nii.gz $maskedt1 "fs-to-t1-"
+rigidtransform brain.nii.gz $maskedt1 "fs-to-t1-rigid.txt"
 
 log "Compute rigid transformation from masked T1 to masked T2"
-rigid $maskedt1 $maskedt2 "t1-to-t2-"
+rigidtransform $maskedt1 $maskedt2 "t1-to-t2-rigid.txt"
 
 log "Compute warp from T2 to DWI baseline"
 warp $maskedt2 $maskedbse "t2-to-bse-"
 run mv t2-to-bse-deformed.nii.gz t2-in-bse.nii.gz 
 
 log "Apply transformations to wmparc.nii.gz to create wmparc-in-bse.nii.gz"
-run $ANTSPATH/antsApplyTransforms -d 3 -i wmparc.nii.gz -o wmparc-in-bse.nrrd -r "$maskedbse" -n NearestNeighbor -t t2-to-bse-Warp.nii.gz t2-to-bse-Affine.txt t1-to-t2-Affine.txt fs-to-t1-Affine.txt
+run $ANTSPATH/antsApplyTransforms -d 3 -i wmparc.nii.gz -o wmparc-in-bse.nrrd -r "$maskedbse" -n NearestNeighbor -t t2-to-bse-Warp.nii.gz t2-to-bse-Affine.txt t1-to-t2-rigid.txt fs-to-t1-rigid.txt
 ConvertBetweenFileFormats wmparc-in-bse.nrrd wmparc-in-bse.nrrd short
 log_success "Made 'wmparc-in-bse.nii.gz'"
 
 popd
-rm_remotes $input_vars
-log_success "Made '$(readlink -f "$output_dir"/wmparc-in-bse.nrrd)'"
-mv "$log" "$output_dir/log"
+rm_remotes $input_vars || true
+run mv "$tmplog" "$output_dir/log"
+log_success "Made ' $(readlink -f "$output_dir")' and '$(readlink -f "$output_dir"/wmparc-in-bse.nrrd)'"
