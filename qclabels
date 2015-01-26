@@ -1,0 +1,48 @@
+#!/bin/bash -eu
+
+SCRIPT=$(readlink -m $(type -p "$0"))
+SCRIPTDIR=$(dirname "$SCRIPT")
+source $SCRIPTDIR/util.sh
+
+usage() {
+echo -e "\
+
+Usage:
+
+    ${0##/*} [-a <axis>] [-s \"<sz0..>\"] <image_var> <labelmap_var> <out.png>
+"
+}
+
+axis=2
+while getopts "ha:s:f:" flag; do
+    case "$flag" in
+        h) usage 1;;
+        a) axis=$OPTARG;;
+        s) scale=$OPTARG;;
+        f) argcaselist=$OPTARG;;
+    esac
+done
+shift $((OPTIND-1))
+
+[[ $# -ne 3 || $1 == -h* ]] && { usage; exit 1; }
+inputvars="$1 $2"
+checkset_local_SetUpData $inputvars
+[ ! -n "${argcaselist-}" ] || caselist=$argcaselist
+checkset_cases
+
+tmp=$(mktemp -d)
+log "Make '$3'"
+for case in $cases; do
+    source SetUpData.sh
+    if [[ -f ${!1} && -f ${!2} ]]; then
+        if [ -n "${scale-}" ]; then 
+            run qclabel -a $axis -s \"$scale\" ${!1} ${!2} "$tmp/$case.png"
+        else
+            run qclabel -a $axis ${!1} ${!2} "$tmp/$case.png"
+        fi
+    else
+        log_error "${!1} and/or ${!2} doesn't exist"
+    fi
+done
+montage -label '%t' "$tmp/*png" -geometry '180x180+4+4' -tile 5x "$3"
+log_success "Made '$3'"

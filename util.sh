@@ -264,6 +264,7 @@ map() {
 
 checkset_local_SetUpData() {
     [ ! -f SetUpData.sh ] && { echo "Run in directory with 'SetUpData.sh' or setenv DATADIR /path/to/SetUpData/"; usage; exit 1; } 
+    [ -n "${case:-}" ] || case=000  # set dummy case to sidestep unbound variable error
     source SetUpData.sh
     for var in $@; do
         if [ ! -n "${!var-}" ]; then
