@@ -9,7 +9,7 @@ checkset_local_SetUpData $status_vars
 logfile="./statuslog.csv"
 
 # Make header
-header="datetime,"
+header="datetime"
 for var in $status_vars; do
     header="$header,$var"
 done
@@ -24,8 +24,8 @@ done
 row="$row,$total"
 
 # Add to log file
-echo -e "$header,total" >> "$logfile"
-echo -e "$row,$total" >> "$logfile"
+echo -e "$header" >> "$logfile"
+echo -e "$row" >> "$logfile"
 
 # Print
 cat "$logfile" | column -t -s","
