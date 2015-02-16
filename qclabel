@@ -7,7 +7,7 @@ are aligned correctly (in pixel space).
 
 Usage:
 
-    ${0##/} [-a <axis>] [-s \"<sz0..>\"] <img> <labelmap> <out.png>
+    ${0##*/} [-a <axis>] [-s \"<sz0..>\"] <img> <labelmap> <out.png>
 "
 }
 
@@ -45,3 +45,5 @@ if [ -n "${scale-}" ]; then
 else
     unu 2op x $img2d $lbl2d | unu quantize -b 8 -o $3
 fi
+
+rm -rf $tmp

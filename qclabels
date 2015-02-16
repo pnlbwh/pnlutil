@@ -9,7 +9,7 @@ echo -e "\
 
 Usage:
 
-    ${0##/*} [-a <axis>] [-s \"<sz0..>\"] <image_var> <labelmap_var> <out.png>
+    ${0##*/} [-f <caselist.txt>] [-a <axis>] [-s \"<sz0..>\"] <image_var> <labelmap_var> <out.png>
 "
 }
 
@@ -44,5 +44,7 @@ for case in $cases; do
         log_error "${!1} and/or ${!2} doesn't exist"
     fi
 done
+[ -n "$(ls $tmp/*.png)" ] || { log_error "No existing data to make a montage."; exit 1; }
 montage -label '%t' "$tmp/*png" -geometry '180x180+4+4' -tile 5x "$3"
 log_success "Made '$3'"
+rm -rf $tmp

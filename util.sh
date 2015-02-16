@@ -307,7 +307,7 @@ checkset_cases() {
     fi
      
     if [ ! -f "$caselist" ]; then
-        echo "'$caselist' doesn't exist."
+        echo "the caselist file '$caselist' (set in 'SetupData.sh' or passed in from the commandline) doesn't exist."
         exit 1
     fi
 
