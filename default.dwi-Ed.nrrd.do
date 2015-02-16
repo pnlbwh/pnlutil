@@ -9,7 +9,7 @@ if [[ -f "$1" ]]; then
 fi
 
 case=${2##*/}
-inputvars="dwiraw"
+inputvars="dwipipeline_dwi"
 checkset_local_SetUpData $inputvars
 
 log "Make '$1'"

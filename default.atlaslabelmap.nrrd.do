@@ -12,7 +12,8 @@ case=${2##*/}
 case=${case%%.*}
 
 tmp=$(mktemp -d) && start_logging "$tmp/log" 
-inputvars="atlas_target \
+inputvars="\
+    atlas_target \
     atlas_trainingstructs \
     atlas_traininglabels"
 checkset_local_SetUpData $inputvars

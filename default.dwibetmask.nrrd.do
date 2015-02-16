@@ -10,10 +10,10 @@ fi
 
 # Input
 case=${2##*/}
-inputvars="dwi"
+inputvars="dwibetmask_dwi"
 checkset_local_SetUpData $inputvars
 redo_ifchange_vars $inputvars
 
 log "Make '$1'"
-run dwibetmask "$dwi" $3
+run dwibetmask "$dwibetmask_dwi" $3
 log_success "Made '$1'"
