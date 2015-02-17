@@ -11,18 +11,19 @@ defined in it.  The set of cases must either be defined in SetUpData.sh (e.g.
 as caselist=mycaselist.txt or cases=\"case1 case2.. caseN\"), or on the
 commandline (see below).
 
-    ${0##*/} [-f <caselist>] <var1> .. <varN> 
+    ${0##*/} [-f <caselist>, -l \"<case1> .. <caseN>\"] <var1> .. <varN> 
 
--f <caselist>           Uses case id's from <caselist> (one per line, but can include comments)
+-f <caselist>             Uses case id's from <caselist> (one per line, but can include comments)
+-l \"<case1> .. <caseN>\" List case id's within quotes
 
 Examples:
     ${0##*/} -f caseslist_notchecked.txt t1raw t2raw dwiraw
     ${0##*/} t1align t1alignmask dwi fsindwi
+    ${0##*/} -l \"01009 01010\" t2 t2atlasmask
 "
 
 parseargs() {
-    selectcases=false
-    while getopts "hf:l:" flag; do
+    while getopts "hsf:l:" flag; do
         case "$flag" in
             h) usage 1;;
             f) argcaselist=$OPTARG;;
@@ -67,11 +68,12 @@ for case in $cases; do
     done
     if [ -n "$paths" ]; then
         log "Loading file paths for '${vars_exist# *}'"
-        run $slicer "$paths"
+        sliceropts="--disable-cli-modules --disable-scripted-loadable-modules" 
+        run $slicer $sliceropts "$paths"
         for var in $vars_exist; do
             caselist_qc=caselist_qcpass_${var}
             echo "Did '$var: ${!var}' pass?"
-            select yn in "Yes" "No"; do
+            select yn in "Yes" "No" "Exit"; do
                 case $yn in
                     Yes ) 
                         if [ ! -e "$caselist_qc" ] || ! grep -q "$case" $caselist_qc; then 
@@ -79,6 +81,7 @@ for case in $cases; do
                         fi 
                         break;;
                     No ) break;;
+                    Exit ) exit;;
                 esac
             done
         done
