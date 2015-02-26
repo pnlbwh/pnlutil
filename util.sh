@@ -159,6 +159,10 @@ get_if_remote() {
     done
 }
 
+check_and_get_if_remote() {
+    get_if_remote $@
+}
+
 rm_remotes() {
     log "Delete any temporary remote files"
     for var in "$@"; do
