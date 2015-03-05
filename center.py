@@ -29,7 +29,11 @@ def get_spc_dirs(s):
     xvec = [float(x) for x in match.group('xvec').split(',')]
     yvec = [float(x) for x in match.group('yvec').split(',')]
     zvec = [float(x) for x in match.group('zvec').split(',')]
-    return (xvec, yvec, zvec)
+    # take transpose
+    col1=[xvec[0],yvec[0],zvec[0]]
+    col2=[xvec[1],yvec[1],zvec[1]]
+    col3=[xvec[2],yvec[2],zvec[2]]
+    return (col1, col2, col3)
 
 def get_sizes(s):
     for line in s.splitlines():
