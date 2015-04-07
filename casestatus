@@ -1,0 +1,18 @@
+#!/bin/bash -eu
+
+SCRIPT=$(readlink -m $(type -p $0))
+SCRIPTDIR=${SCRIPT%/*}      
+source $SCRIPTDIR/util.sh
+
+HELP=""
+
+[ $# -eq 1 ] || usage 1
+case=$1
+
+[ ! -f SetUpData.sh ] && { echo "Run in directory with 'SetUpData.sh'"; usage; exit 1; } 
+setupvars status_vars
+for var in $status_vars; do
+    status="[X]"
+    [ -e ${!var} ] || status="[ ]" 
+    echo "$status ${!var}"
+done

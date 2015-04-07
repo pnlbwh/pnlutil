@@ -1,0 +1,23 @@
+#!/bin/bash -e
+
+SCRIPT=$(readlink -m $(type -p $0))
+SCRIPTDIR=${SCRIPT%/*}      
+source $SCRIPTDIR/util.sh
+
+HELP="
+Prints cases defined in 'SetUpData.sh' 
+(e.g. 'caselist=caselist.txt' or 'cases=\"001 002 003 ..\"').
+
+Usage:
+    cases
+"
+
+[ $# -eq 0 ] || usage 1
+
+[ ! -f SetUpData.sh ] && { echo "Run in directory with 'SetUpData.sh'"; usage; exit 1; } 
+source SetUpData.sh
+setupcases
+
+for case in $cases; do
+    printf "%s\n" $case
+done
