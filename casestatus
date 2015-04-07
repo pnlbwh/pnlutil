@@ -4,15 +4,23 @@ SCRIPT=$(readlink -m $(type -p $0))
 SCRIPTDIR=${SCRIPT%/*}      
 source $SCRIPTDIR/util.sh
 
-HELP=""
+HELP="Prints which filepaths are completed per case.
 
-[ $# -eq 1 ] || usage 1
-case=$1
+    ${0##*/} <case1> <case2> ...
+"
+
+[ $# -gt 0 ] || usage 1
+[[ $1 == "-h" || $1 == "--help" ]] && usage 0
 
 [ ! -f SetUpData.sh ] && { echo "Run in directory with 'SetUpData.sh'"; usage; exit 1; } 
-setupvars status_vars
-for var in $status_vars; do
-    status="[X]"
-    [ -e ${!var} ] || status="[ ]" 
-    echo "$status ${!var}"
+case=000 && setupvars status_vars
+
+for case in $@; do
+    echo "Case '$case'"
+    source SetUpData.sh
+    for var in $status_vars; do
+        status="[X]"
+        [ -e ${!var} ] || status="[ ]" 
+        echo "$status ${!var}"
+    done
 done
