@@ -5,20 +5,20 @@ SCRIPTDIR=${SCRIPT%/*}
 source $SCRIPTDIR/util.sh
 
 HELP="
-For each case, loads <var1> .. <varN> file paths into Slicer.
-Run in directory with 'SetUpData.sh' that has '<var>=/path/to/\$case-file'
-defined in it.  The set of cases must either be defined in SetUpData.sh (e.g.
-as caselist=mycaselist.txt or cases=\"case1 case2.. caseN\"), or on the
+For each case, loads <var1> .. <varN> file paths into Slicer.  Run in directory
+with 'SetUpData.sh' that has '<var>=/path/to/\$case-file' defined for each
+<var>.  The set of cases must either be defined in SetUpData.sh (e.g. as
+caselist=mycaselist.txt or cases=\"case1 case2..  caseN\"), or on the
 commandline (see below).
 
     ${0##*/} [-f <caselist>, -l \"<case1> .. <caseN>\"] <var1> .. <varN> 
 
 -f <caselist>             Uses case id's from <caselist> (one per line, but can include comments)
--l \"<case1> .. <caseN>\" List case id's within quotes
+-l \"<case1> .. <caseN>\"   List case id's within quotes
 
 Examples:
     ${0##*/} -f caseslist_notchecked.txt t1raw t2raw dwiraw
-    ${0##*/} t1align t1alignmask dwi fsindwi
+    ${0##*/} t1align t1alignmask dwi fsindwi  # operate on the caselist file defined by '\$caselist' in SetUpData.sh
     ${0##*/} -l \"01009 01010\" t2 t2atlasmask
 "
 
@@ -37,7 +37,7 @@ parseargs() {
     [ -n "${vars-}" ] || { echo -e "Specify variables <var>..<varN>"; usage 1; }
 
     # check input is ok
-    checkset_SetUpData $vars
+    checkset_local_SetUpData $vars
     [ ! -n "${argcaselist-}" ] || caselist=$argcaselist
     [ ! -n "${argcases-}" ] || cases=$argcases
     checkset_cases

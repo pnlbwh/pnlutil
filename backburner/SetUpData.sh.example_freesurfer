@@ -1,0 +1,24 @@
+# Software
+export FREESURFER_HOME=/projects/schiz/ra/eli/freesurfer5.3
+
+# case list
+#caselist=caselist.txt
+cases="Ndyx268 Ndyx282"
+
+# Source data
+# source the SetUpData.sh of the master dataset
+source $shanghai/SetUpData.sh  # pnl users, run `lsdata` to see avaialble datasets
+# or, if you're setting up a new dataset, write out the filepaths of your data, e.g.
+#base=/projects/schiz/ra/azhu/Shanghai/
+#t1raw=${base}$case/raw/$case-t1w.nhdr
+#t2raw=${base}$case/raw/$case-t2w.nhdr
+#dwiraw=${base}$case/raw/$case-dwi-B3000.nrrd
+#t1align=${base}$case/strct/align-space/$case-t1w-realign.nhdr
+
+# Define the input filepaths required by 'default.freesurfer.do'
+fs_t1=$t1align
+fs_mask=$t1atlasmask
+# Output
+fs=$case/strct/$case.freesurfer 
+# now you can compute freesurfer as
+#    redo -k `missing fs` 

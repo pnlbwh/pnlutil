@@ -1,21 +1,12 @@
 #!/bin/bash -eu
-#
 # Requires `tract_math` from tract_querier (wmql)
 
-if [ -d "$1" ]; then
-    echo "'$1' exists and is out of date, delete it if you want to recompute it."
-    mv $1 $3
-    exit 0
-fi
-
-case=${2##*/}
+source util.sh
 inputvars="\
     tractvols_tracts \
 "
-checkset_local_SetUpData $inputvars
-redo_ifchange_vars $inputvars
+setupdo $@
 
-echo "Make '$1'"
 header="case,tract,tract volume"
 echo "$header" > $3
 for tract in $tractvols_tracts/*.vtk; do

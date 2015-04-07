@@ -16,14 +16,15 @@ where <dwi> and <dwi_mask> are nrrd/nhdr files
 [ -n "${1-}" ] && [[ $1 == "-h" || $1 == "--help" ]] && usage 0
 [ $# -ne 4 ] && usage 1
 
-log=$(mktemp -d)/log && start_logging "$log"
+startlogging
 
-check_vars FREESURFER_HOME ANTSPATH ANTSSRC
+checkvars FREESURFER_HOME ANTSPATH ANTSSRC
 export SUBJECTS_DIR=
 
-input_vars="dwi dwi_mask mri output_dir"
-read -r $input_vars <<<"$@"
-get_if_remote ${input_vars% *}
+inputvars="dwi dwi_mask mri output_dir"
+read -r $inputvars <<<"$@"
+inputvars=${inputvars% *}  # remove output_dir
+check_and_get_if_remote $inputvars
 
 log "Make and change to output directory"
 run mkdir $output_dir || { log_error "$output_dir already exists, delete it or choose another output folder name"; exit 1; }
@@ -40,7 +41,7 @@ log "Create masked baseline"
 bse=$(basename "$dwi")
 bse="${bse%%.*}-bse.nrrd"
 maskedbse=$(basename ${bse%%.*}-masked.nrrd)
-unu slice -a 3 -p 0 -i $dwi | unu 3op ifelse $dwi_mask - 0 -o $maskedbse
+run "unu slice -a 3 -p 0 -i $dwi | unu 3op ifelse $dwi_mask - 0 | unu save -e gzip -f nrrd -o $maskedbse"
 log_success "Made masked baseline: '$maskedbse'"
 
 log "Upsample masked baseline to 1x1x1: "
@@ -63,5 +64,6 @@ ConvertBetweenFileFormats wmparc-in-bse.nrrd wmparc-in-bse.nrrd short
 log_success "Downsampled wmparc: 'wmparc-in-bse.nrrd'"
 
 popd
-log_success "Made '$(readlink -f "$output_dir"/wmparc-in-bse.nrrd)'"
-mv "$log" "$output_dir/log"
+rm_remotes $inputvars || true
+stoplogging "$output_dir/log"
+log_success "Made ' $(readlink -f "$output_dir")' and '$(readlink -f "$output_dir"/wmparc-in-bse.nrrd)'"

@@ -16,7 +16,6 @@ EOF
 
 stats_dir=$1
 case_id=$2
-get_remotes stats_dir >/dev/null 2>&1
 
 aseg=$stats_dir/aseg.stats
 wmparc=$stats_dir/wmparc.stats
@@ -24,18 +23,17 @@ lh_aparc=$stats_dir/lh.aparc.stats
 rh_aparc=$stats_dir/rh.aparc.stats
 
 cat <(echo $case_id) \
-    <($SCRIPTDIR/header_stat.sh $aseg 17) \
-    <($SCRIPTDIR/header_stat.sh $aseg 18) \
-    <($SCRIPTDIR/header_stat.sh $aseg 20) \
-    <($SCRIPTDIR/header_stat.sh $aseg 21) \
-    <($SCRIPTDIR/header_stat.sh $aseg 34) \
-    <($SCRIPTDIR/statsfile_to_csv.sh $aseg | cut -d, -f4) \
-    <($SCRIPTDIR/statsfile_to_csv.sh $wmparc | cut -d, -f4) \
-    <($SCRIPTDIR/statsfile_to_csv.sh $lh_aparc | cut -d, -f4) \
-    <($SCRIPTDIR/statsfile_to_csv.sh $rh_aparc | cut -d, -f4) \
-    <(echo "") \
-    <($SCRIPTDIR/header_stat.sh $lh_aparc 21) \
-    <($SCRIPTDIR/statsfile_to_csv.sh $lh_aparc | cut -d, -f5) \
-    <($SCRIPTDIR/header_stat.sh $rh_aparc 21) \
-    <($SCRIPTDIR/statsfile_to_csv.sh $rh_aparc | cut -d, -f5) | \
+    <($SCRIPTDIR/headerstat.sh $aseg 17) \
+    <($SCRIPTDIR/headerstat.sh $aseg 18) \
+    <($SCRIPTDIR/headerstat.sh $aseg 20) \
+    <($SCRIPTDIR/headerstat.sh $aseg 21) \
+    <($SCRIPTDIR/headerstat.sh $aseg 34) \
+    <($SCRIPTDIR/stats2csv.sh $aseg | cut -d, -f4) \
+    <($SCRIPTDIR/stats2csv.sh $wmparc | cut -d, -f4) \
+    <($SCRIPTDIR/stats2csv.sh $lh_aparc | cut -d, -f4) \
+    <($SCRIPTDIR/stats2csv.sh $rh_aparc | cut -d, -f4) \
+    <($SCRIPTDIR/headerstat.sh $lh_aparc 21) \
+    <($SCRIPTDIR/stats2csv.sh $lh_aparc | cut -d, -f5) \
+    <($SCRIPTDIR/headerstat.sh $rh_aparc 21) \
+    <($SCRIPTDIR/stats2csv.sh $rh_aparc | cut -d, -f5) | \
     paste -d "," $SCRIPTDIR/firstcol.csv -

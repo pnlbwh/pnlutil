@@ -2,21 +2,22 @@
 
 import vtk
 import sys
-infile=sys.argv[1]
-outfile=sys.argv[2]
 
-# Read vtk
 pdr = vtk.vtkPolyDataReader()
-pdr.SetFileName(infile)
+pdr.SetFileName(sys.argv[1])
 pdr.Update()
+
 out = pdr.GetOutput()
 pd = out.GetPointData()
 
-# Write vtk
+if pd is not None and pd.GetArray('tensor1') is not None:
+	pd.SetTensors(pd.GetArray('tensor1'))
+
+
 pdw = vtk.vtkPolyDataWriter()
-pdw.SetFileTypeToASCII()
-#pdw.SetFileTypeToBinary()
-pdw.SetFileName(outfile)
+#pdw.SetFileTypeToASCII()
+pdw.SetFileTypeToBinary()
+pdw.SetFileName(sys.argv[2])
 pdw.SetInput(out)
 #pdw.SetInputData(out)
 pdw.Write()

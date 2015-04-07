@@ -1,0 +1,37 @@
+#!/bin/bash -eu
+
+SCRIPT=$(readlink -m $(type -p "$0"))
+SCRIPTDIR=$(dirname $SCRIPT)
+source util.sh
+
+usage() {
+    echo -e "\
+Copies var1 to var2.  Requires those variables and 'caselist'
+to be set in SetUpData.sh.
+
+Usage:
+
+    ${0##*/} [-f] var1 var2
+
+    -f force an overwrite
+"
+}
+
+[ $# = 2 ] || { usage; exit 1; }
+src=$1
+dest=$2
+[ -f SetUpData.sh ] || { echo "First create 'SetUpData.sh', see README"; exit 1; }
+case='*' && source SetUpData.sh
+[ -n "${!src-}" ] || { echo "Set '$src' in 'SetUpData.sh' first."; exit 1; }
+[ -n "${!dest-}" ] || { echo "Set '$dest' in 'SetUpData.sh' first."; exit 1; }
+[ -n "$caselist" ] || { echo "Set 'caselist' in 'SetUpData.sh' first."; exit 1; }
+
+for case in $(cat $caselist); do
+    source SetUpData.sh
+    log "Install '${!src}' to '${!dest}'"
+    if [ -d "${!src}" ]; then
+        diff_and_exit "${!src}" "${!dest}"
+    fi
+    log "mv "${!src}" "${!dest}""
+    log_success "Installed '$case.freesurfer' to '$fsinstall'"
+done

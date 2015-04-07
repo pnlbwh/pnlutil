@@ -4,8 +4,8 @@ SCRIPT=$(readlink -m $(type -p $0))
 SCRIPTDIR=${SCRIPT%/*}      
 source $SCRIPTDIR/util.sh
 
-checkset_local_SetUpData 
-checkset_local_SetUpData $status_vars
+
+case=000 && setupvars status_vars
 logfile="./statuslog.csv"
 
 # Make header

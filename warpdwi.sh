@@ -25,6 +25,7 @@ fi
 tmp=$(mktemp -d)
 pre="$tmp/$(base "$dwi")"
 
+log "Apply warp to each DWI direction of '$dwi'"
 run "unu convert -t int16 -i "$dwi" | unu dice -a 3 -o $pre"
 for slice in $pre*.nrrd; do 
     [ -n "$dwimask" ] && unu 3op ifelse $dwimask $slice 0 -o $slice
@@ -32,11 +33,17 @@ for slice in $pre*.nrrd; do
     run $ANTSPATH/WarpImageMultiTransform 3 "$slice" "$warpslice" -R "$slice" "$warp"
     run unu convert -t int16 -i $warpslice -o $warpslice
 done
-run "unu join -a 3 -i $tmp/*-warped.nrrd | unu data - > $tmp/tmpdwi.raw.gz"
+
+log "Join warped slices together to make 'tmpdwi.raw.gz'"
 echo "Joining"
 ls -1 $tmp/*-warped.nrrd
-run "unu head "$dwi" > $tmp/tmpdwi.nhdr"
-run sed \"s/data file.*$/data file: tmpdwi\.raw\.gz/\" -i $tmp/tmpdwi.nhdr
+run "unu join -a 3 -i $tmp/*-warped.nrrd | unu data - > $tmp/tmpdwi.raw.gz"
+
+log "Create new nrrd header pointing to the newly generated data file"
+run "unu save -e gzip -f nrrd -i "$dwi" -o $tmp/inputdwi.nhdr"
+run sed \"s/data file.*$/data file: tmpdwi\.raw\.gz/\" "$tmp/inputdwi.nhdr" > $tmp/tmpdwi.nhdr
+
+log "Create final warped DWI '$out'"
 run unu save -e gzip -f nrrd -i $tmp/tmpdwi.nhdr -o "$out"
 log_success "Made $out"
 rm -rf $tmp

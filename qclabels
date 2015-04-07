@@ -26,7 +26,7 @@ shift $((OPTIND-1))
 
 [[ $# -ne 3 || $1 == -h* ]] && { usage; exit 1; }
 inputvars="$1 $2"
-checkset_local_SetUpData $inputvars
+case=00 && setupvars $inputvars
 [ ! -n "${argcaselist-}" ] || caselist=$argcaselist
 checkset_cases
 

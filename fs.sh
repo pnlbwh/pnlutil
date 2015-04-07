@@ -28,7 +28,7 @@ output_folder="."
 force=false
 while getopts "hm:i:sfo:" OPTION; do
     case $OPTION in
-        h) usage 1;;
+        h) usage; exit 1;;
         s) noskullstrip="" ;;
         f) force=true ;;
         m) mask=$OPTARG ;;

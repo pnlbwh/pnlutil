@@ -60,6 +60,10 @@ prepare_log_for_nonterminal() {
     sed "s/[[:cntrl:]]\[[0-9;]*m//g"
 }
 
+scrubcolors() {
+    sed -i "s/[[:cntrl:]]\[[0-9;]*m//g" $1
+} 
+
 log() {
     local log_text="$1"
     local log_level="${2:-"INFO"}"
@@ -72,7 +76,10 @@ log() {
     else
         log_text_color=$log_color
     fi
-    echo -e "${LOG_INFO_COLOR}[$(date +"%Y-%m-%d %H:%M:%S %Z")] [${log_level}] [$PWD] [$SCRIPTDIR/$SCRIPT_NAME] ${log_text_color} ${log_text} ${LOG_DEFAULT_COLOR}" >&2;
+    #echo -e "${LOG_INFO_COLOR}[$(date +"%Y-%m-%d %H:%M:%S %Z")] [${log_level}] [$PWD] [$SCRIPTDIR/$SCRIPT_NAME] ${log_text_color} ${log_text} ${LOG_DEFAULT_COLOR}" >&2;
+    #echo -e "${LOG_INFO_COLOR}$(date +"%Y-%m-%d %H:%M:%S") | ${log_level} | $PWD | $SCRIPTDIR/$SCRIPT_NAME ${log_text_color} ${log_text} ${LOG_DEFAULT_COLOR}" >&2;
+    #echo -e "${LOG_INFO_COLOR}$(date +"%Y-%m-%d %H:%M:%S") | ${log_level} | $SCRIPTDIR/$SCRIPT_NAME | ${log_text_color} ${log_text} ${LOG_DEFAULT_COLOR}" >&2;
+    echo -e "${LOG_INFO_COLOR}$(date +"%Y-%m-%d %H:%M:%S")|${log_level}|$PWD|$SCRIPTDIR/$SCRIPT_NAME ${log_text_color} ${log_text} ${LOG_DEFAULT_COLOR}" >&2;
     return 0;
 }
 
@@ -95,10 +102,10 @@ log_speak()     {
     return 0;
 }
 
-log_success()   { log "$1" "SUCCESS" "${LOG_SUCCESS_COLOR}"; }
+log_success()   { log "$1" "SUCC" "${LOG_SUCCESS_COLOR}"; }
 #log_error()     { log "$1" "ERROR" "${LOG_ERROR_COLOR}"; log_speak "$1"; }
 log_error()     { log "$1" "ERROR" "${LOG_ERROR_COLOR}"; }
-log_warning()   { log "$1" "WARNING" "${LOG_WARN_COLOR}"; }
+log_warning()   { log "$1" "WARN" "${LOG_WARN_COLOR}"; }
 log_debug()     { log "$1" "DEBUG" "${LOG_DEBUG_COLOR}"; }
 log_captains()  {
     if type -P figlet >/dev/null;
@@ -136,6 +143,18 @@ is_target_remote() {
     test -n "$path"
 }
 
+makeabs() {
+    for var in "$@"; do
+        eval "$var=$(readlink -m "${!var}")"
+    done
+}
+
+checkexists() {
+    for var in "$@"; do
+        [ -e ${!var} ] || { log_error "The $var '${!var}' does not exist"; exit 1; }
+    done
+}
+
 get_if_remote() {
     local var
     tmpdir="$(mktemp -d)/remote_files" && mkdir -p "$tmpdir"
@@ -154,7 +173,8 @@ get_if_remote() {
             log_success "Downloaded remote $var: '$filename'"
         else
             [ ! -e ${!var} ] && { log_error "The $var '${!var}' does not exist"; exit 1; }
-            log_success "Found $var:'${!var}'"
+            eval "$var=$(readlink -m "${!var}")"
+            log "Found $var:'${!var}'"
         fi
     done
 }
@@ -180,7 +200,7 @@ check_vars() {
     for var in "$@"; do
         if [ -z "${!var-}" ]; then 
             log_error "Set '${var}' in your shell environment (e.g. in your ~/.tcshrc or ~/.bashrc), \
-or if running 'redo', set it in '/path/to/your/project/SetUpData.sh'."
+or if running a 'redo' pipeline script, set it in '/path/to/your/project/SetUpData.sh'."
             exit 1
         else
             log "Found $var=${!var}"
@@ -232,9 +252,17 @@ redo_ifchange_vars() {
     log_success "Dependencies up to date"
 }
 
-print_vars() {
+varvalues() {
+    local values=""
     for var in "$@"; do
-        printf "%s=%s\n" $var ${!var}
+        values="$values ${!var}"
+    done
+    echo $values
+}
+
+printvars() {
+    for var in "$@"; do
+        printf "* %s=%s\n" $var ${!var}
     done
 }
 
@@ -268,7 +296,7 @@ map() {
 
 checkset_local_SetUpData() {
     [ ! -f SetUpData.sh ] && { echo "Run in directory with 'SetUpData.sh'"; usage; exit 1; } 
-    [ -n "${case:-}" ] || case=000  # set dummy case to sidestep unbound variable error
+    [ -n "${case:-}" ] || { log_error "Set 'case' variable first before calling this function (util.sh:setupvars)"; exit 1; }
     source SetUpData.sh
     for var in $@; do
         if [ ! -n "${!var-}" ]; then
@@ -278,26 +306,12 @@ checkset_local_SetUpData() {
     done
 }
 
-checkset_SetUpData() {
-    if [ -f SetUpData.sh ]; then 
-        SetUpData=SetUpData.sh
-    elif [[ -n "${DATADIR-}" && -f "$DATADIR/SetUpData.sh" ]]; then
-        SetUpData=${DATADIR}/SetUpData.sh
-    else
-        echo "Run in directory with 'SetUpData.sh' or setenv DATADIR /path/to/SetUpData/"
-        usage 1
-    fi
+setupvars() {
+    checkset_local_SetUpData $@
+}
 
-    [ -n "${case:-}" ] || case=000  # set dummy case to sidestep unbound variable error
-    source $SetUpData
-
-    # check vars are set
-    for var in $@; do
-        if [ ! -n "${!var-}" ]; then
-            echo "Set $var in '$SetUpData' first."
-            exit 1
-        fi
-    done
+checkvars() {  
+    check_vars $@
 }
 
 checkset_cases() {
@@ -318,6 +332,9 @@ checkset_cases() {
     cases=$(cat "$caselist" | awk '{print $1}')
 }
 
+setupcases() {
+    checkset_cases $@
+}
 
 diff_and_exit() {
     if diff -q "$1" "$2" >/dev/null; then
@@ -329,7 +346,36 @@ diff_and_exit() {
 }
 
 start_logging() {
-    exec > >(tee "$1") 2>&1  # pipe stderr and stdout to logfile as well as console
+    exec &> >(tee "$1")  # pipe stderr and stdout to logfile as well as console
+}
+
+startlogging() {
+    _tmplog=$(mktemp).log
+    exec &> >(tee "$_tmplog")  # pipe stderr and stdout to logfile as well as console
+}
+
+stoplogging() {
+    cp $_tmplog $1
+    scrubcolors $1
+}
+
+# Requires 'inputvars' be set first
+setupdo() {
+    if [[ -f "$1" ]]; then
+        echo "'$1' exists, delete it if you want to recompute it."
+        mv $1 $3
+        exit 0
+    fi
+    case=${2##*/}
+    [ -n "${inputvars-}" ] || { log_error "Set 'inputvars' before calling this function (util.sh:setupdo)"; exit 1; }
+    setupvars $inputvars
+    printvars case 
+    echo "Target:"
+    echo "* $1"
+    echo "Dependencies:"
+    printvars $inputvars
+    redo-ifchange $(varvalues $inputvars)
+    log "Make '$1'"
 }
 
 #####
@@ -351,10 +397,10 @@ queryscript_parseargs() {
     [ -n "${var-}" ] || { echo -e "Specify variable <var>."; usage 1; }
 
     # check input is ok
-    checkset_SetUpData $var
+    case=000 && setupvars $var
     [ ! -n "${argcaselist-}" ] || caselist=$argcaselist
     [ ! -n "${argcases-}" ] || cases=$argcases
-    checkset_cases
+    setupcases
 }
 
 queryscript_helpmsg="\

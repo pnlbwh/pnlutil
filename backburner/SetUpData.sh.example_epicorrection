@@ -1,0 +1,24 @@
+# software
+ANTSPATH=/projects/schiz/software/deprecated/ANTs-1.9.y-Linux/bin
+
+# List your cases
+cases="01009 01010"
+#caselist=caselist.txt
+
+# Source data 
+# source the SetUpData.sh of the master dataset
+source $threet/SetUpData.sh  # pnl users: run `lsdata` to see available datasets
+# or, if you're or setting up a new dataset, write out the filepaths of your data, e.g.
+#base=/projects/schiz/3Tdata
+#dwi=${base}diff/$case-dwi-Ed.nhdr
+#dwimask=${base}diff/Tensor_mask-$case-dwi-filt-Ed_AvGradient-edited.nhdr
+#t2masked=${base}strct/orig-space/$case-t2w-restore.nrrd
+
+# Define the input filepaths required by 'default.dwi-epi.nrrd.do'
+epi_dwi=$dwi
+epi_dwimask=$dwimask
+epi_t2=$t2masked
+# Output
+dwiepi=$case/diff/$case.dwi-epi.nrrd  
+# now you can compute epi correction as
+#    redo -k `missing dwiepi` 

@@ -1,13 +1,11 @@
-#!/usr/bin/env bash -e
+#!/bin/bash -eu
 
 source util.sh
-
-case=${2##*/}
-input_vars="\
-    epi_dwi \
-    epi_dwimask \
-    epi_t2"
-checkset_local_SetUpData $inputvars
-redo_ifchange_vars $inputvars
-epi.sh "$epi_dwi" "$epi_dwimask" "$epi_t2" $3
+inputvars="\
+    dwiepi_dwi \
+    dwiepi_dwimask \
+    dwiepi_t2 \
+    "
+setupdo $@
+epi.sh $(varvalues $inputvars) $3
 log_success "Made '$1'"

@@ -18,6 +18,6 @@ Usage:
 [[ $# -lt 1 || $1 == "-h" || $1 == "--help" ]] && usage 1
 var=$1
 
-checkset_SetUpData "$var"
-checkset_cases
-echo $($SCRIPTDIR/completed $var | wc -l)/$(wc -w < $caselist)
+case=000 && setupvars "$var"  # set dummy case just to check if var is a valid variable
+setupcases
+echo $($SCRIPTDIR/completed $var | wc -l)/$(echo $cases | wc -w)

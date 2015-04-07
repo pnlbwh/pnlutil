@@ -1,17 +1,8 @@
 #!/bin/bash -eu
 
 source util.sh
-
-if [[ -f "$1" ]]; then
-    echo "'$1' exists and is out of date, delete it if you want to recompute it."
-    mv $1 $3
-    exit 0
-fi
-
-case=${2##*/}
 inputvars="ukf_dwi ukf_dwimask"
-checkset_local_SetUpData $inputvars
-redo_ifchange_vars $inputvars
+setupdo $@
 
 vtkout=${3%.gz}
 
@@ -29,12 +20,10 @@ cmd="UKFTractography \
     --recordTensors \
     --tracts $vtkout"
 
-log=$(mktemp -d)/log && start_logging "$log"
-log "Run ukf tractography to make '$vtkout'"
-run "$cmd | tee $1.log"
+startlogging
+log "Make '$vtkout'"
+run "$cmd"
 log "Made $vtkout"
-
 log "Gzip '$3'"
 gzip "$vtkout"
 log_success "Made '$1'"
-mv "$log" "$1.log"

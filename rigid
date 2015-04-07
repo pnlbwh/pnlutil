@@ -2,13 +2,13 @@
 
 set -eu
 SCRIPT=$(readlink -m $(type -p $0))
-PNLUTIL=$(dirname ${SCRIPT})      
-source "$PNLUTIL/util.sh"
+SCRIPTDIR=$(dirname ${SCRIPT})      
+source "$SCRIPTDIR/util.sh"
 
 HELP="
 Compute rigid transformation and transform <moving> to <fixed>
-space.  The transformation is not saved (Use 'rigidtrans' if you'd
-like to save the trasnformation).
+space.  The transformation is not saved (Use 'rigidtransform' if you'd
+like to save the transformation). (TODO: Add '-s' flag to save transform)
 
 Usage:
     $(basename $0) [-f |--fast] <moving> <fixed> [out]
@@ -28,7 +28,7 @@ moving=$1; fixed=$2; out=${3:-$(base $moving)_in_$(base $fixed)-rigid.nrrd}
 log "First, compute rigid transformation from '$moving' to '$fixed'"
 tmp=$(mktemp -d) 
 transform=$tmp/$(base "$out").txt
-run $PNLUTIL/rigidtransform "$moving" "$fixed" "$transform"
+run $SCRIPTDIR/rigidtransform "$moving" "$fixed" "$transform"
 
 log "Second, use rigid transformation to warp '$moving' to '$out'"
 run WarpImageMultiTransform 3 "$moving" "$out" -R "$fixed" "$transform" 

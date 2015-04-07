@@ -30,7 +30,7 @@ input_vars="labelmap moving fixed out"
 read -r $input_vars <<<"$@"
 
 log "List input arguments"
-print_vars $input_vars
+printvars $input_vars
 
 log "Check that inputs exist and download any remote ones"
 get_if_remote ${input_vars% *}
