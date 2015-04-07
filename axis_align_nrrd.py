@@ -3,21 +3,57 @@
 # How does this compare to `unu unorient`?
 
 import sys
+import os
 from os.path import basename, splitext, abspath, exists
 import argparse
 import tempfile
 from subprocess import Popen, PIPE
 import re
-from decorators import pushd
-from myhelpers import t, nii, insertsuff
-import nrrdlib
 import numpy
-from myhelpers import replace_line_in_file
 from numpy import matrix, identity, diag
 from numpy import linalg
 from numpy.linalg import inv
 from numpy.testing import assert_almost_equal
+import fileinput
+from subprocess import check_call
 
+def pushd(tmpdir):
+    """
+    Change the working directory of the decorated function.
+
+    Makes the decorated function's code cleaner.
+    """
+    def wrap(f):
+        def new_function(*args, **kw):
+            orig_dir = os.getcwd()
+            print '* Changing to working dir %s' % tmpdir
+            os.chdir(tmpdir)
+            output = f(*args, **kw)
+            os.chdir(orig_dir)
+            return output
+        return new_function
+    return wrap
+
+def t(cmd):
+    """
+    >>> t(['ls', '-a', '>', '/dev/null'])
+    ls -a > /dev/null
+    >>> t('ls -a > /dev/null')
+    ls -a > /dev/null
+    """
+
+    if isinstance(cmd, list):
+        cmd = ' '.join(cmd)
+    #print cmd
+    print
+    print "* " + cmd
+    check_call(cmd, shell=True)
+
+def replace_line_in_file(afile, match_string, replace_with):
+    for line in fileinput.FileInput(afile, inplace=1):
+        if match_string in line:
+            line = replace_with
+        print line,
 
 def find_spc_dir(s):
     match = re.search(
@@ -77,8 +113,6 @@ def axis_align_dwi(dwi, outfile=None, precision=5):
     mf_new = [','.join(map(str, x)) for x in mf_new.tolist()]
     newline = 'measurement frame: (%s) (%s) (%s)\n' % (mf_new[0], mf_new[1],
                                                      mf_new[2])
-    #nhdr = lambda x: splitext(x)[0] + '.nhdr'
-    #dwi_new = insertsuff(nhdr(dwi), '_axisaligned')
     dwi_new = splitext(dwi)[0] + '_axisaligned.nhdr' if not outfile else \
             outfile
     t('unu save -f nrrd -e gzip -i %s -o %s' % (dwi, dwi_new))
@@ -128,9 +162,9 @@ def main():
     if not exists(image_in):
         print image_in + ' doesn\'t exist'
         return
-    if not nrrdlib.nrrd_is_valid(image_in):
-        print image_in + ' is not a valid nrrd'
-        return
+    #if not nrrdlib.nrrd_is_valid(image_in):
+        #print image_in + ' is not a valid nrrd'
+        #return
 
     if exists(args.outfile) and not args.overwrite:
         print args.outfile + ' already exists.'
