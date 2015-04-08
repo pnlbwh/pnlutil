@@ -20,7 +20,7 @@ for debugging.
 DOFAST=""
 if [[ -n ${1-} ]]; then
     [[  $1 == "-h" || $1 == "--help" ]] && usage 0
-    [[  $1 == "-f" || $1 == "--fast" ]] && { DOFAST="--number-of-affine-iterations 1"; shift; }
+    [[  $1 == "-f" || $1 == "--fast" ]] && { DOFAST="-f"; shift; }
 fi
 [ $# -lt 2 ] && usage 1
 moving=$1; fixed=$2; out=${3:-$(base $moving)_in_$(base $fixed)-rigid.nrrd}
@@ -28,7 +28,7 @@ moving=$1; fixed=$2; out=${3:-$(base $moving)_in_$(base $fixed)-rigid.nrrd}
 log "First, compute rigid transformation from '$moving' to '$fixed'"
 tmp=$(mktemp -d) 
 transform=$tmp/$(base "$out").txt
-run $SCRIPTDIR/rigidtransform "$moving" "$fixed" "$transform"
+run $SCRIPTDIR/rigidtransform $DOFAST "$moving" "$fixed" "$transform"
 
 log "Second, use rigid transformation to warp '$moving' to '$out'"
 run WarpImageMultiTransform 3 "$moving" "$out" -R "$fixed" "$transform" 

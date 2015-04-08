@@ -7,7 +7,7 @@ source $SCRIPTDIR/util.sh
 usage() {
     echo -e "\
 Lists variables defined in './SetUpData.sh ./dataEnv.sh' or
-'/path/to/data/{SetUpData.sh,dataEnv.sh}'
+'/path/to/data/SetUpData.sh'
 
 Usage:
     ${0##*/} 

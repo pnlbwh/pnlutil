@@ -37,11 +37,11 @@ done
 log "Join warped slices together to make 'tmpdwi.raw.gz'"
 echo "Joining"
 ls -1 $tmp/*-warped.nrrd
-run "unu join -a 3 -i $tmp/*-warped.nrrd | unu data - > $tmp/tmpdwi.raw.gz"
+run "unu join -a 3 -i $tmp/*-warped.nrrd | unu save -e gzip -f nrrd | unu data - > $tmp/tmpdwi.raw.gz"
 
 log "Create new nrrd header pointing to the newly generated data file"
-run "unu save -e gzip -f nrrd -i "$dwi" -o $tmp/inputdwi.nhdr"
-run sed \"s/data file.*$/data file: tmpdwi\.raw\.gz/\" "$tmp/inputdwi.nhdr" > $tmp/tmpdwi.nhdr
+run "unu save -e gzip -f nrrd -i "$dwi" -o $tmp/tmpdwi.nhdr"
+run sed -i \"s/data file.*$/data file: tmpdwi\.raw\.gz/\" "$tmp/tmpdwi.nhdr"
 
 log "Create final warped DWI '$out'"
 run unu save -e gzip -f nrrd -i $tmp/tmpdwi.nhdr -o "$out"

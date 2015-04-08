@@ -5,13 +5,10 @@ SCRIPTDIR=${SCRIPT%/*}
 source $SCRIPTDIR/util.sh
 
 HELP="Prints progress ('done/total') for <var>.  
-
 $standard_var_help
-
 Usage:
 
     ${0##*/} <var>
-
 "
 
 # check args and ./SetUpData.sh
