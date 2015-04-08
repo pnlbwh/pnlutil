@@ -361,7 +361,7 @@ stoplogging() {
 
 # Requires 'inputvars' be set first
 setupdo() {
-    if [[ -f "$1" ]]; then
+    if [[ -e "$1" ]]; then
         echo "'$1' exists, delete it if you want to recompute it."
         mv $1 $3
         exit 0
