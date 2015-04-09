@@ -4,7 +4,7 @@ source util.sh
 inputvars="\
     tractmeasures_tracts \
     "
-setupdo $2
+setupdo $@
 
 run "measureTracts.py -i $tractmeasures_tracts/*.vtk -o $3" 
 # prepend caseid column
