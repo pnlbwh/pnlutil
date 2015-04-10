@@ -40,10 +40,11 @@ ls -1 $tmp/*-warped.nrrd
 run "unu join -a 3 -i $tmp/*-warped.nrrd | unu save -e gzip -f nrrd | unu data - > $tmp/tmpdwi.raw.gz"
 
 log "Create new nrrd header pointing to the newly generated data file"
-run "unu save -e gzip -f nrrd -i "$dwi" -o $tmp/tmpdwi.nhdr"
+run "unu head "$dwi" > $tmp/tmpdwi.nhdr"
 run sed -i \"s/data file.*$/data file: tmpdwi\.raw\.gz/\" "$tmp/tmpdwi.nhdr"
+run sed -i \"s/encoding.*$/encoding: gzip/\" "$tmp/tmpdwi.nhdr"
 
-log "Create final warped DWI '$out'"
+log "Save as '$out'"
 run unu save -e gzip -f nrrd -i $tmp/tmpdwi.nhdr -o "$out"
 log_success "Made $out"
-rm -rf $tmp
+[ -n "${DEBUG-}" ] || rm -rf $tmp

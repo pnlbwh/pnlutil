@@ -202,8 +202,8 @@ check_vars() {
             log_error "Set '${var}' in your shell environment (e.g. in your ~/.tcshrc or ~/.bashrc), \
 or if running a 'redo' pipeline script, set it in '/path/to/your/project/SetUpData.sh'."
             exit 1
-        else
-            log "Found $var=${!var}"
+        #else
+            #log "Found $var=${!var}"
         fi
     done
 }
@@ -262,7 +262,11 @@ varvalues() {
 
 printvars() {
     for var in "$@"; do
-        printf "* %s=%s\n" $var ${!var}
+        if [ -n "$var" ]; then
+            printf "* %s=%s\n" $var ${!var}
+        else 
+            printf "* %s=\n"
+        fi
     done
 }
 
@@ -376,6 +380,15 @@ setupdo() {
     printvars $inputvars
     redo-ifchange $(varvalues $inputvars)
     log "Make '$1'"
+}
+
+function verify() {
+    if md5sum $1 | cut -d' ' -f1 | diff - <(echo $2); then
+        log_success "$1 PASS"
+    else
+        log_error "$1 FAIL"
+        return 1
+    fi
 }
 
 #####

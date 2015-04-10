@@ -8,27 +8,28 @@ source "$SCRIPTDIR/util.sh"
 HELP="
 Usage: 
 
-   ${0##*/} <dwi> <dwi_mask> <freesurfer_mri_dir> <output_dir>
+   ${0##*/} <dwi> <dwimask> <freesurfer_mri_dir> <output_dir>
 
-where <dwi> and <dwi_mask> are nrrd/nhdr files
+where <dwi> and <dwimask> are nrrd/nhdr files
 "
 
-[ -n "${1-}" ] && [[ $1 == "-h" || $1 == "--help" ]] && usage 0
 [ $# -ne 4 ] && usage 1
 
-startlogging
-
-checkvars FREESURFER_HOME ANTSPATH ANTSSRC
 export SUBJECTS_DIR=
-
-inputvars="dwi dwi_mask mri output_dir"
+inputvars="dwi dwimask mri output_dir"
 read -r $inputvars <<<"$@"
+envvars="FREESURFER_HOME ANTSPATH ANTSSRC"
+log "Inputs:"
+printvars $inputvars $envvars
+
 inputvars=${inputvars% *}  # remove output_dir
-check_and_get_if_remote $inputvars
+checkexists $inputvars
+checkvars $envvars
+startlogging
 
 log "Make and change to output directory"
 run mkdir $output_dir || { log_error "$output_dir already exists, delete it or choose another output folder name"; exit 1; }
-run pushd $output_dir
+run pushd $output_dir >/dev/null
 
 log "Create 'brain.nii.gz' and 'wmparc.nii.gz' from their mgz versions"
 #$fsbin/mri_convert -rt nearest --in_type mgz --out_type nii --out_orientation LPI $mri/wmparc.mgz $mri/wmparc.nii.gz
@@ -41,7 +42,7 @@ log "Create masked baseline"
 bse=$(basename "$dwi")
 bse="${bse%%.*}-bse.nrrd"
 maskedbse=$(basename ${bse%%.*}-masked.nrrd)
-run "unu slice -a 3 -p 0 -i $dwi | unu 3op ifelse $dwi_mask - 0 | unu save -e gzip -f nrrd -o $maskedbse"
+run "unu slice -a 3 -p 0 -i $dwi | unu 3op ifelse $dwimask - 0 | unu save -e gzip -f nrrd -o $maskedbse"
 log_success "Made masked baseline: '$maskedbse'"
 
 log "Upsample masked baseline to 1x1x1: "

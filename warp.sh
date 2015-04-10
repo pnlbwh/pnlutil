@@ -34,7 +34,7 @@ while getopts "hfraxs:" flag; do
     case "$flag" in
         h) usage 1;;
         f) FAST=true;;
-        r) LINEAR=true; RIGID="--do-rigid";;
+        r) LINEAR=true; DORIGID="--do-rigid";;
         a) LINEAR=true;;
         x) SAVEXFM=true;;
         s) METRIC=$OPTARG;; 
@@ -45,12 +45,12 @@ shift $((OPTIND-1))
 [ $# -eq 3 ] || { usage; exit 1; }
 inputvars="moving fixed out"
 read -r $inputvars <<< "$@"
-startlogging 
-
-makeabs $inputvars
-printvars $inputvars ANTSPATH
-checkexists moving fixed
 checkvars ANTSPATH
+makeabs $inputvars
+checkexists moving fixed
+
+startlogging 
+printvars $inputvars ANTSPATH METRIC DORIGID 
 $LINEAR || { checkvars ANTSSRC; printvars ANTSSRC; }
 
 tmp=$(mktemp -d)
@@ -62,8 +62,11 @@ if $LINEAR; then
     $FAST && DOFAST="--number-of-affine-iterations 1"
     run ${ANTSPATH}/ANTS 3 -m $METRIC[$fixed,$moving,1,32] -i 0 -o $pre $DORIGID $DOFAST
     transform="${pre}Affine.txt"
-    outtransform="${out%.*}-affine.txt"
-    [ -z "$DORIGID" ] || outtransform="${out%.*}-rigid.txt"
+    if [ -n "$DORIGID" ];  then
+        outtransform="${out%.*}-rigid.txt"
+    else
+        outtransform="${out%.*}-affine.txt"
+    fi
 else
     $FAST && DOFAST="-m 1x1x1"
     run $ANTSSRC/Scripts/antsIntroduction.sh -d 3 -i $moving -r $fixed -o $pre -s $METRIC $DOFAST
@@ -75,7 +78,9 @@ fi
 log "Made '$transform'"
 
 log "Transform moving to fixed space to make '$out'"
-run WarpImageMultiTransform 3 "$moving" "$out" -R "$fixed" "$transform" 
+#run WarpImageMultiTransform 3 "$moving" "$out" -R "$fixed" "$transform" 
+run $ANTSPATH/antsApplyTransforms -d 3 -i "$moving" -o "$out" -r "$fixed" -t "$transform"
+run unu save -e gzip -f nrrd -i $out -o $out
 
 run popd
 
