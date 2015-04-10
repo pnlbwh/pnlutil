@@ -12,3 +12,4 @@ out=fs2dwi
 rm -rf $out || true
 ../fs2dwi.sh $dwied $dwiedmask $fs/mri $out
 verify $out/wmparc-in-bse.nrrd 64c8d74111997484bfe2e15b7466de78
+verify $out/wmparc-in-bse-1mm.nrrd e40500603b23f101382cca74cbcb9ecc

@@ -56,7 +56,8 @@ run mv brain-to-bse-1mm-deformed.nii.gz brain-in-bse-1mm.nii.gz
 
 log "Apply warp to wmparc.nii.gz to create wmparc-in-bse-1mm.nii.gz"
 run $ANTSPATH/antsApplyTransforms -d 3 -i wmparc.nii.gz -o wmparc-in-bse-1mm.nrrd -r "$maskedbse1mm" -n NearestNeighbor -t brain-to-bse-1mm-Warp.nii.gz brain-to-bse-1mm-Affine.txt 
-log_success "Made 'wmparc-in-bse-1mm.nii.gz'"
+run ConvertBetweenFileFormats wmparc-in-bse-1mm.nrrd wmparc-in-bse-1mm.nrrd  short
+log_success "Made 'wmparc-in-bse-1mm.nrrd'"
 
 log "Downsample wmparc-in-bse-1mm.nii.gz to DWI's resolution"
 new_size=$(unu head $maskedbse | grep "sizes:" | sed 's/sizes:\s*//')
