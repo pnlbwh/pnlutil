@@ -1,3 +1,0 @@
-#!/bin/bash
-
-column -t -s',' statuslog.csv
