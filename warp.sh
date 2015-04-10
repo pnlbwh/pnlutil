@@ -17,13 +17,14 @@ Usage:
 -f     Fast registration, for debugging
 
 If '-x' is passed, the transform is saved as 
-'\${out%.*}-Affine.txt' for linear transforms and  
-'\${out%.*}-transform.nii.gz' for non-linear warps.
+'\${out%.*}-affine.txt' for affine transforms,
+'\${out%.*}-rigid.txt' for rigid transforms, and
+'\${out%.*}-warp.nii.gz' for non-linear warps.
 "
 
 }
 
-SAVE=false
+SAVEXFM=false
 FAST=false
 LINEAR=false
 DORIGID=""
@@ -35,7 +36,7 @@ while getopts "hfraxs:" flag; do
         f) FAST=true;;
         r) LINEAR=true; RIGID="--do-rigid";;
         a) LINEAR=true;;
-        x) SAVE=true;;
+        x) SAVEXFM=true;;
         s) METRIC=$OPTARG;; 
     esac
 done
@@ -50,35 +51,41 @@ makeabs $inputvars
 printvars $inputvars ANTSPATH
 checkexists moving fixed
 checkvars ANTSPATH
+$LINEAR || { checkvars ANTSSRC; printvars ANTSSRC; }
 
 tmp=$(mktemp -d)
 run pushd $tmp
+
 pre=$(base $moving)-to-$(base $fixed)-
 
 if $LINEAR; then
     $FAST && DOFAST="--number-of-affine-iterations 1"
     run ${ANTSPATH}/ANTS 3 -m $METRIC[$fixed,$moving,1,32] -i 0 -o $pre $DORIGID $DOFAST
     transform="${pre}Affine.txt"
-    outtransform="${out%.*}-Affine.txt"
+    outtransform="${out%.*}-affine.txt"
+    [ -z "$DORIGID" ] || outtransform="${out%.*}-rigid.txt"
 else
     $FAST && DOFAST="-m 1x1x1"
-    checkvars ANTSSRC
     run $ANTSSRC/Scripts/antsIntroduction.sh -d 3 -i $moving -r $fixed -o $pre -s $METRIC $DOFAST
     transforms="${pre}Warp.nii.gz ${pre}Affine.txt"
     transform="${pre}warp.nii.gz"
     run "$ANTSPATH/ComposeMultiTransform 3 "$transform" -R "$fixed" $transforms || true"  
-    outtransform="${out%.*}-transform.nii.gz"
+    outtransform="${out%.*}-warp.nii.gz"
 fi
 log "Made '$transform'"
+
 log "Transform moving to fixed space to make '$out'"
 run WarpImageMultiTransform 3 "$moving" "$out" -R "$fixed" "$transform" 
+
 run popd
 
-if $SAVE; then
+if $SAVEXFM; then
     mv $tmp/$transform $outtransform
     log_success "Made '$outtransform'"
 fi
+
 log_success "Made '$out'"
 stoplogging "$out.log"
-rm -rf $tmp
 log_success "Made '$out.log'"
+
+rm -rf $tmp
