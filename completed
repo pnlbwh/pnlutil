@@ -14,7 +14,7 @@ queryscript_parseargs "$@"
 if $selectcases; then # doesn't work on remote file paths
     case_if_exists() {
         local case=$1
-        source $SetUpData
+        source SetUpData.sh
         [ ! -e "${!var}" ] || echo $case
     }
     map "case_if_exists" $cases

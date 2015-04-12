@@ -13,7 +13,7 @@ queryscript_parseargs "$@"
 
 if $selectcases; then
     case_if_not_exists() {
-        local case=$1; source $SetUpData;
+        local case=$1; source SetUpData.sh;
         [ -e "${!var}" ] || echo $case
     }
     map "case_if_not_exists" $cases

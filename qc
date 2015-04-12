@@ -54,7 +54,7 @@ fi
 
 for case in $cases; do
     echo -e "\n== $case =="
-    source "$SetUpData"
+    source "SetUpData.sh"
     paths=""
     vars_exist=""
     for var in $vars; do
