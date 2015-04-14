@@ -59,15 +59,15 @@ log_success "Made masked baseline: '$maskedbse'"
 
 log "Compute rigid transformation from brain.nii.gz to T1"
 #rigidtransform brain.nii.gz $maskedt1 "fs-to-t1-rigid.txt"
-warp.sh -x -r brain.nii.gz $maskedt1 fs-to-t1.nrrd  # '-x': makes fs-to-t1-rigid.txt
+run $SCRIPTDIR/warp.sh -x fs-to-t1-rigid.txt -r brain.nii.gz $maskedt1 fs-to-t1.nrrd  # '-x': makes fs-to-t1-rigid.txt
 
 log "Compute rigid transformation from masked T1 to masked T2"
 #rigidtransform $maskedt1 $maskedt2 "t1-to-t2-rigid.txt"
-warp.sh -x -r $maskedt1 $maskedt2 t1-to-t2.nrrd  # '-x': makes t1-to-t2-rigid.txt
+run $SCRIPTDIR/warp.sh -x t1-to-t2-rigid.txt -r $maskedt1 $maskedt2 t1-to-t2.nrrd  # '-x': makes t1-to-t2-rigid.txt
 
 log "Compute warp from T2 to DWI baseline"
 #warp $maskedt2 $maskedbse "t2-to-bse-"
-warp.sh -x $maskedt2 $maskedbse t2-to-bse.nrrd  # '-x': makes t2-to-bse-warp.nii.gz
+run $SCRIPTDIR/warp.sh -x t2-to-bse-warp.nii.gz $maskedt2 $maskedbse t2-to-bse.nrrd  # '-x': makes t2-to-bse-warp.nii.gz
 #run mv t2-to-bse-deformed.nii.gz t2-in-bse.nii.gz 
 
 log "Apply transformations to wmparc.nii.gz to create wmparc-in-bse.nii.gz"
