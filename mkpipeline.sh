@@ -16,7 +16,7 @@ Usage:
 installpipeline() {
     cp -L "$SCRIPTDIR"/pipeline-files/* $1
     sed -i "s,SCRIPTDIR,$SCRIPTDIR," $dir/SetUpData.sh
-    sed -i "s,PIPELINEDIR,$dir," $dir/SetUpData.sh
+    #sed -i "s,PIPELINEDIR,$dir," $dir/SetUpData.sh
     echo "Installed to '$dir':"
     for f in $files; do echo $f; done
     echo "Now make 'SetUpData_config.sh', 'trainingt1s.txt', 'trainingmasks.txt', and 'caselist' in '$dir'"
