@@ -4,8 +4,8 @@ strct=$base/$case/strct
 # Atlas mask
 # Inputs
 atlas_target=$t1align
-atlas_trainingstructs=${base}/config/trainingt1s.txt
-atlas_traininglabels=${base}/config/trainingmasks.txt
+atlas_trainingstructs=${base}/trainingt1s.txt
+atlas_traininglabels=${base}/trainingmasks.txt
 # Output
 t1atlasmask=$strct/$case.t1atlasmask.nrrd
 
@@ -80,7 +80,7 @@ fsindwi=$diff/$case.fsindwi.nrrd
 # Inputs
 wmqltracts_tractography=$ukf
 wmqltracts_wmparc=$fsindwi
-wmqltracts_query=pipeline-files/wmql_query.txt
+wmqltracts_query=wmql_query.txt
 # Output
 wmqltracts=$diff/$case.wmqltracts
 
