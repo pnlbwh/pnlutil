@@ -30,7 +30,7 @@ dwibetmask=$diff/$case.dwibetmask.nrrd
 
 status_vars_epi=""
 if $EPICORRECTION; then
-    status_vars_epi="dwiepi dwiepimask"
+    status_vars_epi="t2 dwiepi dwiepimask"
     # DWI epi correction
     # Inputs
     dwiepi_dwi=$dwied
@@ -98,7 +98,6 @@ tractvols=$diff/$case.tractvols.csv
 
 status_vars="\
     t1align \
-    t2 \
     dwiraw \
     t1atlasmask \
     fs \
