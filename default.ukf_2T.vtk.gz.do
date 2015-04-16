@@ -4,19 +4,25 @@ source util.sh
 inputvars="ukf_dwi ukf_dwimask"
 setupdo $@
 
+[ -n "${ukf_params-}" ] || ukf_params=""
+
+defaultparams="\
+--numTensor 2  \
+--seedsPerVoxel 10  \
+--Qm 0.001 \
+--Ql 70 \
+--Rs 0.015 \
+--stepLength 0.3 \
+--seedFALimit 0.18 \
+--recordLength 1.7"
+
 vtkout=${3%.gz}
 
-matlabparams="\
---numTensor 2  \
---seedsPerVoxel 5  \
---Qm 0.0030  \
---Rs 0.015  \
---Ql 100"
 cmd="UKFTractography \
     --dwiFile $ukf_dwi \
     --maskFile $ukf_dwimask \
     --seedsFile $ukf_dwimask \
-    $matlabparams \
+    $defaultparams \
     --recordTensors \
     --tracts $vtkout"
 
