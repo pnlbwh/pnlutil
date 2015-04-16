@@ -17,7 +17,7 @@ Options:
 -h          help
 -i  <t1>    t1 image in nifti or nrrd format (nrrd, nhdr, nii, nii.gz)
 -s          tells freesurfer to skull strip the t1
--m      
+-m <mask>   use <mask> to mask the t1 before running freesurfer      
 -f          force a re-run even if a subject folder already exists
 -o  <output_folder>  (default: <t1>-freesurfer)
 EOF
