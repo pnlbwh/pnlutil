@@ -13,4 +13,4 @@ for tract in $tractvols_tracts/*.vtk; do
     vol=$(tract_math $tract tract_volume 1 | sed -n 2p)
     echo "$case,$tract,$vol" >> $3
 done
-echo "Made '$1'"
+log_success "Made '$1'"
