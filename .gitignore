@@ -1,2 +1,5 @@
 config.sh
 .redo
+test-pipeline/epi
+test-pipeline/noepi
+tests/output

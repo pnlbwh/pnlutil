@@ -10,3 +10,4 @@ b=$base
 source $threet/SetUpData.sh
 t2=$t2masked 
 base=$b
+cases="01010"

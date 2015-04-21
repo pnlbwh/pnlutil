@@ -1,5 +1,0 @@
-/rfanfs/pnl-zorro/INTRuST/data_processing//T1masks/003_GNX_007.atlasmask.thresh50.edited.nrrd
-/rfanfs/pnl-zorro/INTRuST/data_processing//T1masks/003_GNX_012.atlasmask.thresh50.edited.nrrd
-/rfanfs/pnl-zorro/INTRuST/data_processing//T1masks/003_GNX_013.atlasmask.thresh50.edited.nrrd
-/rfanfs/pnl-zorro/INTRuST/data_processing//T1masks/003_GNX_015.atlasmask.thresh50.edited.nrrd
-/rfanfs/pnl-zorro/INTRuST/data_processing//T1masks/003_GNX_018.atlasmask.thresh50.edited.nrrd

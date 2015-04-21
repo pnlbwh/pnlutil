@@ -1,5 +1,0 @@
-/rfanfs/pnl-zorro/INTRuST/data_processing//003_GNX_007/strct/align-space/003_GNX_007-t1w-realign.nhdr
-/rfanfs/pnl-zorro/INTRuST/data_processing//003_GNX_012/strct/align-space/003_GNX_012-t1w-realign.nhdr
-/rfanfs/pnl-zorro/INTRuST/data_processing//003_GNX_013/strct/align-space/003_GNX_013-t1w-realign.nhdr
-/rfanfs/pnl-zorro/INTRuST/data_processing//003_GNX_015/strct/align-space/003_GNX_015-t1w-realign.nhdr
-/rfanfs/pnl-zorro/INTRuST/data_processing//003_GNX_018/strct/align-space/003_GNX_018-t1w-realign.nhdr

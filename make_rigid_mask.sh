@@ -23,7 +23,7 @@ where <out> is the new labelmap in <fixed> space.
 
 # Start piping output to a log file
 tmp="$(mktemp -d)"
-start_logging $tmp/log
+startlogging 
 
 # Read in args
 input_vars="labelmap moving fixed out"
@@ -43,7 +43,7 @@ run ConvertBetweenFileFormats $moving $tmpmoving >/dev/null
 run ConvertBetweenFileFormats $fixed $tmpfixed >/dev/null
 run ConvertBetweenFileFormats $labelmap $tmplabelmap >/dev/null
 run $SCRIPTDIR/center.py -i $tmpmoving -o $tmpmoving
-run $SCRIPTDIR/center.py -i $tmpfixed -o $tmpfixed
+#run $SCRIPTDIR/center.py -i $tmpfixed -o $tmpfixed
 run $SCRIPTDIR/center.py -i $tmplabelmap -o $tmplabelmap
 log_success "Done centering inputs"
 
@@ -60,5 +60,4 @@ if [ -f "$out" ]; then  # need to check because ants does not exit with an error
 else
     log_error "Failed to create '$out'"; exit 1
 fi
-
-mv "$tmp/log" "$out.log"
+stoplogging "$out.log"

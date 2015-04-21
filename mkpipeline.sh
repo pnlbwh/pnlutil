@@ -14,19 +14,23 @@ Usage:
 }
 
 installpipeline() {
-    cp -L "$SCRIPTDIR"/pipeline-files/* $1
+    cp -L "$pipelinedir"/* $1
     sed -i "s,SCRIPTDIR,$SCRIPTDIR," $dir/SetUpData.sh
-    #sed -i "s,PIPELINEDIR,$dir," $dir/SetUpData.sh
+    datadir="$SCRIPTDIR"/pipeline-trainingdata/
+    ls -1 $datadir/*edited.nrrd | sed "s|.*\/|$datadir|" | head -n 5 > $dir/trainingmasks.txt
+    ls -1 $datadir/*realign.nrrd | sed "s|.*\/|$datadir|" | head -n 5 > $dir/trainingt1s.txt
     echo "Installed to '$dir':"
     for f in $files; do echo $f; done
-    echo "Now make 'SetUpData_config.sh', 'trainingt1s.txt', 'trainingmasks.txt', and 'caselist' in '$dir'"
+    echo "Now make 'SetUpData_config.sh' and 'caselist' in '$dir'"
 }
 
 [ $# -gt 0 ] || { usage; exit 1; }
 [ $1 = "-h" ] && { usage; exit 0; }
 dir=$(readlink -f $1)
 
-files=$(ls -1 "$SCRIPTDIR/pipeline-files")
+pipelinedir="$SCRIPTDIR/pipeline"
+files=$(ls -1 "$pipelinedir")
+files="$files trainingmasks.txt trainingt1s.txt"
 
 existingfiles=""
 for f in $files; do
@@ -35,7 +39,7 @@ done
 
 [ -d "$dir" ] || mkdir "$dir"
 
-echo "Copy pipeline files from '$SCRIPTDIR' to '$dir'?"
+echo "Copy pipeline files from '$pipelinedir' to '$dir'?"
 if [ -n "$existingfiles" ]; then
     echo  "The following files would be overwritten:"
     echo -e "$existingfiles"

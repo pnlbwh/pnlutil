@@ -9,4 +9,5 @@ EPICORRECTION=false
 b=$base
 source $threet/SetUpData.sh
 #t2=$t2masked 
+cases="01010"
 base=$b
