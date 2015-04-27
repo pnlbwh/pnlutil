@@ -7,7 +7,7 @@
 #   fs_mask (optional) - if defined will use it to mask '$fs_t1' before running freesurfer
 
 source util.sh
-inputvars="fs_t1"
+inputvars="fs_t1 fs_mask"
 setupdo $@
 
 if [ -n "${fs_mask-}" ]; then
