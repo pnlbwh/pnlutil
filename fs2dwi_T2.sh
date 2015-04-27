@@ -54,7 +54,7 @@ bse=$(basename "$dwi")
 bse="${bse%%.*}-bse.nrrd"
 maskedbse=$(basename ${bse%%.*}-masked.nrrd)
 run "unu slice -a 3 -p 0 -i $dwi | unu 3op ifelse $dwimask - 0 -o $maskedbse"
-$SCRIPTDIR/center.py -i "$maskedbse" -o "$maskedbse"
+#$SCRIPTDIR/center.py -i "$maskedbse" -o "$maskedbse"
 log_success "Made masked baseline: '$maskedbse'"
 
 log "Compute rigid transformation from brain.nii.gz to T1"
