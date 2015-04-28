@@ -38,78 +38,87 @@ parseargs() {
     [ -n "${vars-}" ] || { echo -e "Specify variables <var>..<varN>"; usage 1; }
 
     # check input is ok
-    case=000 && setupvars $vars
+    case=000 && setupvars $vars $reference_vars
     [ ! -n "${argcaselist-}" ] || caselist=$argcaselist
     [ ! -n "${argcases-}" ] || cases=$argcases
     setupcases
 }
 
-parseargs "$@"
-
-# Set path to Slicer
-if [ -e "$SCRIPTDIR/config.sh" ]; then
-    source $SCRIPTDIR/config.sh
-else
-    slicer=Slicer
-fi
-
+setslicer() {
+    if [ -e "$SCRIPTDIR/config.sh" ]; then
+        source $SCRIPTDIR/config.sh
+    else
+        slicer=Slicer
+    fi
+    sliceropts="--disable-cli-modules --disable-scripted-loadable-modules" 
+    slicer="$slicer $sliceropts"
+}
 #add_to_caselist() {
-    #local _case=$1
-    #local _caselist=$2
-    #if [ ! -e "$_caselist" ] || ! grep -q "$_case" $_caselist; then 
-        #echo $_case >> $_caselist; 
-        #echo -e "\nAdded '$_case' to '$_caselist'"
-    #else
-        #echo -e "\n'$_case' already in '$_caselist', so doing nothing"
-    #fi 
+#local _case=$1
+#local _caselist=$2
+#if [ ! -e "$_caselist" ] || ! grep -q "$_case" $_caselist; then 
+    #echo $_case >> $_caselist; 
+    #echo -e "\nAdded '$_case' to '$_caselist'"
+#else
+    #echo -e "\n'$_case' already in '$_caselist', so doing nothing"
+#fi 
 #}
+
+parseargs "$@"
+setslicer
+
+check_reference_vars() {
+    for var in $reference_vars; do
+        if [ -e "${!var}" ]; then
+            echo "Found '$var: ${!var}'"
+            paths="$paths ${!var}"
+        else
+            echo "Not found '$var: ${!var}'"
+            echo "Skipping this case"
+            missing_path=true
+        fi
+    done
+}
+
+check_qc_vars() {
+    for var in $vars; do
+        if [ -e "${!var}" ]; then
+            echo "Found '$var: ${!var}'"
+            paths="$paths ${!var}"
+            #vars_exist="$vars_exist $var"
+        else
+            echo "Not found '$var: ${!var}'"
+            [ ! -f "${!var/nrrd/qc.nrrd}" ] || { echo "Already QC'ed (passed)"; }
+            [ ! -f "${!var/nrrd/qcfail.nrrd}" ] || { echo "Already QC'ed (failed)"; }
+            missing_path=true
+        fi
+    done
+}
 
 for case in $cases; do
     echo -e "\n== $case =="
     source "SetUpData.sh"
     paths=""
-    vars_exist=""
-    skipcase=false
+    missing_paths=false
+    check_reference_vars
+    check_qc_vars
+    $missing_path && { echo "Missing files, skipping this case"; missing_path=false; continue; }
+    log "Loading file paths for '$reference_vars $vars'"
+    run $slicer "$paths"
     for var in $vars; do
-        if [ -e "${!var}" ]; then
-            echo "Found '$var: ${!var}'"
-            paths="$paths ${!var}"
-            vars_exist="$vars_exist $var"
-        else
-            echo "Not found '$var: ${!var}'"
-            [ ! -f "${!var/nrrd/qc.nrrd}" ] || { echo "Already QC'ed (passed)"; }
-            [ ! -f "${!var/nrrd/qcfail.nrrd}" ] || { echo "Already QC'ed (failed)"; }
-            echo "Skipping this case"
-            skipcase=true
-        fi
-    done
-    $skipcase && continue
-    if [ -n "$paths" ]; then
-        log "Loading file paths for '${vars_exist# *}'"
-        sliceropts="--disable-cli-modules --disable-scripted-loadable-modules" 
-        run $slicer $sliceropts "$paths"
-        for var in $vars_exist; do
-            if [[ $reference_vars == *$var* ]]; then
-                continue
-            fi
-            #caselist_qcpass=caselist_qcpass_${var}
-            #caselist_qcfail=caselist_qcfail_${var}
-            prompt="
+        prompt="
 Did '$var: ${!var}' pass
 [p]ass) make ${!var/nrrd/qc.nrrd}
 [f]ail) make ${!var/nrrd/qcfail.nrrd}
 [s]kip) 
 [q]uit) 
 ? "
-            read -r -n 1 -p "$prompt" response
-            case $response in
-                [pP]) echo; $SCRIPTDIR/qcaccept ${!var}; continue;;
-                [fF]) echo; $SCRIPTDIR/qcreject ${!var}; continue;;
-                [sS]) continue;;
-                [qQ]) echo; exit;;
-            esac
-        done
-    else
-        echo "No files to load for case '$case'"
-    fi
+        read -r -n 1 -p "$prompt" response
+        case $response in
+            [pP]) echo; $SCRIPTDIR/qcaccept ${!var}; continue;;
+            [fF]) echo; $SCRIPTDIR/qcreject ${!var}; continue;;
+            [sS]) continue;;
+            [qQ]) echo; exit;;
+        esac
+    done
 done
