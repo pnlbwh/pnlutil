@@ -23,9 +23,10 @@ Examples:
 "
 
 parseargs() {
-    while getopts "hsf:l:" flag; do
+    while getopts "hsr:f:l:" flag; do
         case "$flag" in
             h) usage 1;;
+            r) reference_vars=$OPTARG;;
             f) argcaselist=$OPTARG;;
             l) argcases=$OPTARG;;
         esac
@@ -37,10 +38,10 @@ parseargs() {
     [ -n "${vars-}" ] || { echo -e "Specify variables <var>..<varN>"; usage 1; }
 
     # check input is ok
-    checkset_local_SetUpData $vars
+    case=000 && setupvars $vars
     [ ! -n "${argcaselist-}" ] || caselist=$argcaselist
     [ ! -n "${argcases-}" ] || cases=$argcases
-    checkset_cases
+    setupcases
 }
 
 parseargs "$@"
@@ -52,38 +53,61 @@ else
     slicer=Slicer
 fi
 
+#add_to_caselist() {
+    #local _case=$1
+    #local _caselist=$2
+    #if [ ! -e "$_caselist" ] || ! grep -q "$_case" $_caselist; then 
+        #echo $_case >> $_caselist; 
+        #echo -e "\nAdded '$_case' to '$_caselist'"
+    #else
+        #echo -e "\n'$_case' already in '$_caselist', so doing nothing"
+    #fi 
+#}
+
 for case in $cases; do
     echo -e "\n== $case =="
     source "SetUpData.sh"
     paths=""
     vars_exist=""
+    skipcase=false
     for var in $vars; do
         if [ -e "${!var}" ]; then
             echo "Found '$var: ${!var}'"
             paths="$paths ${!var}"
             vars_exist="$vars_exist $var"
         else
-            echo "Not found '$var: ${!var}' (skipping)"
+            echo "Not found '$var: ${!var}'"
+            [ ! -f "${!var/nrrd/qc.nrrd}" ] || { echo "Already QC'ed (passed)"; }
+            [ ! -f "${!var/nrrd/qcfail.nrrd}" ] || { echo "Already QC'ed (failed)"; }
+            echo "Skipping this case"
+            skipcase=true
         fi
     done
+    $skipcase && continue
     if [ -n "$paths" ]; then
         log "Loading file paths for '${vars_exist# *}'"
         sliceropts="--disable-cli-modules --disable-scripted-loadable-modules" 
         run $slicer $sliceropts "$paths"
         for var in $vars_exist; do
-            caselist_qc=caselist_qcpass_${var}
-            echo "Did '$var: ${!var}' pass?"
-            select yn in "Yes" "No" "Exit"; do
-                case $yn in
-                    Yes ) 
-                        if [ ! -e "$caselist_qc" ] || ! grep -q "$case" $caselist_qc; then 
-                            echo $case >> $caselist_qc; 
-                        fi 
-                        break;;
-                    No ) break;;
-                    Exit ) exit;;
-                esac
-            done
+            if [[ $reference_vars == *$var* ]]; then
+                continue
+            fi
+            #caselist_qcpass=caselist_qcpass_${var}
+            #caselist_qcfail=caselist_qcfail_${var}
+            prompt="
+Did '$var: ${!var}' pass
+[p]ass) make ${!var/nrrd/qc.nrrd}
+[f]ail) make ${!var/nrrd/qcfail.nrrd}
+[s]kip) 
+[q]uit) 
+? "
+            read -r -n 1 -p "$prompt" response
+            case $response in
+                [pP]) echo; $SCRIPTDIR/qcaccept ${!var}; continue;;
+                [fF]) echo; $SCRIPTDIR/qcreject ${!var}; continue;;
+                [sS]) continue;;
+                [qQ]) echo; exit;;
+            esac
         done
     else
         echo "No files to load for case '$case'"

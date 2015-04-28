@@ -16,17 +16,30 @@ email Ryan (reckbo@bwh.harvard.edu).
 
 if [[ $1 == *qc.nrrd ]]; then
     out=$1
-    echo "Passed QC previously, not renaming"
+    echo "Passed QC previously, not renaming, just adding QC stamp to header"
 elif [[ $1 == *qcfail.nrrd ]]; then
     out=${1/qcfail.nrrd/qc.nrrd}
     echo "Failed QC previously, renaming to '$out'"
     mv $1 $out
 else
     out=${1/nrrd/qc.nrrd}
-    echo "Not QC'ed yet, renaming to '$out'"
-    mv $1 $out
+    if [ -f "$out" ]; then
+        prompt="Not QC'ed yet, but '$out' already exists.  Overwrite it? [y/n] "
+        read -r -n 1 -p "$prompt" response
+        echo
+        case $response in
+            [yY]) mv "$1" "$out";;
+            [nN]) echo "Skipping '$1'"; exit 0;; 
+            *) echo "Skipping '$1'"; exit 0;;
+        esac
+    else
+        echo "Not QC'ed yet, renaming to '$out'"
+        mv "$1" "$out"
+    fi
 fi
 
-sed -i "2i# QC'ed (PASS) by $(whoami) on $(date)" $out
+#sed -i "2i# QC'ed (PASS) by $(whoami) on $(date)" $out
+stamptxt="# QC'ed (PASS) by $(whoami) on $(date)"
+sed -i "" -e '1a\'$'\n'"$stamptxt" $out  # make compatible with Mac sed
 
 echo "Made '$out' and stamped it's header (view it by running 'unu head $out')"
