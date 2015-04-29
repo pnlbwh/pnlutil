@@ -1,0 +1,23 @@
+#!/bin/bash -e
+
+SCRIPT=$(readlink -m $(type -p $0))
+SCRIPTDIR=${SCRIPT%/*}      
+source $SCRIPTDIR/util.sh
+
+HELP="
+${0##*/}: Prints all <var> filepaths that don't exist for a given set of cases.
+
+$queryscript_helpmsg"
+
+queryscript_parseargs "$@"
+
+if $selectcases; then
+    case_if_failed() {
+        local case=$1; source SetUpData.sh;
+        [ ! -e "${!var/nrrd/qcfail.nrrd}" ] || echo $case
+    }
+    map "case_if_failed" $cases
+else
+    mypred() { test -e "${1/nrrd/qcfail.nrrd}"; }
+    filter "mypred" $($SCRIPTDIR/all $var $cases)
+fi
