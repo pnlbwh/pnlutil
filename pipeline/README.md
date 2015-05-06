@@ -40,7 +40,7 @@ These should already be installed on standard linux/mac distributions.
 * pnlutil (https://github.com/pnlbwh/pnlutil)
 * Freesurfer (http://surfer.nmr.mgh.harvard.edu/fswiki/DownloadAndInstall)
 * skullstripping (https://github.com/pnlbwh/skullstripping-ants)
-* tract-querier (https://github.com/pnlbwh/tract_querier)
+* tract-querier (https://github.com/demianw/tract_querier)
 * measureTracts.py (https://github.com/pnlbwh/measuretracts)
 * FSL bet (http://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FSL)
 * ConvertBetweenFileFormats (https://github.com/BRAINSia/BRAINSTools)
@@ -118,7 +118,7 @@ Here are the install instructions for each package.
 6. tract-querier
 
     ```
-    git clone https://github.com/pnlbwh/tract_querier
+    git clone https://github.com/demianw/tract_querier
     cd tract_querier 
     python setup.py install
     ```
