@@ -53,7 +53,7 @@ log "Make masked baseline"
 bse=$(basename "$dwi")
 bse="${bse%%.*}-bse.nrrd"
 maskedbse=$(basename ${bse%%.*}-masked.nrrd)
-run $SCRIPTDIR/bse.sh -m $dwimask $dwi -o $maskedbse
+run $SCRIPTDIR/bse.sh -m $dwimask $dwi $maskedbse
 #$SCRIPTDIR/center.py -i "$maskedbse" -o "$maskedbse"
 log_success "Made masked baseline: '$maskedbse'"
 
