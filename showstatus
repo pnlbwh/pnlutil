@@ -6,4 +6,4 @@ if [ ! -f "$logfile" ]; then
     exit 1
 fi
 
-cat "$logfile" | sed -n '1p;$p' | csvtranspose | column -t -s','
+cat "$logfile" | tail -n 2| csvtranspose | column -t -s','
