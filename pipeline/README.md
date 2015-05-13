@@ -209,9 +209,10 @@ To show the status of a particular case:
 
     casestatus 001
 
-To visually inspect the results and save the cases that pass quality control to `caselist_qcpass_<var>`:
+To visually inspect and QC the results:
 
-    qc dwied fsindwi  # Loads each case's DWI and freesurfer map into Slicer, one case at a time
+    qc -h  # show you the options
+    qc -r dwied fsindwi  # Loads each case's DWI and freesurfer map into Slicer, one case at a time
     qc -l "001 002" t1align fs  # Load t1 and freesurfer map for cases 001 and 002
     qc -f caselist_notchecked_wmql dwied wmql  # Load DWI's and wmql tracts for cases in 'caselist_notchecked_wmql'
 

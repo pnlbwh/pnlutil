@@ -11,15 +11,17 @@ with 'SetUpData.sh' that has '<var>=/path/to/\$case-file' defined for each
 caselist=mycaselist.txt or cases=\"case1 case2..  caseN\"), or on the
 commandline (see below).
 
-    ${0##*/} [-f <caselist>, -l \"<case1> .. <caseN>\"] <var1> .. <varN> 
+    ${0##*/} [-f <caselist>, -l \"<case1> .. <caseN>\"] [-r \"<var> ...\"] <var1> .. <varN> 
 
 -f <caselist>             Uses case id's from <caselist> (one per line, but can include comments)
 -l \"<case1> .. <caseN>\"   List case id's within quotes
+-r \"<var> ...\"           Vars to be loaded as reference volumes but you won't be asked if they passed QC
 
 Examples:
+    ${0##*/} -r dwi fsindwi 
     ${0##*/} -f caseslist_notchecked.txt t1raw t2raw dwiraw
     ${0##*/} t1align t1alignmask dwi fsindwi  # operate on the caselist file defined by '\$caselist' in SetUpData.sh
-    ${0##*/} -l \"01009 01010\" t2 t2atlasmask
+    ${0##*/} -l \"01009 01010\" -r t2 t2atlasmask
 "
 
 parseargs() {
@@ -99,10 +101,10 @@ for case in $cases; do
     echo -e "\n== $case =="
     source "SetUpData.sh"
     paths=""
-    missing_paths=false
+    missing_path=false
     check_reference_vars
     check_qc_vars
-    $missing_path && { echo "Missing files, skipping this case"; missing_path=false; continue; }
+    $missing_path && { echo "Missing files, skipping this case"; continue; }
     log "Loading file paths for '$reference_vars $vars'"
     run $slicer "$paths"
     for var in $vars; do
