@@ -33,6 +33,11 @@ if [[ $vtk =~ gz$ ]]; then
     vtk=$tmpvtk
 fi
 
+log "Remove tracts with only one point"
+tmpvtk_pruned=$tmp/$case-pruned.vtk
+run tract_math $vtk  tract_remove_short_tracts 2 $tmpvtk_pruned
+vtk=$tmpvtk_pruned
+
 log "Make temporary nifti from $wmparc"
 tmpnii="$tmp/${case}-wmparc.nii.gz"
 run ConvertBetweenFileFormats "$wmparc" "$tmpnii" >/dev/null && log_success "Made wmparc nifti"
