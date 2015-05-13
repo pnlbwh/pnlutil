@@ -10,7 +10,7 @@ atlas_traininglabels=${base}/trainingmasks.txt
 t1atlasmask=$strct/$case.t1atlasmask.nrrd
 
 status_vars_extra=""
-if [ -n "$ATLASMASK_EDIT" ]; then
+if [ -n "${ATLASMASK_EDIT:-}" ]; then
     t1atlasmask_edit=$strct/$case.t1atlasmask.edited.nrrd
     fs_mask=$t1atlasmask_edit
     status_vars_extra="t1atlasmask_edit"
@@ -37,7 +37,7 @@ dwibetmask_dwi=$dwied
 # Output
 dwibetmask=$diff/$case.dwibetmask.nrrd  
 
-if [ -n "$DWIMASK_EDIT" ]; then
+if [ -n "${DWIMASK_EDIT:-}" ]; then
     dwibetmask_edit=$diff/$case.dwibetmask.edited.nrrd  
     dwiepi_dwimask=$dwibetmask_edit
     ukf_dwimask=$dwibetmask_edit
