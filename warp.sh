@@ -8,18 +8,14 @@ usage() {
     echo -e "ANTS registration.  Default is non-linear warp.
 
 Usage:
-    ${0##*/} [-a|-r] [-f] [-x] [-s MI|CC] <moving> <fixed> <out>
+    ${0##*/} [-a|-r] [-f] [-x <outtransform>] [-s MI|CC] <moving> <fixed> <out>
 
 -a     Affine only
 -r     Rigid only
--x     Save transform
+-x     Save transform as <outtransform>
 -s     Similarity metric (default: 'MI')
 -f     Fast registration, for debugging
 
-If '-x' is passed, the transform is saved as 
-'\${out%.*}-affine.txt' for affine transforms,
-'\${out%.*}-rigid.txt' for rigid transforms, and
-'\${out%.*}-warp.nii.gz' for non-linear warps.
 "
 
 }
