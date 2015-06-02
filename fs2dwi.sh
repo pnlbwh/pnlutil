@@ -68,4 +68,4 @@ log_success "Downsampled wmparc: 'wmparc-in-bse.nrrd'"
 popd
 rm_remotes $inputvars || true
 stoplogging "$output_dir/log"
-log_success "Made ' $(readlink -f "$output_dir")' and '$(readlink -f "$output_dir"/wmparc-in-bse.nrrd)'"
+log_success "Made ' $(readlink -f "$output_dir")' and '$(readlink -f "$output_dir"/wmparc-in-bse-1mm.nrrd)'"

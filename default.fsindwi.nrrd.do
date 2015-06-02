@@ -20,10 +20,11 @@ if [ -n "${fsindwi_t2-}" ]; then  # use t2 in registration
     done
     redo-ifchange $(varvalues $inputvars_extra)
     run fs2dwi_T2.sh $fsindwi_fssubjectdir/mri $fsindwi_dwi $fsindwi_dwimask $fsindwi_t2 $fsindwi_t2mask $fsindwi_t1 $fsindwi_t1mask $outputdir
+    run "mv $outputdir/wmparc-in-bse.nrrd $3"  # TODO: not upsampled yet
 else  # register t1 directly to dwi
     run fs2dwi.sh $fsindwi_dwi $fsindwi_dwimask $fsindwi_fssubjectdir/mri $outputdir
+    run "mv $outputdir/wmparc-in-bse-1mm.nrrd $3"
 fi
 
-run "mv $outputdir/wmparc-in-bse.nrrd $3"
 mv "$outputdir/log" "$1.log"
 log_success "Made '$1'"

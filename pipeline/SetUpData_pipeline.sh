@@ -1,9 +1,15 @@
 diff=$base/$case/diff
 strct=$base/$case/strct
 
+# Axis align and center
+dwixc_dwi=$dwiraw
+dwixc=$diff/$case.dwixc.nrrd
+t1xc_t1=$t1align
+t1xc=$strct/$case.t1xc.nrrd
+
 # Atlas mask
 # Inputs
-atlas_target=$t1align
+atlas_target=$t1xc
 atlas_trainingstructs=${base}/trainingt1s.txt
 atlas_traininglabels=${base}/trainingmasks.txt
 # Output
@@ -20,14 +26,14 @@ fi
 
 # Freesurfer
 # Inputs
-fs_t1=$t1align
+fs_t1=$t1xc
 #fs_mask=$t1atlasmask  # set above
 # Output
 fs=$strct/$case.freesurfer
 
 # DWI preprocessing
 # Inputs:
-dwied_dwi=$dwiraw
+dwied_dwi=$dwixc
 # Output
 dwied=$diff/$case.dwi-Ed.nrrd  
 
@@ -118,7 +124,9 @@ tractvols=$diff/$case.tractvols.csv
 
 status_vars="\
     t1align \
+    t1xc \
     dwiraw \
+    dwixc \
     t1atlasmask \
     fs \
     $status_vars_extra \
