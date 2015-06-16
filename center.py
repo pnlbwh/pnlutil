@@ -66,10 +66,16 @@ def centered_origin(hdr):
     print get_origin(hdr)
     new_origin = []
     for dir in spc_dirs:
-        dp = dot_product(sizes, dir)
+#        dp = dot_product(sizes, dir)
+#        dp_abs = [abs(x) for x in dp]
+#        maxmin_elem = dp_abs.index(max(dp_abs))
+#        new_origin.append(-dp[maxmin_elem]/2 + (dp[maxmin_elem]/abs(dp[maxmin_elem]))*0.5)
+        sizes2 = [(x-1)/2  for x in sizes]
+        tuple(sizes2)
+        dp = dot_product(sizes2, dir)
         dp_abs = [abs(x) for x in dp]
         maxmin_elem = dp_abs.index(max(dp_abs))
-        new_origin.append(-dp[maxmin_elem]/2 + (dp[maxmin_elem]/abs(dp[maxmin_elem]))*0.5)
+        new_origin.append(-dp[maxmin_elem])
     print "new origin: " + str(new_origin)
     return new_origin
 
@@ -105,3 +111,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
