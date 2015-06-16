@@ -1,7 +1,7 @@
 #!/bin/bash -eu
 
 source util.sh
-pre=${2##/*}
+pre=$2
 
 if [ -e "$pre.nhdr" ]; then
     log "Center '$pre.nhdr'"
