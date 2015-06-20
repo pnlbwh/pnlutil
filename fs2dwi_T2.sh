@@ -57,24 +57,29 @@ run $SCRIPTDIR/bse.sh -m $dwimask $dwi $maskedbse
 #$SCRIPTDIR/center.py -i "$maskedbse" -o "$maskedbse"
 log_success "Made masked baseline: '$maskedbse'"
 
+log "Upsample masked baseline to 1x1x1: "
+maskedbse1mm=$(basename ${maskedbse%%.*}-1mm.nii.gz)
+run $ANTSPATH/ResampleImageBySpacing 3 $maskedbse $maskedbse1mm 1 1 1 
+log_success "Made masked baseline: '$maskedbse1mm'"
+
 log "Compute rigid transformation from brain.nii.gz to T1"
 #rigidtransform brain.nii.gz $maskedt1 "fs-to-t1-rigid.txt"
-run $SCRIPTDIR/warp.sh -x fs-to-t1-rigid.txt -r brain.nii.gz $maskedt1 fs-to-t1.nrrd  # '-x': makes fs-to-t1-rigid.txt
+run $SCRIPTDIR/warp.sh -x fs-to-t1-rigid.txt -r brain.nii.gz $maskedt1 fs-in-t1.nrrd  # '-x': makes fs-to-t1-rigid.txt
 
 log "Compute rigid transformation from masked T1 to masked T2"
 #rigidtransform $maskedt1 $maskedt2 "t1-to-t2-rigid.txt"
-run $SCRIPTDIR/warp.sh -x t1-to-t2-rigid.txt -r $maskedt1 $maskedt2 t1-to-t2.nrrd  # '-x': makes t1-to-t2-rigid.txt
+run $SCRIPTDIR/warp.sh -x t1-to-t2-rigid.txt -r $maskedt1 $maskedt2 t1-in-t2.nrrd  # '-x': makes t1-to-t2-rigid.txt
 
 log "Compute warp from T2 to DWI baseline"
-#warp $maskedt2 $maskedbse "t2-to-bse-"
-run $SCRIPTDIR/warp.sh -x t2-to-bse-warp.nii.gz $maskedt2 $maskedbse t2-to-bse.nrrd  # '-x': makes t2-to-bse-warp.nii.gz
+#warp $maskedt2 $maskedbse1mm "t2-to-bse-"
+run $SCRIPTDIR/warp.sh -x t2-to-bse-warp.nii.gz $maskedt2 $maskedbse1mm t2-in-bse.nrrd  # '-x': makes t2-to-bse-warp.nii.gz
 #run mv t2-to-bse-deformed.nii.gz t2-in-bse.nii.gz 
 
 log "Apply transformations to wmparc.nii.gz to create wmparc-in-bse.nii.gz"
 #run $ANTSPATH/antsApplyTransforms -d 3 -i wmparc.nii.gz -o wmparc-in-bse.nrrd -r "$maskedbse" -n NearestNeighbor -t t2-to-bse-Warp.nii.gz t2-to-bse-Affine.txt t1-to-t2-rigid.txt fs-to-t1-rigid.txt
-run $ANTSPATH/antsApplyTransforms -d 3 -i wmparc.nii.gz -o wmparc-in-bse.nrrd -r "$maskedbse" -n NearestNeighbor -t t2-to-bse-warp.nii.gz t1-to-t2-rigid.txt fs-to-t1-rigid.txt
+run $ANTSPATH/antsApplyTransforms -d 3 -i wmparc.nii.gz -o wmparc-in-bse.nrrd -r "$maskedbse1mm" -n NearestNeighbor -t t2-to-bse-warp.nii.gz t1-to-t2-rigid.txt fs-to-t1-rigid.txt
 run ConvertBetweenFileFormats wmparc-in-bse.nrrd wmparc-in-bse.nrrd short
-log_success "Made 'wmparc-in-bse.nii.gz'"
+log_success "Made 'wmparc-in-bse.nrrd'"
 
 popd
 
