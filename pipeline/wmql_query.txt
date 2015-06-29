@@ -1,1 +1,0 @@
-../wmql_query.txt

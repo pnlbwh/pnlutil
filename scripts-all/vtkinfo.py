@@ -1,0 +1,1 @@
+../scripts-util/vtkinfo.py

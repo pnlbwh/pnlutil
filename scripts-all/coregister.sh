@@ -1,0 +1,1 @@
+../scripts-pipeline/coregister.sh

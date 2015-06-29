@@ -1,1 +1,0 @@
-../default.atlaslabelmap.nrrd.do

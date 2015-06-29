@@ -1,0 +1,1 @@
+../scripts-pipeline/make_rigid_mask.sh

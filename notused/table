@@ -1,0 +1,46 @@
+#!/bin/bash -eu
+shopt -s extglob
+
+SCRIPT=$(readlink -m $(type -p $0))
+SCRIPTDIR=${SCRIPT%/*}      
+source $SCRIPTDIR/util.sh
+
+vars=""
+while IFS='=' read lhs rhs
+do
+    if [[ ! $lhs =~ ^\ *# && ! $lhs =~ ^\ + && -n $lhs && -n $rhs ]]; then
+        #rhs="${rhs%%\#*}"    # Del in line right comments
+        #rhs="${rhs%%*( )}"   # Del trailing spaces
+        #rhs="${rhs%\"*}"     # Del opening string quotes 
+        #rhs="${rhs#\"*}"     # Del closing string quotes 
+        if [[ ! $lhs = 'base' && ! $lhs = 'caselist' && ! $lhs = 'status_vars' ]]; then
+            vars="$vars $lhs"
+        fi
+    fi
+done < SetUpData.sh
+
+case=000 && setupvars $vars
+setupcases
+table=".datatable.csv"
+
+#status_vars=${status_vars% *}
+#header="caseid,${vars//+( )/,}"
+header="caseid"
+for var in $vars; do
+    header="$header,$var,${var}_exists"
+done
+echo "$header" > "$table"
+
+#row="'$(date +"%Y-%m-%d %H:%M")'"
+for case in $cases; do
+    source SetUpData.sh
+    row="$case"
+    for var in $vars; do
+        exists='missing'
+        [ ! -e "${!var}" ] || exists='exists'
+        row="$row,${!var},$exists"
+    done
+    echo "$row" >> "$table"
+done
+
+echo "Made '.datatable.csv'" >&2

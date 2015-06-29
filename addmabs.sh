@@ -5,11 +5,10 @@ SCRIPTDIR=$(dirname $SCRIPT)
 source "$SCRIPTDIR/util.sh"
 
 SetUpData_vars="\
-atlas_target=/path/to/your/\$case-t1  # if you have \$t1 already defined, make this line 'atlas_target=\$t1'
+atlas_target=\$case/\$case-t1  # if you have \$t1 already defined, make this line 'atlas_target=\$t1'
 atlas_trainingstructs=trainingt1s.txt
 atlas_traininglabels=trainingmasks.txt
 t1atlasmask=\$case/strct/\$case.t1atlasmask.nrrd"
-
 
 usage() {
     echo -e "\
@@ -33,8 +32,8 @@ run
 [ $# -eq 1 ] && [[ ! $1 == "-h" ]] || { usage; exit 1; }
 
 [ -d $1 ] || { echo "Make directory '$1' first."; exit 1; }
-cp $SCRIPTDIR/default.atlaslabelmap.nrrd.do $1/default.t1atlasmask.nrrd.do
-datadir="$SCRIPTDIR"/pipeline-trainingdata/
+cp $SCRIPTDIR/pipeline/default.atlaslabelmap.nrrd.do $1/default.t1atlasmask.nrrd.do
+datadir="$SCRIPTDIR"/pipeline/trainingdata/
 ls -1 $datadir/*edited.nrrd | sed "s|.*\/|$datadir|" | head > $1/trainingmasks.txt
 ls -1 $datadir/*realign.nrrd | sed "s|.*\/|$datadir|" | head > $1/trainingt1s.txt
 echo >> $1/SetUpData.sh
