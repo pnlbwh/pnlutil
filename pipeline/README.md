@@ -111,7 +111,7 @@ Here are the install instructions for each package.
     ```
     git clone https://github.com/pnlbwh/skullstripping-ants
     mkdir skullstripping-ants-build && cd skullstripping-ants-build
-    cmake ../skullstripping-ants -DITK_DIR=$NEP/ANTS-build/ITKv4-build/ -DANTS_BUILD=$NEP/ANTS-build -DANTS_SRC=$NEP/ANTs
+    cmake ../skullstripping-ants -DITK_DIR=$NEP/ITKv4-build/ -DANTS_BUILD=$NEP/ -DANTS_SRC=$NEP/ANTs
     make
     ```
 
