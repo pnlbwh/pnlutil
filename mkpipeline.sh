@@ -13,41 +13,46 @@ Usage:
 "
 }
 
-installpipeline() {
-    cp -L "$pipelinedir"/* $1
-    sed -i "s,SCRIPTDIR,$SCRIPTDIR," $dir/SetUpData.sh
-    datadir="$SCRIPTDIR"/pipeline-trainingdata/
-    ls -1 $datadir/*edited.nrrd | sed "s|.*\/|$datadir|" | head -n 5 > $dir/trainingmasks.txt
-    ls -1 $datadir/*realign.nrrd | sed "s|.*\/|$datadir|" | head -n 5 > $dir/trainingt1s.txt
-    echo "Installed to '$dir':"
-    for f in $files; do echo $f; done
-    echo "Now make 'SetUpData_config.sh' and 'caselist' in '$dir'"
-}
-
 [ $# -gt 0 ] || { usage; exit 1; }
 [ $1 = "-h" ] && { usage; exit 0; }
 dir=$(readlink -f $1)
 
+tmpdir=$(mktemp -d)
 pipelinedir="$SCRIPTDIR/pipeline"
-files=$(ls -1 "$pipelinedir")
-files="$files trainingmasks.txt trainingt1s.txt"
-
-existingfiles=""
-for f in $files; do
-    [ ! -f "$dir/$f" ] || existingfiles="$existingfiles\n$dir/$f"
-done
+datadir="$pipelinedir/trainingdata/"
+ls -1 $datadir/*edited.nrrd | sed "s|.*\/|$datadir|" > $tmpdir/trainingmasks.txt
+ls -1 $datadir/*realign.nrrd | sed "s|.*\/|$datadir|" > $tmpdir/trainingt1s.txt
+pushd $pipelinedir
+cp -LR $(ls . | grep -v trainingdata) $tmpdir
+sed -i "s,SCRIPTDIR,$(readlink -m "$1")\/scripts-pipeline," $tmpdir/SetUpData.sh
+popd
 
 [ -d "$dir" ] || mkdir "$dir"
 
-echo "Copy pipeline files from '$pipelinedir' to '$dir'?"
-if [ -n "$existingfiles" ]; then
-    echo  "The following files would be overwritten:"
-    echo -e "$existingfiles"
-    echo
+echo "Diff between staging temporary staging directory '$tmpdir' and target directory '$dir':"
+echo "------------------------------------------------------------------------------------------------------"
+diff=$(diff -rqu "$tmpdir" "$dir" | grep "$tmpdir" | grep -v '.redo' | grep -v 'trainingdata' || true)
+if [ -n "$diff" ]; then
+    echo  "$diff" 
+    echo "------------------------------------------------------------------------------------------------------"
+else
+    echo "No difference, nothing to do"
+    echo "------------------------------------------------------------------------------------------------------"
+    exit 0
 fi
+
+echo "Copy files to '$dir'?"
 select yn in "Yes" "Cancel"; do
     case $yn in
-        Yes ) installpipeline "$dir"; break;;
-        Cancel ) exit;;
+        Yes ) cp -r $tmpdir/* "$dir"; rm -r "$tmpdir"; exit;;
+        Cancel ) break;;
+    esac
+done
+
+echo "Delete temporary staging directory '$tmpdir'?"
+select yn in "Yes" "No"; do
+    case $yn in
+        Yes ) rm -r $tmpdir; break;;
+        No ) break;;
     esac
 done

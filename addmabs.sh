@@ -34,8 +34,8 @@ run
 [ -d $1 ] || { echo "Make directory '$1' first."; exit 1; }
 cp $SCRIPTDIR/pipeline/default.atlaslabelmap.nrrd.do $1/default.t1atlasmask.nrrd.do
 datadir="$SCRIPTDIR"/pipeline/trainingdata/
-ls -1 $datadir/*edited.nrrd | sed "s|.*\/|$datadir|" | head > $1/trainingmasks.txt
-ls -1 $datadir/*realign.nrrd | sed "s|.*\/|$datadir|" | head > $1/trainingt1s.txt
+ls -1 $datadir/*edited.nrrd | sed "s|.*\/|$datadir|" > $1/trainingmasks.txt
+ls -1 $datadir/*realign.nrrd | sed "s|.*\/|$datadir|" > $1/trainingt1s.txt
 echo >> $1/SetUpData.sh
 echo "$SetUpData_vars" >> $1/SetUpData.sh 
 

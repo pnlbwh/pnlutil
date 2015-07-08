@@ -30,7 +30,7 @@ read -r dwi out <<<"$@"
 checkexists dwi
 [ -z "$dwimask" ] || checkexists dwimask
 
-regex="DWMRI_gradient_\([0-9]*\):= *0\(\.0*\)\{0,1\} 0\(\.0*\)\{0,1\} 0\(\.0*\)\{0,1\}"
+regex="DWMRI_gradient_\([0-9]*\):= *0\(\.0*\)\{0,1\} *0\(\.0*\)\{0,1\} *0\(\.0*\)\{0,1\}"
 direction=$(unu head $dwi | sed -n "s|$regex|\1|p" | head -n 1)
 log "Found baseline at gradient direction '$direction'"
 if [ -n "$dwimask" ]; then
