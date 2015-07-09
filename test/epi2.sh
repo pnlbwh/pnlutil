@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
 set -eu
-SCRIPT=$(readlink -m $(type -p "$0"))
-SCRIPTDIR=$(dirname $SCRIPT)
+#SCRIPT=$(readlink -m $(type -p "$0"))
+#SCRIPTDIR=$(dirname $SCRIPT)
+SCRIPTDIR=../scripts-pipeline/
 source "$SCRIPTDIR/util.sh"
 
 HELP="DWI EPI distortion correction.
@@ -31,7 +32,7 @@ inputvars="dwi dwimask t2 out"
 read -r $inputvars <<< "$@"
 checkexists dwi dwimask t2
 checkvars ANTSPATH
-printvars $inputvars ANTSPATH ANTSPATH_epi DEBUG
+printvars $inputvars ANTSPATH DEBUG
 
 tmp=$(mktemp -d)
 startlogging
@@ -52,15 +53,12 @@ log_success "2. Made rigidly registered T2: '$t2inbse'"
 
 
 log "3. Compute 1d nonlinear registration from the DWI to the T2 along the phase direction"
-if [ -n "${ANTSPATH_epi:-}" ]; then
-    log "Found 'ANTSPATH_epi=$ANTSPATH_epi', using this as ANTSPATH for the 1d nonlinear registration"
-    export ANTSPATH=$ANTSPATH_epi
-fi
 moving=$bse
 fixed=$t2inbse
 pre="$tmp/$(base $moving)_in_$(base $fixed)_warp"
 #run $ANTSPATH/ANTS 3 -m CC[$fixed,$moving,1,5] -i 50x20x10 -r Gauss[3,0] -t SyN[1] -o $pre --Restrict-Deformation 0x1x0 --do-rigid $DOFAST_warp
-run $ANTSPATH/ANTS 3 -m CC[$fixed,$moving,1,5] -i 50x20x10 -r Gauss[3,0] -t SyN[0.25] -o $pre --Restrict-Deformation 0x1x0 --do-rigid $DOFAST_warp
+#run $ANTSPATH/ANTS 3 -m CC[$fixed,$moving,1,5] -i 50x20x10 -r Gauss[3,0] -t SyN[0.25] -o $pre --Restrict-Deformation 0x1x0 --do-rigid $DOFAST_warp
+run $ANTSPATH/antsRegistration -d 3 --metric CC[$fixed,$moving,1,5] -r Gauss[3,0]  --convergence 50x20x10 -t SyN[0.25] -o $pre --restrict-deformation 0x1x0 
 run "$ANTSPATH/ComposeMultiTransform 3 "$epiwarp" -R "$fixed" "${pre}Warp.nii.gz" "${pre}Affine.txt" || true"  
 # Note: composeMultiTransform has exit status 1 even when it completes successfully without an error message, hence the '|| true'
 log_success "3. Made 1d epi corrective warp: '$epiwarp'"
