@@ -41,10 +41,14 @@ else
     exit 0
 fi
 
+goodbyeMsg() {
+    echo "Now make 'SetUpData_config.sh' and 'caselist' in '$dir' and run 'redo'"
+}
+
 echo "Copy files to '$dir'?"
 select yn in "Yes" "Cancel"; do
     case $yn in
-        Yes ) cp -r $tmpdir/* "$dir"; rm -r "$tmpdir"; exit;;
+        Yes ) cp -r $tmpdir/* "$dir"; rm -r "$tmpdir"; goodbyeMsg; exit;;
         Cancel ) break;;
     esac
 done
