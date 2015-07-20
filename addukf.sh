@@ -5,9 +5,9 @@ SCRIPTDIR=$(dirname $SCRIPT)
 source "$SCRIPTDIR/util.sh"
 
 SetUpData_vars="\
-ukf_dwi=\$case/\$case-dwi.nrrd 
-ukf_dwimask=\$case/\$case-dwimask.nrrd
-ukf=\$case/diff/\$case.ukf_2T.vtk.gz"
+ukf_dwi=\$case/\$case-dwi.nrrd  # edit this, if you already defined dwi make it ukf_dwi=\$dwi
+ukf_dwimask=\$case/\$case-dwimask.nrrd # edit this, if you already defined dwimask make it ukf_dwimask=\$dwimask
+ukf=\$case/diff/\$case.ukf_2T.vtk.gz "
 dofile="default.ukf_2T.vtk.gz.do"
 scripts="util.sh"
 
@@ -43,7 +43,7 @@ made_scripts=$(for i in $scripts; do echo "$1/scripts-pipeline/$i"; done)
 echo -e "Made
 
 $1/$dofile
-$1/SetUpData.sh  # added FREESURFER_HOME, fs_t1, fs_mask, fs
+$1/SetUpData.sh  # added ukf_dwi, ukf_dwimask, and ukf
 $made_scripts
 
 Now set the variables 'ukf_dwi' and 'ukf_dwimask' in 'SetUpData.sh' and run

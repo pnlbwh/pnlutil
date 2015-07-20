@@ -58,7 +58,8 @@ fixed=$t2inbse
 pre="$tmp/$(base $moving)_in_$(base $fixed)_warp"
 #run $ANTSPATH/ANTS 3 -m CC[$fixed,$moving,1,5] -i 50x20x10 -r Gauss[3,0] -t SyN[1] -o $pre --Restrict-Deformation 0x1x0 --do-rigid $DOFAST_warp
 #run $ANTSPATH/ANTS 3 -m CC[$fixed,$moving,1,5] -i 50x20x10 -r Gauss[3,0] -t SyN[0.25] -o $pre --Restrict-Deformation 0x1x0 --do-rigid $DOFAST_warp
-run $ANTSPATH/antsRegistration -d 3 --metric CC[$fixed,$moving,1,5] -r Gauss[3,0]  --convergence 50x20x10 -t SyN[0.25] -o $pre --restrict-deformation 0x1x0 
+#run $ANTSPATH/antsRegistration -d 3 --metric CC[$fixed,$moving,1,5] -r Gauss[3,0]  --convergence 50x20x10 -t SyN[0.25] -o $pre --restrict-deformation 0x1x0 
+run $ANTSPATH/antsRegistration -d 3 --metric CC[$fixed,$moving,1,5]  --convergence 50x20x10 -t SyN[0.25] -o $pre --restrict-deformation 0x1x0  # seg faults
 run "$ANTSPATH/ComposeMultiTransform 3 "$epiwarp" -R "$fixed" "${pre}Warp.nii.gz" "${pre}Affine.txt" || true"  
 # Note: composeMultiTransform has exit status 1 even when it completes successfully without an error message, hence the '|| true'
 log_success "3. Made 1d epi corrective warp: '$epiwarp'"

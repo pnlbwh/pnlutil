@@ -5,7 +5,7 @@ SCRIPTDIR=$(dirname $SCRIPT)
 source "$SCRIPTDIR/util.sh"
 
 SetUpData_vars="\
-atlas_target=\$case/\$case-t1  # if you have \$t1 already defined, make this line 'atlas_target=\$t1'
+atlas_target=\$case/\$case-t1.nrrd  # edit this, if you have \$t1 already defined, make this line 'atlas_target=\$t1'
 atlas_trainingstructs=trainingt1s.txt
 atlas_traininglabels=trainingmasks.txt
 t1atlasmask=\$case/strct/\$case.t1atlasmask.nrrd"
@@ -32,7 +32,7 @@ run
 [ $# -eq 1 ] && [[ ! $1 == "-h" ]] || { usage; exit 1; }
 
 [ -d $1 ] || { echo "Make directory '$1' first."; exit 1; }
-cp $SCRIPTDIR/pipeline/default.atlaslabelmap.nrrd.do $1/default.t1atlasmask.nrrd.do
+cp $SCRIPTDIR/pipeline/default.t1atlasmask.nrrd.do $1/default.t1atlasmask.nrrd.do
 datadir="$SCRIPTDIR"/pipeline/trainingdata/
 ls -1 $datadir/*edited.nrrd | sed "s|.*\/|$datadir|" > $1/trainingmasks.txt
 ls -1 $datadir/*realign.nrrd | sed "s|.*\/|$datadir|" > $1/trainingt1s.txt
@@ -44,14 +44,14 @@ echo -e "Made
     $1/trainingmasks.txt
     $1/trainingt1s.txt 
     $1/default.t1atlasmask.nrrd.do 
-    $1/SetUpData.sh  # added default.t1atlasmask.nrrd.do's input variables here
+    $1/SetUpData.sh
 
-Now edit 'atlas_target' in 'SetUpData.sh' and run 
+Now set 'atlas_target' in 'SetUpData.sh' and run 
 
     redo \`missing t1atlasmask\`  # or 'missing t1atlasmask | redo'
 
-(Don't forget to define your caselist in 'SetUpData.sh' as
-'cases="001 002 ..."',  or 'caselist=mycaselist.txt', for
+(Don't forget to define your case list in 'SetUpData.sh' as
+'cases="001 002 ..."'  or 'caselist=mycaselist.txt' for
 query script 'missing' to work)\
 "
 
