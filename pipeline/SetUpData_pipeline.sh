@@ -25,19 +25,18 @@ atlas_trainingstructs=${base}/trainingt1s.txt
 atlas_traininglabels=${base}/trainingmasks.txt
 # Output
 t1atlasmask=$strct/$case.t1atlasmask.nrrd
+if [ -n "${ATLASMASK_EDIT:-}" ]; then 
+    t1atlasmask=$strct/$case.t1atlasmask.edited.nrrd
+    t1atlasmask_unedited=$strct/$case.t1atlasmask.nrrd
+    status_vars_extra="t1atlasmask_unedited"
+fi
 # ==========================================================
 
 
 # ==========================================================
 # Freesurfer
 # Inputs
-if [ -n "${ATLASMASK_EDIT:-}" ]; then
-    t1atlasmask_edit=$strct/$case.t1atlasmask.edited.nrrd
-    fs_mask=$t1atlasmask_edit
-    status_vars_extra="t1atlasmask_edit"
-else
-    fs_mask=$t1atlasmask
-fi
+fs_mask=$t1atlasmask
 fs_t1=$t1xc
 # Output
 fs=$strct/$case.freesurfer
@@ -59,7 +58,11 @@ dwied=$diff/$case.dwi-Ed.nrrd
 dwibetmask_dwi=$dwied
 # Output
 dwibetmask=$diff/$case.dwibetmask.nrrd  
-[ ! -n "${DWIMASK_EDIT:-}" ] || dwibetmask=$diff/$case.dwibetmask.edited.nrrd  
+if [ -n "${DWIMASK_EDIT:-}" ]; then
+    dwibetmask=$diff/$case.dwibetmask.edited.nrrd  
+    dwibetmask_unedited=$diff/$case.dwibetmask.nrrd  
+    status_vars_extra="$status_vars_extra dwibetmask_unedited"
+fi
 # ==========================================================
 
 
