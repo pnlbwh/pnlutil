@@ -14,7 +14,7 @@ def t(cmd):
     check_call(cmd, shell=True)
 
 def nrrd_is_valid(nrrd):
-    stdout, stderr = Popen('unu minmax %s' % nrrd, shell=True, stdout=PIPE,
+    stdout, stderr = Popen('unu minmax "%s"' % nrrd, shell=True, stdout=PIPE,
                            stderr=PIPE).communicate()
     if 'trouble' in stdout:
         return False
@@ -106,7 +106,7 @@ def main():
         #sys.exit(1)
 
     new_origin = centered_origin(get_hdr(image_in))
-    t('unu save -e gzip -f nrrd -i %s -o %s' % (image_in, image_out))
+    t('unu save -e gzip -f nrrd -i "%s" -o "%s"' % (image_in, image_out))
     replace_line_in_file(image_out, "space origin: ", "space origin: (%s, %s, %s)\n" % tuple(new_origin))
 
 if __name__ == '__main__':
