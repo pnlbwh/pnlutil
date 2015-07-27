@@ -21,13 +21,13 @@ e.g.
 "
 }
 
-data="./SetUpData.sh ./dataEnv.sh"
+data="./SetUpData*.sh"
 [[ ${1-} == "-h" || ${1-} == "--help" ]] && { usage; exit 1; }
 if [ -n "${1-}" ]; then
-    data="$1/SetUpData.sh $1/dataEnv.sh"
+    data="$1/SetUpData*.sh"
 fi
 
 out=$(cat $data 2>/dev/null || true)
 [ -n "$out" ] || { echo "No output from '$data.sh', do they exist?"; usage; exit 1; }
 
-echo -e "$out" | grep "=" | column -s"=" -t
+echo -e "$out" | grep "=" | sed 's/^[[:space:]]*//' | grep -Ev '^#' | column -s"=" -t
