@@ -262,10 +262,10 @@ varvalues() {
 
 printvars() {
     for var in "$@"; do
-        if [ -n "$var" ]; then
+        if [ -n "${!var-}" ]; then
             printf "* %s=%s\n" $var ${!var}
         else 
-            printf "* %s=\n"
+            printf "* %s=\n" $var
         fi
     done
 }
