@@ -27,7 +27,7 @@ Examples:
 parseargs() {
     while getopts "hsr:f:l:" flag; do
         case "$flag" in
-            h) usage 1;;
+            h) echo -e "$HELP"; exit 0;;
             r) reference_vars=$OPTARG;;
             f) argcaselist=$OPTARG;;
             l) argcases=$OPTARG;;
