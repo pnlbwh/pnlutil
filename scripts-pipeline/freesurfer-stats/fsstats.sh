@@ -9,7 +9,6 @@ Outputs a column of freesurfer stats to stdout
 
 Usage: 
     ${SCRIPT##*/} </path/to/freesurfer/subjects/case/stats> <caseid>
-EOF
 "
 
 [ $# -ne 2 ] || [[ $1 == "-h" || $1 == "--help" ]]  && usage 1
