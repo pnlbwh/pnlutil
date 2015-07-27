@@ -18,7 +18,7 @@ header="$header,total"
 # Make row
 row="'$(date +"%Y-%m-%d %H:%M")'"
 for var in $status_vars; do
-    row="$row,$(status $var | cut -d"/" -f1)"
+    row="$row,$(status $var | cut -d"/" -f1)" || { echo "$row"; exit $?; }
     total=$(status $var | cut -d"/" -f2)
 done
 row="$row,$total"
