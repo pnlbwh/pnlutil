@@ -2,7 +2,7 @@
 
 set -eu
 SCRIPT=$(readlink -m $(type -p "$0"))
-SCRIPTDIR=$(dirname $SCRIPT)
+SCRIPTDIR=$(dirname "$SCRIPT")
 source "$SCRIPTDIR/util.sh"
 
 HELP="DWI EPI distortion correction.
@@ -30,16 +30,16 @@ shift $((OPTIND-1))
 inputvars="dwi dwimask t2 t2mask out"
 read -r $inputvars <<< "$@"
 checkexists dwi dwimask t2 t2mask
-checkvars ANTSPATH
+checkvars ANTSPATH ANTSPATH_epi
 printvars $inputvars ANTSPATH ANTSPATH_epi DEBUG
 
 tmp=$(mktemp -d)
 startlogging
 
-bse="$tmp/$(base $dwi)-maskedbse.nrrd"
-t2masked="$tmp/$(base $t2)-masked.nrrd"
-t2inbse="$tmp/$(base $t2)-in-bse-rigid.nrrd"
-epiwarp="$tmp/$(base $dwi)_in_$(base $t2)-epiwarp.nii.gz"
+bse="$tmp/$(base "$dwi")-maskedbse.nrrd"
+t2masked="$tmp/$(base "$t2")-masked.nrrd"
+t2inbse="$tmp/$(base "$t2")-in-bse-rigid.nrrd"
+epiwarp="$tmp/$(base "$dwi")_in_$(base "$t2")-epiwarp.nii.gz"
 
 
 log "1. Extract and mask the DWI baseline"
@@ -51,7 +51,7 @@ run "unu 3op ifelse "$t2mask" "$t2" 0 -o "$t2masked""
 log_success "1. Made masked baseline: '$t2masked'"
 
 log "3. Compute a rigid registration from the T2 to the DWI baseline"
-run $SCRIPTDIR/warp.sh $DOFAST_rigid -r "$t2masked" "$bse" "$t2inbse"  # -r for rigid
+run \"$SCRIPTDIR/warp.sh\" $DOFAST_rigid -r "$t2masked" "$bse" "$t2inbse"  # -r for rigid
 log_success "2. Made rigidly registered T2: '$t2inbse'"
 
 log "4. Compute 1d nonlinear registration from the DWI to the T2 along the phase direction"

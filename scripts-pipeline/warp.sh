@@ -1,7 +1,7 @@
 #!/bin/bash -eu
 
-SCRIPT=$(readlink -m $(type -p $0))
-SCRIPT_DIR=$(dirname ${SCRIPT})      
+SCRIPT=$(readlink -m "$(type -p "$0")")
+SCRIPT_DIR=$(dirname "${SCRIPT}")      
 source "$SCRIPT_DIR/util.sh"
 
 usage() {
