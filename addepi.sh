@@ -5,11 +5,16 @@ SCRIPTDIR=$(dirname $SCRIPT)
 source "$SCRIPTDIR/util.sh"
 
 SetUpData_vars="\
-#ANTSPATH_epi=path/to/ANTs-1.9
+# ==========================================================================
+# EPI
+# Input
+export ANTSPATH_epi=/projects/schiz/software/deprecated/ANTs-1.9.y-Linux/bin/
 dwiepi_dwi=\$case/\$case-dwi.nrrd 
 dwiepi_dwimask=\$case/\$case-dwimask.nrrd
 dwiepi_t2=\$case/\$case-t2masked.nrrd # preferably masked
-dwiepi=\$case/diff/\$case.dwi-epi.nrrd"
+# Output
+dwiepi=\$case/diff/\$case.dwi-epi.nrrd
+# ==========================================================================="
 dofile="default.dwi-epi.nrrd.do"
 scripts="epi.sh warp.sh antsApplyTransformsDWI.sh util.sh"
 
@@ -43,17 +48,16 @@ mkdir -p $1/scripts-pipeline && for i in $scripts; do cp $SCRIPTDIR/scripts-pipe
 
 made_scripts=$(for i in $scripts; do echo "$1/scripts-pipeline/$i"; done)
 echo -e "Made
-
 $1/default.dwi-epi.nrrd.do 
 $1/SetUpData.sh  # added dwiepi_dwi, dwiepi_dwimask, and dwiepi_t2
 $made_scripts
 
-Now set the variables 'dwiepi_dwi', 'dwiepi_dwimask', and 'dwiepi_t2' in 
-'SetUpData.sh' and run
+Now set the variables dwiepi_dwi, dwiepi_dwimask, and dwiepi_t2 in 
+SetUpData.sh and run
 
-    redo \`missing dwi-epi\`  # or 'missing dwi-epi | redo'
+    redo \`missing dwiepi\`  # or, missing dwiepi | redo
 
-(Don't forget to define your caselist in 'SetUpData.sh' as
+(Don't forget to define your caselist in SetUpData.sh as
 'cases="001 002 ..."',  or 'caselist=mycaselist.txt', for
 query script 'missing' to work)\
 "
