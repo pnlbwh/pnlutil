@@ -18,8 +18,8 @@ run $SCRIPT -x $outtrans -r $t1 $t1align $out
 verify $out e2ca83b715611cf6ce247f569e18863b
 test -f $outtrans
 
-out=$output/warped.nrrd
-outtrans=$output/warpedxfm.nii.gz
+out=$outdir/warped.nrrd
+outtrans=$outdir/warpedxfm.nii.gz
 rm $out $outtrans || true
 run $SCRIPT -x $outtrans $t1 $t1align $out
 verify $out 36785119c152442c04bd8f4c0db9888b
