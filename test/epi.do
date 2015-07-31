@@ -4,9 +4,7 @@ source SetUpData.sh
 source ../util.sh # for 'run'
 source ./util.sh  # for 'verify'
 
-export ANTSPATH=/projects/schiz/software/ANTS-git-build2/bin/
-export ANTSPATH_epi=/projects/schiz/software/deprecated/ANTs-1.9.y-Linux/bin/
-export ANTSSRC=/projects/schiz/software/ANTS-git/
+export ANTSPATH=/projects/schiz/software/ANTS-git-build/bin/
 
 outdir=out && mkdir -p $outdir
 
@@ -20,4 +18,4 @@ SCRIPT=../scripts-pipeline/epi.sh
 redo-ifchange $SCRIPT ../scripts-pipeline/antsApplyTransformsDWI.sh ../scripts-pipeline/warp.sh
 #run $SCRIPT -d $dwiednrrd $dwiedmask $t2masked $outdir/dwiepi.nrrd
 run $SCRIPT $dwiednrrd $dwiedmask $t2 $origmask $outdir/dwiepi.nrrd
-verify $outdir/dwiepi.nrrd 5c6692285a78a3f0e6cdd05dc4feecb8
+verify $outdir/dwiepi.nrrd 3141becf500f2e9ac211e1b50a3b62bd
