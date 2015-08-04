@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+#
+# dependencies:
+# * util.sh
+# * warp.sh (todo: replace this with antsRegistrationSyn.sh)
+# * bse.sh
+# * $FREESURFER_HOME
+# * $ANTSPATH
+# * $ANTSSRC (todo: remove this)
 
 set -eu
 SCRIPT=$(readlink -m $(type -p $0))
