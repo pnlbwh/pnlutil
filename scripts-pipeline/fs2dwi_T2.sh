@@ -4,6 +4,7 @@
 # * util.sh
 # * warp.sh (todo: replace this with antsRegistrationSyn.sh)
 # * bse.sh
+# * mask
 # * $FREESURFER_HOME
 # * $ANTSPATH
 # * $ANTSSRC (todo: remove this)
@@ -49,12 +50,12 @@ log_success "Made 'brain.nii.gz' and 'wmparc.nii.gz'"
 
 log "Make masked T2"
 maskedt2=$(base $t2)-masked.nrrd
-run mask "$t2" "$t2mask" $maskedt2
+run $SCRIPTDIR/mask "$t2" "$t2mask" $maskedt2
 log_success "Made masked T2: '$maskedt2'"
 
 log "Make masked T1"
 maskedt1=$(base $t1)-masked.nrrd
-run mask "$t1" "$t1mask" $maskedt1
+run $SCRIPTDIR/mask "$t1" "$t1mask" $maskedt1
 log_success "Made masked T1: '$maskedt1'"
 
 log "Make masked baseline"
