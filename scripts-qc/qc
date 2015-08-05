@@ -11,11 +11,12 @@ with 'SetUpData.sh' that has '<var>=/path/to/\$case-file' defined for each
 caselist=mycaselist.txt or cases=\"case1 case2..  caseN\"), or on the
 commandline (see below).
 
-    ${0##*/} [-f <caselist>, -l \"<case1> .. <caseN>\"] [-r \"<var> ...\"] <var1> .. <varN> 
+    ${0##*/} [-f <caselist>, -l \"<case1> .. <caseN>\"] [-r \"<var> ...\"] -q \"<var1> .. <varN>\"
 
 -f <caselist>             Uses case id's from <caselist> (one per line, but can include comments)
 -l \"<case1> .. <caseN>\"   List case id's within quotes
 -r \"<var> ...\"           Vars to be loaded as reference volumes but you won't be asked if they passed QC
+-q \"<var> ...\"           Vars to be loaded and QC'ed
 
 Examples:
     ${0##*/} -r dwi fsindwi 
@@ -25,27 +26,42 @@ Examples:
 "
 
 parseargs() {
-    while getopts "hsr:f:l:" flag; do
+    while getopts "hsr:f:l:q:" flag; do
         case "$flag" in
-            h) echo -e "$HELP"; exit 0;;
-            r) reference_vars=$OPTARG;;
-            f) argcaselist=$OPTARG;;
-            l) argcases=$OPTARG;;
+            h) 
+                echo -e "$HELP"; exit 0;;
+            r) 
+                reference_vars=$OPTARG;;
+            f) 
+                [ -f "$OPTARG" ] || { echo "$OPTARG doesn't exist"; exit 1; }
+                cases=$(cat "$caselist" | awk '{print $1}');;
+            l) 
+                cases=$OPTARG;;
+            q) 
+                qc_vars=$OPTARG;;
         esac
     done
-    shift $((OPTIND-1))
-
-    # get positional arguments
-    IFS=" " read vars <<<"$@"
-    [ -n "${vars-}" ] || { echo -e "Specify variables <var>..<varN>"; usage 1; }
 
     # check input is ok
-    case=000 && setupvars $vars $reference_vars
-    [ ! -n "${argcaselist-}" ] || caselist=$argcaselist
-    [ ! -n "${argcases-}" ] || cases=$argcases
-    setupcases
+    [ -n "${qc_vars-}" ] || { usage; exit 1; }
+    [ ! -f SetUpData.sh ] && { echo "Run in directory with 'SetUpData.sh'"; usage; exit 1; } 
+    case=000 && source SetUpData.sh
+    for var in $reference_vars $qc_vars; do
+        [ -n "${!var-}" ] || { echo "Define '${var}' in SetUpData.sh first."; exit 1; }
+    done
+
+    [ -n "${cases-}" ] || cases=$(cases)
 }
 
+printvars() {
+    for var in "$@"; do
+        if [ -n "${!var-}" ]; then
+            printf "* %s=%s\n" $var ${!var}
+        else 
+            printf "* %s=\n" $var
+        fi
+    done
+}
 setslicer() {
     if [ -e "$SCRIPTDIR/config.sh" ]; then
         source $SCRIPTDIR/config.sh
@@ -55,70 +71,102 @@ setslicer() {
     sliceropts="--disable-cli-modules --disable-scripted-loadable-modules" 
     slicer="$slicer $sliceropts"
 }
-#add_to_caselist() {
-#local _case=$1
-#local _caselist=$2
-#if [ ! -e "$_caselist" ] || ! grep -q "$_case" $_caselist; then 
-    #echo $_case >> $_caselist; 
-    #echo -e "\nAdded '$_case' to '$_caselist'"
-#else
-    #echo -e "\n'$_case' already in '$_caselist', so doing nothing"
-#fi 
-#}
 
 parseargs "$@"
 setslicer
 
-check_reference_vars() {
-    for var in $reference_vars; do
-        if [ -e "${!var}" ]; then
-            echo "Found '$var: ${!var}'"
-            paths="$paths ${!var}"
-        else
-            echo "Not found '$var: ${!var}'"
-            echo "Skipping this case"
-            missing_path=true
+getVarsWithMissingPaths() {
+    local varsMissingPaths=""
+    for var in $@; do
+        if [ ! -e "${!var}" ]; then
+            varsMissingPaths="$varsMissingPaths $var"
         fi
+    done
+    echo "$varsMissingPaths"
+}
+
+pathsFromVars() {
+    local paths=""
+    for var in $@; do
+            paths="$paths ${!var}"
+    done
+    echo "$paths"
+}
+
+record_qc() {
+    local qc_var="$1"
+    local passfail="$2"
+    local note="$3"
+    hdr="caseid,datetime,passfail,md5sum,reference_var,reference_md5sum,note"
+    echo "$hdr" >> "${!qc_var}-qc.csv"
+    for reference_var in $reference_vars; do
+        row="$case,$(date),$passfail,$(md5sum ${!qc_var} | cut -d' ' -f1),$reference_var,$(md5sum ${!reference_var} | cut -d' ' -f1),$note"
+        echo "$row" >> "${!qc_var}-qc.csv"
     done
 }
 
-check_qc_vars() {
-    for var in $vars; do
-        if [ -e "${!var}" ]; then
-            echo "Found '$var: ${!var}'"
-            paths="$paths ${!var}"
-            #vars_exist="$vars_exist $var"
-        else
-            echo "Not found '$var: ${!var}'"
-            [ ! -f "${!var/nrrd/qc.nrrd}" ] || { echo "Already QC'ed (passed)"; }
-            [ ! -f "${!var/nrrd/qcfail.nrrd}" ] || { echo "Already QC'ed (failed)"; }
-            missing_path=true
+uptodate() {
+    filepath=$1
+    md5sumRecorded=$2
+    md5sum "$filepath" | cut -d' ' -f1 | diff -q - <(echo $md5sumRecorded) >/dev/null
+}
+
+qcedAndUpToDate() {
+    for qcvar in $@; do
+        csv="${!qcvar}-qc.csv" 
+        [ -f "$csv" ] || return 1
+        # It has been qc'ed - read in qc values
+        hdr="caseid datetime passfail md5sum reference_var reference_md5sum note"
+        IFS=, read -r $hdr <<<"$(tail -n 1 "$csv")"
+        if ! uptodate ${!qcvar} $md5sum || ! uptodate ${!reference_var} $reference_md5sum; then
+            return 1
         fi
     done
+    return 0
 }
 
 for case in $cases; do
     echo -e "\n== $case =="
     source "SetUpData.sh"
-    paths=""
-    missing_path=false
-    check_reference_vars
-    check_qc_vars
-    $missing_path && { echo "Missing files, skipping this case"; continue; }
-    log "Loading file paths for '$reference_vars $vars'"
-    run $slicer "$paths"
-    for var in $vars; do
+
+    echo "QC vars:"
+    printvars $qc_vars
+    echo "Reference vars:"
+    printvars $reference_vars
+    echo
+
+    if qcedAndUpToDate "$qc_vars"; then
+        echo "Already QC'ed and up to date, skipping"
+        continue
+    fi
+
+    varsMissingPaths=$(getVarsWithMissingPaths $reference_vars $qc_vars)
+    if [ -n "$varsMissingPaths" ]; then
+        for var in $varsMissingPaths; do
+            echo "Missing file: $var= ${!var}"
+        done
+        echo "Skipping this case"
+        continue
+    fi
+
+    log "Loading file paths for '$reference_vars $qc_vars'"
+    run $slicer "$(pathsFromVars $reference_vars $qc_vars)"
+    for qc_var in $qc_vars; do
         prompt="
-Did '$var: ${!var}' pass
-[p]ass) make ${!var/nrrd/qc.nrrd}
-[f]ail) make ${!var/nrrd/qcfail.nrrd}
+Did '$qc_var: ${!qc_var}' pass
+[p]ass) 
+[f]ail) 
+[P]ass, write note) 
+[F]ail, write note) 
 [s]kip) 
 [q]uit) 
 ? "
         read -r -n 1 -p "$prompt" response
         case $response in
-            [pP]) echo; $SCRIPTDIR/qcaccept ${!var}; continue;;
-            [fF]) echo; $SCRIPTDIR/qcreject ${!var}; continue;;
+            [p]) echo; record_qc $qc_var "PASS"; continue;;
+            [f]) echo; record_qc $qc_var "FAIL"; continue;;
+            [P]) echo; read -r -p "Enter note: " note; record_qc $qc_var "PASS" "$note"; continue;;
+            [F]) echo; read -r -p "Enter note: " note; record_qc $qc_var "FAIL" "$note"; continue;;
             [sS]) continue;;
             [qQ]) echo; exit;;
         esac

@@ -1,0 +1,93 @@
+#!/bin/bash -e
+
+SCRIPT=$(readlink -m $(type -p $0))
+SCRIPTDIR=${SCRIPT%/*}      
+source $SCRIPTDIR/util.sh
+
+
+usage() {
+
+echo -e "\
+
+Usage:
+    qcquery [-v] [-f] [-p] [-u] [-o] <var>
+"
+}
+
+#selectcases=false
+printPassed=false
+printFailed=false
+printUptodate=false
+printOutofdate=false
+printNotqced=false
+while getopts "hvfpuo" flag; do
+    case "$flag" in
+        h) usage; exit 0;;
+        v) printNotqced=true;; 
+        f) printFailed=true;;
+        p) printPassed=true;;
+        u) printUptodate=true;;
+        o) printOutofdate=true;;
+    esac
+done
+shift $((OPTIND-1))
+
+qcvar="$1"
+[ -n "${qcvar-}" ] || { echo "Specify var to query."; usage; exit 1; }
+case=000 && source SetUpData.sh && [ -n "${!qcvar-}" ] || { echo "Set $qcvar in SetUpData.sh first."; exit 1; }
+
+uptodate() {
+    filepath=$1
+    md5sumRecorded=$2
+    md5sum "$filepath" | cut -d' ' -f1 | diff -q - <(echo $md5sumRecorded) >/dev/null
+}
+
+if $printNotqced; then
+    for case in $($SCRIPTDIR/cases); do
+        source SetUpData.sh
+        csv="${!qcvar}-qc.csv" 
+        [ -f "$csv" ] || echo "${!qcvar}"
+    done
+else # print all or subset of images that have been QC'ed
+    for case in $($SCRIPTDIR/cases); do
+        source SetUpData.sh
+
+        # If it hasn't been qc'ed yet, continue
+        csv="${!qcvar}-qc.csv" 
+        [ -f "$csv" ] || continue
+
+        # It has been qc'ed - read in qc values
+        hdr="caseid datetime passfail md5sum reference_var reference_md5sum note"
+        IFS=, read -r $hdr <<<"$(tail -n 1 "$csv")"
+
+        # Check we read the qc data correctly, i.e. all variables are set (except note)
+        for var in ${hdr% *}; do
+            [ -n "${var-}" ] || { echo "Something wrong with $csv, skipping case"; continue; }
+        done
+
+        # Check if the QC is up to date, i.e. the images haven't been modified since the QC
+        boolUptodate=false
+        if uptodate ${!qcvar} $md5sum && uptodate ${!reference_var} $reference_md5sum; then
+            boolUptodate=true
+        fi
+
+        if $printOutofdate && $boolUptodate; then
+            continue
+        fi
+
+        if $printUptodate && ! $boolUptodate; then
+            continue
+        fi
+
+        if $printPassed && [[ $passfail == "FAIL" ]]; then
+            continue
+        fi
+
+        if $printFailed && [[ $passfail == "PASS" ]]; then
+            continue
+        fi
+
+        echo "${!qcvar}"
+
+    done
+fi
