@@ -255,7 +255,7 @@ redo_ifchange_vars() {
 varvalues() {
     local values=""
     for var in "$@"; do
-        values="$values ${!var}"
+        values="$values ${!var-}"
     done
     echo $values
 }
@@ -362,6 +362,23 @@ stoplogging() {
     cp $_tmplog $1
     scrubcolors $1
 }
+printvarsOptional() {
+    for var in "$@"; do
+        if [ -n "${!var-}" ]; then
+            printf "* %s=%s (optional)\n" $var ${!var}
+        else 
+            printf "* %s= (optional)\n" $var
+        fi
+    done
+}
+
+getUnsetVars() {
+    local varsNotSet=""
+    for var in $1; do
+        [ -n "${!var-}" ] || varsNotSet="$varsNotSet $var"
+    done
+    echo ${varsNotSet# *}
+}
 
 # Requires 'inputvars' be set first
 setupdo() {
@@ -378,7 +395,8 @@ setupdo() {
     echo "* $1"
     echo "Dependencies:"
     printvars $inputvars
-    redo-ifchange $(varvalues $inputvars)
+    [ ! -n "${optvars-}" ] || printvarsOptional $optvars
+    redo-ifchange $(varvalues $inputvars $optvars)
     log "Make '$1'"
 }
 
