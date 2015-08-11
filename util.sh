@@ -396,7 +396,7 @@ setupdo() {
     echo "Dependencies:"
     printvars $inputvars
     [ ! -n "${optvars-}" ] || printvarsOptional $optvars
-    redo-ifchange $(varvalues $inputvars $optvars)
+    redo-ifchange $(varvalues $inputvars ${optvars-})
     log "Make '$1'"
 }
 
