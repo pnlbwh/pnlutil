@@ -12,9 +12,20 @@ HELP="Prints which filepaths are completed per case.
 [ $# -gt 0 ] || usage 1
 [[ $1 == "-h" || $1 == "--help" ]] && usage 0
 
+# check SetUpData.sh exists
 [ ! -f SetUpData.sh ] && { echo "Run in directory with 'SetUpData.sh'"; usage; exit 1; } 
-case=000 && setupvars status_vars
 
+# check vars in status_vars are valid
+case=000 && source SetUpData.sh
+[ -n "${status_vars-}" ] || { echo "Set status_vars in SetUpData.sh first."; exit 1; }
+for var in $status_vars; do
+    if [ ! -n "${!var-}" ]; then
+        echo "Set $var in 'SetUpData.sh' first."
+        exit 1
+    fi
+done
+
+# pretty print status of vars for each case
 for case in $@; do
     echo "Case '$case'"
     source SetUpData.sh
