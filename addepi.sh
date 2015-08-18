@@ -55,7 +55,7 @@ $made_scripts
 Now set the variables dwiepi_dwi, dwiepi_dwimask, and dwiepi_t2 in 
 SetUpData.sh and run
 
-    redo \`missing dwiepi\`  # or, missing dwiepi | redo
+    redo \`missing dwiepi\`  # or, missing dwiepi | xargs redo
 
 (Don't forget to define your caselist in SetUpData.sh as
 'cases="001 002 ..."',  or 'caselist=mycaselist.txt', for

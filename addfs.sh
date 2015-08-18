@@ -49,7 +49,7 @@ $made_scripts
 
 Now set the variables 'fs_t1' and 'fs_mask' in 'SetUpData.sh' and run
 
-    redo \`missing fs\`  # or 'missing fs | redo'
+    redo \`missing fs\`  # or 'missing fs | xargs redo'
 
 (Don't forget to define your caselist in 'SetUpData.sh' as
 'cases="001 002 ..."',  or 'caselist=mycaselist.txt', for

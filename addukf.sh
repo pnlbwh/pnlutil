@@ -48,7 +48,7 @@ $made_scripts
 
 Now set the variables 'ukf_dwi' and 'ukf_dwimask' in 'SetUpData.sh' and run
 
-    redo \`missing ukf\`  # or 'missing ukf | redo'
+    redo \`missing ukf\`  # or 'missing ukf | xargs redo'
 
 (Don't forget to define your caselist in 'SetUpData.sh' as
 'cases="001 002 ..."',  or 'caselist=mycaselist.txt', for

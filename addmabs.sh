@@ -48,7 +48,7 @@ echo -e "Made
 
 Now set 'atlas_target' in 'SetUpData.sh' and run 
 
-    redo \`missing t1atlasmask\`  # or 'missing t1atlasmask | redo'
+    redo \`missing t1atlasmask\`  # or 'missing t1atlasmask | xargs redo'
 
 (Don't forget to define your case list in 'SetUpData.sh' as
 'cases="001 002 ..."'  or 'caselist=mycaselist.txt' for
