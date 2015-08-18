@@ -2,7 +2,7 @@
 
 SCRIPT=$(readlink -m "$(type -p $0)")
 SCRIPTDIR=$(dirname "$SCRIPT")
-source "$SCRIPTDIR/../util.sh"
+source "$SCRIPTDIR/util.sh"
 
 usage() {
     echo -e "\
@@ -33,8 +33,8 @@ done
 [ ! -f "$outmask" ]  || { echo "'$outmask' exists, delete it first"; exit 1; }
 
 echo "Training data:"
+cat $trainingfile | cut -d, -f1 | xargs ls -l
 cat $trainingfile | cut -d, -f2 | xargs ls -l
-cat $trainingfile | cut -d, -f3 | xargs ls -l
 
 tmp=$(mktemp -d)
 echo "Saving registrations to '$tmp'"
