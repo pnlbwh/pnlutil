@@ -11,9 +11,7 @@ Masks <img> (including DWI's) with <mask>.
 
 Usage:
 
-    mask [-c] <img> <mask> <out>
-    
-    -c   Center <img> and <mask> first before masking
+    mask <img> <mask> <out>
 "
 }
 
@@ -22,7 +20,7 @@ isdwi() {
 }
 
 centerfirst=false
-[[ $# -gt 0 && $1 == "-c" ]] && { centerfirst=true; shift; }
+#[[ $# -gt 0 && $1 == "-c" ]] && { centerfirst=true; shift; }
 [[ $# -ne 3 || $1 == -h* || $1 == --h* ]] && { usage; exit 1; }
 read -r img mask out <<<"$@"
 
