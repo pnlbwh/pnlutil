@@ -7,7 +7,9 @@ source "$SCRIPTDIR/util.sh"
 SetUpData_vars="\
 # -----------------------------------------------------------------
 ## T1 mask generation
-t1mabs_target=\$case/\$case-t1.nrrd  # edit this, if you have \$t1 already defined, make this line 'atlas_target=\$t1'
+# Input
+t1mabs_target=\$t1  # make sure you define t1 above
+# Output
 t1mabs=\$case/strct/\$case.t1mabs.nrrd
 # -----------------------------------------------------------------
 "
