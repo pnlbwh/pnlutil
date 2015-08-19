@@ -5,10 +5,15 @@ SCRIPTDIR=$(dirname $SCRIPT)
 source "$SCRIPTDIR/util.sh"
 
 SetUpData_vars="\
-#FREESURFER_HOME=path/to/freesurfer 
+# -----------------------------------------------------------------
+## Freesurfer
+# Input
+FREESURFER_HOME=path/to/freesurfer 
 fs_t1=\$case/\$case-t1.nrrd 
-fs_mask=\$case/\$case-t1mask.nrrd
-fs=\$case/strct/\$case.freesurfer"
+fs_mask=\$case/\$case-t1mask.nrrd  # optional
+# Output
+fs=\$case/strct/\$case.freesurfer
+# -----------------------------------------------------------------"
 dofile="default.freesurfer.do"
 scripts="fs.sh util.sh"
 

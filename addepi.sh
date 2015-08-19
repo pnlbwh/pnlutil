@@ -5,7 +5,7 @@ SCRIPTDIR=$(dirname $SCRIPT)
 source "$SCRIPTDIR/util.sh"
 
 SetUpData_vars="\
-# ==========================================================================
+# --------------------------------------------------------------------------
 # EPI
 # Input
 export ANTSPATH_epi=/projects/schiz/software/deprecated/ANTs-1.9.y-Linux/bin/
@@ -14,7 +14,7 @@ dwiepi_dwimask=\$case/\$case-dwimask.nrrd
 dwiepi_t2=\$case/\$case-t2masked.nrrd # preferably masked
 # Output
 dwiepi=\$case/diff/\$case.dwi-epi.nrrd
-# ==========================================================================="
+# ---------------------------------------------------------------------------"
 dofile="default.dwi-epi.nrrd.do"
 scripts="epi.sh warp.sh antsApplyTransformsDWI.sh util.sh"
 

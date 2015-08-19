@@ -5,9 +5,14 @@ SCRIPTDIR=$(dirname $SCRIPT)
 source "$SCRIPTDIR/util.sh"
 
 SetUpData_vars="\
+# --------------------------------------------------------------------------
+## UKF
+# Input
 ukf_dwi=\$case/\$case-dwi.nrrd  # edit this, if you already defined dwi make it ukf_dwi=\$dwi
 ukf_dwimask=\$case/\$case-dwimask.nrrd # edit this, if you already defined dwimask make it ukf_dwimask=\$dwimask
-ukf=\$case/diff/\$case.ukf_2T.vtk.gz "
+# Output
+ukf=\$case/diff/\$case.ukf_2T.vtk.gz 
+# ---------------------------------------------------------------------------"
 dofile="default.ukf_2T.vtk.gz.do"
 scripts="util.sh"
 

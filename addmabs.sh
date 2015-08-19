@@ -5,10 +5,16 @@ SCRIPTDIR=$(dirname $SCRIPT)
 source "$SCRIPTDIR/util.sh"
 
 SetUpData_vars="\
+# --------------------------------------------------------------------------
+## MABS
+# Input
 atlas_target=\$case/\$case-t1.nrrd  # edit this, if you have \$t1 already defined, make this line 'atlas_target=\$t1'
 atlas_trainingstructs=trainingt1s.txt
 atlas_traininglabels=trainingmasks.txt
-t1atlasmask=\$case/strct/\$case.t1atlasmask.nrrd"
+# Output
+t1atlasmask=\$case/strct/\$case.t1atlasmask.nrrd
+# --------------------------------------------------------------------------
+"
 
 usage() {
     echo -e "\
