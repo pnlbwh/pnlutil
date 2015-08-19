@@ -1,1 +1,1 @@
-../scripts-util/activate_tensors.py
+../scripts-pipeline/activate_tensors.py
