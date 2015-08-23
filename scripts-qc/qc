@@ -19,10 +19,10 @@ commandline (see below).
 -q \"<var> ...\"           Vars to be loaded and QC'ed
 
 Examples:
-    ${0##*/} -r dwi fsindwi 
-    ${0##*/} -f caseslist_notchecked.txt t1raw t2raw dwiraw
-    ${0##*/} t1align t1alignmask dwi fsindwi  # operate on the caselist file defined by '\$caselist' in SetUpData.sh
-    ${0##*/} -l \"01009 01010\" -r t2 t2atlasmask
+    ${0##*/} -r dwi -q fsindwi 
+    ${0##*/} -f caseslist_notchecked.txt -q \"t1raw t2raw dwiraw\"
+    ${0##*/} -q \"t1align t1alignmask dwi fsindw\" # operate on the caselist file defined by '\$caselist' in SetUpData.sh
+    ${0##*/} -l \"01009 01010\" -r t2 -q t2atlasmask
 "
 
 parseargs() {
