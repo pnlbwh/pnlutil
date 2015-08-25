@@ -39,6 +39,8 @@ normalize() {
     echo "${normalized_weights[@]}" | sed 's/\./0./g' | tr ' ' '\n'
 }
 
+[ -z "${DEBUG-}" ] || set -x
+
 ## Parse args
 while getopts "ht:i:o:" OPTION; do
     case $OPTION in
@@ -73,23 +75,26 @@ echo "Saving registrations to '$outdir'"
 
 ## Compute transforms and MI for each training image, and save filenames and MI to a csv file
 csvTransforms="$outdir/transforms.csv" && rm -f $csvTransforms >/dev/null
-iTraining=0
+iTraining="1"
 while read imgTraining; do
     sPre=$outdir/${iTraining}_to_target
     xfmRigid=${sPre}0GenericAffine.mat
     xfmWarp=${sPre}1Warp.nii.gz
-    xfm=${sPre}transform.nii.gz
+    xfm=${sPre}Transform.nii.gz
     imgTrainingWarped=${sPre}Warped.nii.gz
-    run $ANTSPATH/antsRegistrationSyNQuick.sh -d 3 -f $imgTarget -m $imgTraining -o $sPre -n 8  # '-n 8' => 8 cores
+    #run $ANTSPATH/antsRegistrationSyNQuick.sh -d 3 -f $imgTarget -m $imgTraining -o $sPre -n 8  # '-n 8' => 8 cores
+    run $ANTSPATH/antsRegistrationSyN.sh -d 3 -f $imgTarget -m $imgTraining -o $sPre -n 8  # '-n 8' => 8 cores
     run "$ANTSPATH/ComposeMultiTransform 3 "$xfm" -R "$imgTarget" "$xfmWarp" "$xfmRigid" || true"  
     fMI=$(mi $imgTarget $imgTrainingWarped)
-    printf "$imgTraining,$xfm,$fMI\n" | tee -a $csvTransforms
+    log "Result for '$imgTraining'"
+    printf "imgTraining,imgTarget,xfm,fMI\n"
+    printf "$imgTraining,$imgTarget,$xfm,$fMI\n" | tee -a $csvTransforms
     (( iTraining++ ))
 done < $txtTrainingImages
 
-# Normalize the MI and add the result to the csv
+# Normalize the MI and add it as a column to the csv
 tmpfile=$(mktemp)
-normalize $(cat $csvTransforms | cut -d, -f3) | paste -d, $csvTransforms - > $tmpfile
+normalize $(cat $csvTransforms | cut -d, -f4) | paste -d, $csvTransforms - > $tmpfile
 mv $tmpfile $csvTransforms
 
 log_success "Made '$outdir'"
