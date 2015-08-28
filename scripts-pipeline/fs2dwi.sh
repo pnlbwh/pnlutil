@@ -13,6 +13,15 @@ Usage:
 where <dwi> and <dwimask> are nrrd/nhdr files
 "
 
+warp() {
+    local moving=$1
+    local fixed=$2
+    local prefix=$3
+    check_vars ANTSSRC ANTSPATH
+    run $ANTSSRC/Scripts/antsIntroduction.sh -d 3 -i $moving -r $fixed -o $prefix -s MI 
+    log_success "Made non-linear warp: '${prefix}Affine.txt', '${prefix}Warp.nii.gz'"
+}
+
 [ $# -ne 4 ] && usage 1
 
 export SUBJECTS_DIR=
@@ -42,7 +51,8 @@ log "Create masked baseline"
 bse=$(basename "$dwi")
 bse="${bse%%.*}-bse.nrrd"
 maskedbse=$(basename ${bse%%.*}-masked.nrrd)
-run "unu slice -a 3 -p 0 -i $dwi | unu 3op ifelse $dwimask - 0 | unu save -e gzip -f nrrd -o $maskedbse"
+$SCRIPTDIR/bse.sh -m $dwimask $dwi $maskedbse
+#run "unu slice -a 3 -p 0 -i $dwi | unu 3op ifelse $dwimask - 0 | unu save -e gzip -f nrrd -o $maskedbse"
 log_success "Made masked baseline: '$maskedbse'"
 
 log "Upsample masked baseline to 1x1x1: "
