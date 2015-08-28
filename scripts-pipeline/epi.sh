@@ -67,7 +67,7 @@ pre="$tmp/$(base $moving)_in_$(base $fixed)_warp"
 run $ANTSPATH/antsRegistrationSyN.sh -d 3 -f $fixed -m $moving -t r -o $tmp/rigid_init
 run "$ANTSPATH/antsRegistration -d 3 --initial-moving-transform $tmp/rigid_init0GenericAffine.mat \
     -m cc[$fixed,$moving,1,2] -t SyN[0.25,3,0] -c 50x50x10 -f 4x2x1 \
-    -s 2x1x0 --restrict-deformation 0.1x1x0.1 -v 1 -o $pre"
+    -s 2x1x0 --restrict-deformation 0x1x0 -v 1 -o $pre"
 run "$ANTSPATH/ComposeMultiTransform 3 "$epiwarp" -R "$fixed" "${pre}1Warp.nii.gz" $tmp/rigid_init0GenericAffine.mat || true"  
 log_success "3. Made 1d epi corrective warp: '$epiwarp'"
 
