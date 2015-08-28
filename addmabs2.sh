@@ -31,7 +31,7 @@ Then edit 't1mabs_target' in 'SetUpData.sh' to point to your T1's and
 run 
 
     missing t1mabs | xargs redo -k  # or, equivalently
-    redo -k \`missing t1atlasmask\`
+    redo -k \`missing t1mabs\`
 "
 }
 
