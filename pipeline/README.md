@@ -33,7 +33,7 @@ prerequisite software already installed.
 These should already be installed on standard linux/mac distributions. 
 
 * Bash
-* Python
+* Python 2.7 (you will need to install this if your system only comes with 2.6)
 
 ### Software Packages
 * redo (https://github.com/mildred/redo)
@@ -115,6 +115,9 @@ Here are the install instructions for each package.
     cmake ../skullstripping-ants -DITK_DIR=$NEP/ITKv4-build/ -DANTS_BUILD=$NEP/ -DANTS_SRC=$NEP/ANTs
     make
     ```
+
+    Some users have reported that the `UKFTractography` binary is not copied to `$NEP/bin`, in that case move
+    it by running `cp UKF-build/ukf/UKFTractography bin/`.
 
 6. tract-querier
 
