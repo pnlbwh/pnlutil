@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-source util.sh
+source scripts-pipeline/util.sh
 case=${2##*/}
 setupvars tractvols tractmeasures
 redo $tractvols $tractmeasures

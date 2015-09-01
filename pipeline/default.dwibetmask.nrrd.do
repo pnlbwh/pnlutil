@@ -1,7 +1,7 @@
 #!/bin/bash -eu
 
-source util.sh
+source scripts-pipeline/util.sh
 inputvars="dwibetmask_dwi"
 setupdo $@
-run dwibetmask "$dwibetmask_dwi" $3
+run scripts-pipeline/dwibetmask "$dwibetmask_dwi" $3
 log_success "Made '$1'"

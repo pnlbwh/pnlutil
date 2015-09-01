@@ -1,6 +1,6 @@
 #!/bin/bash -eu
 
-source util.sh
+source scripts-pipeline/util.sh
 inputvars="\
     atlas_target \
     atlas_trainingstructs \

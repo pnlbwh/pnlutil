@@ -1,6 +1,6 @@
 #!/bin/bash -eu
 
-source util.sh
+source scripts-pipeline/util.sh
 inputvars="\
     wmqltracts_tractography \
     wmqltracts_wmparc \
@@ -8,5 +8,5 @@ inputvars="\
     "
 setupdo $@
 
-run wmql.sh $(varvalues $inputvars) $3 $case
+run scripts-pipeline/wmql.sh $(varvalues $inputvars) $3 $case
 log_success "Made '$1'"

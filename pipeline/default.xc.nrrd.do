@@ -1,6 +1,6 @@
 #!/bin/bash -eu
 
-source util.sh
+source scripts-pipeline/util.sh
 
 input=${2}.nrrd
 log "Axis align and center '$input' to make '$1'"

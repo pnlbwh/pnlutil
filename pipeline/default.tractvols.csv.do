@@ -1,7 +1,7 @@
 #!/bin/bash -eu
 # Requires `tract_math` from tract_querier (wmql)
 
-source util.sh
+source scripts-pipeline/util.sh
 inputvars="\
     tractvols_tracts \
 "

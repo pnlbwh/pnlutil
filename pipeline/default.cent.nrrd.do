@@ -1,6 +1,6 @@
 #!/bin/bash -eu
 
-source util.sh
+source scripts-pipeline/util.sh
 pre=$2
 
 if [ -e "$pre.nhdr" ]; then

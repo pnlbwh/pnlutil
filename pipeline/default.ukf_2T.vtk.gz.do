@@ -1,6 +1,6 @@
 #!/bin/bash -eu
 
-source util.sh
+source scripts-pipeline/util.sh
 inputvars="ukf_dwi ukf_dwimask"
 setupdo $@
 
