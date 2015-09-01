@@ -102,6 +102,7 @@ Here are the install instructions for each package.
     mkdir NAMICExternalProjects-build && cd NAMICExternalProjects-build 
     cmake ../NAMICExternalProjects
     make
+    # Add 'NAMICExternalProjects-build/bin' to your path
     ```
 
 5. Skullstripping-ants
