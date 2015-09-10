@@ -21,4 +21,4 @@ verify $origmask e39852262e15a684b9174314e167acce
 SCRIPT=../../scripts-pipeline/epi.sh
 redo-ifchange $SCRIPT ../../scripts-pipeline/antsApplyTransformsDWI.sh 
 run $SCRIPT $dwiednrrd $dwiedmask $t2 $origmask dwiepi.nrrd
-verify dwiepi.nrrd 3141becf500f2e9ac211e1b50a3b62bd
+verify dwiepi.nrrd 6d8dea6c5014de216ee9451b40cf3340
