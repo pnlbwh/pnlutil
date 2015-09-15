@@ -1,0 +1,9 @@
+#!/bin/bash
+
+#BSUB -J pnlutil-atlasmask
+#BSUB -o %J.out
+#BSUB -e %J.err
+#BSUB -q big-multi
+#BSUB -n 4
+
+redo
