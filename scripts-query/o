@@ -1,0 +1,20 @@
+#!/bin/bash -e
+
+SCRIPT=$(readlink -m $(type -p "$0"))
+SCRIPTDIR=${SCRIPT%/*}      
+source $SCRIPTDIR/util.sh
+
+HELP="
+${0##*/}: Prints space directions for <var>
+
+$queryscript_helpmsg"
+
+queryscript_parseargs "$@"
+
+for img in $(all "$var" $cases); do
+    if [[ "${img##*.}" != "nrrd" && "${img##*.}" != "nhdr" ]]; then
+        echo "$img not a nrrd"
+    else
+        unu head $img | grep "origin"
+    fi
+done
