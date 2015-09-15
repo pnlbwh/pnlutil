@@ -52,8 +52,6 @@ $SCRIPTDIR/mabsReg.sh -t $txtTrainingImages -i $imgTarget -o "$dirTmp"
 $SCRIPTDIR/mabsApply.sh -t $txtTrainingMasks -i "$dirTmp" -o "$maskOut"
 
 ## Clean up
-rm -rf "$dirTmp"
-rm $txtTrainingImages
-rm $txtTrainingMasks
+test -n "${DEUBG-}" || rm -rf "$dirTmp" $txtTrainingImages $txtTrainingMasks
 
 log_success "Made '$maskOut'"

@@ -45,12 +45,12 @@ csvTmp=$(mktemp)
 paste -d, $csvTransforms $txtTrainingLabels > $csvTmp
 
 ## Warp and weight the labelmaps and add them together
-dirTmp=$(mktemp -d)
-echo "Saving temporary files to '$dirTmp'"
+#dirTmp=$(mktemp -d)
+#echo "Saving temporary files to '$dirTmp'"
 iTraining=1
 while IFS=, read imgTraining imgTarget xfm fMI fMInormalized lblTraining; do
     # apply warp
-    lblTrainingWarped=$dirTmp/$iTraining-lblTraining-warped.nrrd
+    lblTrainingWarped=$dirMabs/$iTraining-lblTraining-warped.nrrd
     run $ANTSPATH/antsApplyTransforms -d 3 -i "$lblTraining" -o "$lblTrainingWarped" -r "$imgTarget" -t "$xfm"
 
     # weight
@@ -70,6 +70,6 @@ done < $csvTmp
 run unu 2op gt $lblOut 0.5 | unu save -e gzip -f nrrd -o $lblOut
 
 ## Clean up
-rm -rf $dirTmp $csvTmp
+#rm -rf $csvTmp
 
 log_success "Made '$lblOut'"
