@@ -28,9 +28,9 @@ Usage:
     ${0##*/} <project_dir>
 
 After running this script, edit '<project_dir>/SetUpData.sh', then run the
-following to generate the epi corrected DWI's 
+following to generate the freesurfer subject directories.
 
-    missing dwiepi | xargs redo  # or, equivalently
+    missing fs | xargs redo  # or, equivalently
     redo \`missing dwiepi\`
 "
 }
