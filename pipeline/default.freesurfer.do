@@ -11,8 +11,6 @@ inputvars="fs_t1"
 optvars="fs_mask"
 setupdo $@
 
-log "Make '$1'"
-
 if [ -n "${fs_mask-}" ]; then
     #redo-ifchange $fs_mask
     run scripts-pipeline/fs.sh -f -i "$fs_t1" -m "$fs_mask" -o $3 
