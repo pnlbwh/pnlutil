@@ -4,6 +4,17 @@ SCRIPT=$(readlink -m $(type -p $0))
 SCRIPTDIR=${SCRIPT%/*}
 source "$SCRIPTDIR/util.sh"
 
+usage() {
+    echo -e "
+Coregisters t2 to t1 using flirt rigid registration.
+
+Usage: 
+
+    ${0##*/} t2 t1 out
+"
+}
+
+[ $# -eq 3 ] && [[ $1 != "-h" ]] || { usage; exit 1; }
 t2=$1
 t1=$2
 out=$3
