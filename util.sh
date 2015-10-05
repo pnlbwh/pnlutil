@@ -213,8 +213,7 @@ warp() {
     local fixed=$2
     local prefix=$3
     check_vars ANTSSRC ANTSPATH
-#    run $ANTSSRC/Scripts/antsIntroduction.sh -d 3 -i $moving -r $fixed -o $prefix -s MI 
-    run $ANTSPATH/antsIntroduction.sh -d 3 -i $moving -r $fixed -o $prefix -s MI
+    run $ANTSSRC/Scripts/antsIntroduction.sh -d 3 -i $moving -r $fixed -o $prefix -s MI 
     log_success "Made non-linear warp: '${prefix}Affine.txt', '${prefix}Warp.nii.gz'"
 }
 
