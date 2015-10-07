@@ -26,11 +26,13 @@ if '-h' in args or '--help' in args or len(args) == 1:
 input = args[1]
 output = args[2]
 
+dirOutput = os.path.splitext(output)[0] + '-xfms'
 wdir = tempfile.mkdtemp()
 
 #Save the file as gzip in temp directory
 os.system('unu save -f nrrd -e gzip -i '+input+' -o '+wdir+'/dwijoined.nhdr')
 
+sys.stderr.write('Changing to working directory: ' + wdir + '\n')
 os.chdir(wdir)
 
 # this is where the noise filtering goes in the script which does it as well
@@ -113,6 +115,9 @@ fd.close()
 
 os.chdir(rootdir)
 os.system('unu save -f nrrd -e gzip -i '+wdir+'/EddyCorrect-DWI.nhdr -o '+output)
+if not os.path.exists(dirOutput):
+    os.mkdir(dirOutput)
+os.system('cp '+wdir+'/*.txt '+dirOutput)
 
 sys.stderr.write('Clean up\n')
 #shutil.rmtree(wdir)
