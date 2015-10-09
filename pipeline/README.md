@@ -18,7 +18,7 @@ you specify the file paths of your T1's and DWI's in a config file and then run
       - <case>.tractmeasures.csv
       - <case>.tractvols.csv
    - strct/
-      - <case>.t1atlasmask.nrrd
+      - <case>.t1mabs.nrrd
       - <case>.freesurfer/
 ```
 
@@ -39,7 +39,6 @@ These should already be installed on standard linux/mac distributions.
 * redo (https://github.com/mildred/redo)
 * pnlutil (https://github.com/pnlbwh/pnlutil)
 * Freesurfer (http://surfer.nmr.mgh.harvard.edu/fswiki/DownloadAndInstall)
-* skullstripping (https://github.com/pnlbwh/skullstripping-ants)
 * tract-querier (https://github.com/demianw/tract_querier)
 * measureTracts.py (https://github.com/pnlbwh/measuretracts)
 * FSL bet (http://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FSL)
@@ -63,8 +62,6 @@ Afterwards, your filesystem tree should look something like this:
 ~/software
     - NAMICExternalProjects
     - NAMICExternalProjects-build
-    - skullstripping-ants
-    - skullstripping-ants-build
     - freesurfer5.3
     - measuretracts
     - pnlutil
@@ -105,19 +102,8 @@ Here are the install instructions for each package.
     # Add 'NAMICExternalProjects-build/bin' to your path
     ```
 
-5. Skullstripping-ants
-
-    Replace `$NEP` below with the path to your `NAMICExternalProjects-build`:
-
-    ```
-    git clone https://github.com/pnlbwh/skullstripping-ants
-    mkdir skullstripping-ants-build && cd skullstripping-ants-build
-    cmake ../skullstripping-ants -DITK_DIR=$NEP/ITKv4-build/ -DANTS_BUILD=$NEP/ -DANTS_SRC=$NEP/ANTs
-    make
-    ```
-
-    Some users have reported that the `UKFTractography` binary is not copied to `$NEP/bin`, in that case move
-    it by running `cp UKF-build/ukf/UKFTractography bin/`.
+Some users have reported that the `UKFTractography` binary is not copied to `$NEP/bin`, in that case move
+it by running `cp UKF-build/ukf/UKFTractography bin/`.
 
 6. tract-querier
 
@@ -174,9 +160,9 @@ Examples:
     redo  # Run whole pipeline for all cases
     redo 001.all  # Run whole pipeline for case '001'
     casestatus 001 # Print what files are generated so far for case '001'
-    missing t1atlasmask  # Print a list of the atlas masks not yet generated
-    redo `missing t1atlasmask`  # Generate all the missing atlas masks
-    completed t1atlasmask  # Print a list of the completed t1 atlas masks
+    missing t1mabs  # Print a list of the t1 masks not yet generated
+    redo `missing t1mabs`  # Generate all the missing masks
+    completed t1mabs  # Print a list of the completed t1 masks
     redo `missing fs | head -n 2`  # Run freesurfer for the first 2 cases not yet generated
     redo `missing dwied` # Generate eddy current corrected DWI's
     redo `missing dwibetmask`  # Generated DWI masks
@@ -191,7 +177,7 @@ generated automatically.  For example, running
 
 without any of the preceding commands will first generate `fsindwi` and `ukf`,
 which in turn will first generate `dwied`, `dwibetmask`, and `fs`, which in
-turn will first generate `t1atlasmask`.  So this runs the whole pipeline.  The
+turn will first generate `t1mabs`.  So this runs the whole pipeline.  The
 `-k` flag means keep going if a target fails to build.
 
 More Examples:
@@ -216,20 +202,13 @@ To show the status of a particular case:
 To visually inspect and QC the results:
 
     qc -h  # show you the options
-    qc -r dwied fsindwi  # Loads each case's DWI and freesurfer map into Slicer, one case at a time
-    qc -l "001 002" t1align fs  # Load t1 and freesurfer map for cases 001 and 002
-    qc -f caselist_notchecked_wmql dwied wmql  # Load DWI's and wmql tracts for cases in 'caselist_notchecked_wmql'
+    qc -r dwied -q fsindwi  # Loads each case's DWI and freesurfer map into Slicer, one case at a time
+    qc -l "001 002" -r t1align -q fs  # Load t1 as reference image and freesurfer segmentation as image to be QC'ed for cases 001 and 002
+    qc -f caselist_notchecked_wmql -r dwied -q wmql  # Load DWI's and wmql tracts for cases in 'caselist_notchecked_wmql'
 
 Finally, to generate a montage of image slices with a labelmap overlay:
 
-    qclabels t1align t1atlasmask t1atlasmask.png
+    qclabels t1align t1mabs t1mabs.png
     qclabels dwied fsindwi fsindwi.png
     # see 'qclabels -h' on how to adjust the slice axis and dimension size
     # Note: doesn't work so well on DWI's right now
-
-## Common Issues
-
-Right now for some datasets the mask generation step (the step that creates
-`<case>.t1atlasmask.nrrd` using the code from
-https://github.com/pnlbwh/skullstripping-ants) occassionally fails with a
-segmentation fault.  `skullstripping-ants` is being debugged to fix this issue.
