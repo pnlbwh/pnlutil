@@ -18,17 +18,16 @@ t1xc=$strct/$case.t1xc.nrrd
 
 
 # ==========================================================
-# MABS (atlas) mask
+# MABS mask
 # Inputs
-atlas_target=$t1xc
-atlas_trainingstructs=${base}/trainingt1s.txt
-atlas_traininglabels=${base}/trainingmasks.txt
+t1mabs_trainingcsv=${base}/trainingDataT1.csv
+t1mabs_target=$t1xc
 # Output
-t1atlasmask=$strct/$case.t1atlasmask.nrrd
-if [ -n "${ATLASMASK_EDIT:-}" ]; then 
-    t1atlasmask=$strct/$case.t1atlasmask.edited.nrrd
-    t1atlasmask_unedited=$strct/$case.t1atlasmask.nrrd
-    status_vars_extra="t1atlasmask_unedited"
+t1mabs=$strct/$case.t1mabs.nrrd
+if [ -n "${MABS_EDIT:-}" ]; then 
+    t1mabs=$strct/$case.t1mabs.edited.nrrd
+    t1mabs_unedited=$strct/$case.t1mabs.nrrd
+    status_vars_extra="t1mabs_unedited"
 fi
 # ==========================================================
 
@@ -36,7 +35,7 @@ fi
 # ==========================================================
 # Freesurfer
 # Inputs
-fs_mask=$t1atlasmask
+fs_mask=$t1mabs
 fs_t1=$t1xc
 # Output
 fs=$strct/$case.freesurfer
@@ -174,7 +173,7 @@ status_vars="\
     t1xc \
     dwiraw \
     dwixc \
-    t1atlasmask \
+    t1mabs \
     fs \
     $status_vars_extra \
     dwibetmask \

@@ -19,13 +19,13 @@ dir=$(readlink -f $1)
 
 tmpdir=$(mktemp -d)
 pipelinedir="$SCRIPTDIR/pipeline"
-datadir="$pipelinedir/trainingdata/"
-ls -1 $datadir/*edited.nrrd | sed "s|.*\/|$datadir|" > $tmpdir/trainingmasks.txt
-ls -1 $datadir/*realign.nrrd | sed "s|.*\/|$datadir|" > $tmpdir/trainingt1s.txt
-pushd $pipelinedir
-cp -LR $(ls . | grep -v trainingdata) $tmpdir
+datadir="$SCRIPTDIR/trainingDataT1/"
+$datadir/mktrainingfiles.sh $tmpdir
+rm $tmpdir/masks.txt $tmpdir/t1s.txt
+#pushd $pipelinedir
+#cp -LR $(ls . | grep -v trainingdata) $tmpdir
+cp -LR  $pipelinedir/*  $tmpdir
 sed -i "s,SCRIPTDIR,$(readlink -m "$1")\/scripts-pipeline," $tmpdir/SetUpData.sh
-popd
 
 [ -d "$dir" ] || mkdir "$dir"
 

@@ -1,5 +1,3 @@
 config.sh
 .redo
 test/out
-pipeline/trainingmasks.txt
-pipeline/trainingt1s.txt
