@@ -47,7 +47,7 @@ checkexists moving fixed
 
 startlogging 
 printvars $inputvars ANTSPATH METRIC DORIGID 
-#$LINEAR || { checkvars ANTSSRC; printvars ANTSSRC; }
+$LINEAR || { checkvars ANTSSRC; printvars ANTSSRC; }
 
 tmp=$(mktemp -d)
 run pushd $tmp
@@ -65,8 +65,8 @@ if $LINEAR; then
     #fi
 else
     $FAST && DOFAST="-m 1x1x1"
-    #run $ANTSSRC/antsIntroduction.sh -d 3 -i $moving -r $fixed -o $pre -s $METRIC $DOFAST
-    run $ANTSPATH/antsIntroduction.sh -d 3 -i $moving -r $fixed -o $pre -s $METRIC $DOFAST
+    run $ANTSSRC/Scripts/antsIntroduction.sh -d 3 -i $moving -r $fixed -o $pre -s $METRIC $DOFAST
+    #run $ANTSPATH/antsIntroduction.sh -d 3 -i $moving -r $fixed -o $pre -s $METRIC $DOFAST
     transforms="${pre}Warp.nii.gz ${pre}Affine.txt"
     transform="${pre}warp.nii.gz"
     run "$ANTSPATH/ComposeMultiTransform 3 "$transform" -R "$fixed" $transforms || true"  

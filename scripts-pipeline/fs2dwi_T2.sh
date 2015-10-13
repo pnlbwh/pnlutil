@@ -7,39 +7,103 @@
 # * mask
 # * $FREESURFER_HOME
 # * $ANTSPATH
-# * $ANTSSRC (todo: remove this)
+# * $ANTSSRC (needed by warp.sh)
 
 set -eu
 SCRIPT=$(readlink -m $(type -p $0))
-SCRIPTDIR=$(dirname $SCRIPT)
+SCRIPTDIR=${SCRIPT%/*}
 source "$SCRIPTDIR/util.sh"
+
+makeAbsolute() {
+    for var in "$@"; do
+        eval "$var=$(readlink -m "${!var}")"
+    done
+}
+
+assertPathsExist() {
+    for var in "$@"; do
+        [ -e "${!var}" ] || { log_error "The $var '${!var}' does not exist"; exit 1; }
+    done
+}
+
+assertVarsAreSet() {
+    for var in "$@"; do
+        [ -n "${!var-}" ] || { echo "Value for --$var missing"; usage; exit 1; }
+    done
+}
+
+prettyPrint() {
+    for var in "$@"; do
+        if [ -n "${!var-}" ]; then
+            printf "* %s=%s\n" $var ${!var}
+        else 
+            printf "* %s=\n" $var
+        fi
+    done
+}
 
 HELP="
 Usage: 
 
-   ${0##*/} <freesurfer_mri_folder> <dwi> <dwimask> <T2> <T2mask> <T1> <T1mask> <output_dir>
+   ${0##*/} --mri <freesurfer_mri_folder> --dwi <dwi> --dwimask <dwimask> --t2 <T2> [--t2mask <T2mask>] --t1 <T1> --t1mask <T1mask> -o <output_dir>
 
 where <dwi> and <dwimask> are nrrd/nhdr files
 "
 
-[ $# -ne 8 ] && usage 1
-
 export SUBJECTS_DIR=
-inputvars="mri dwi dwimask t2 t2mask t1 t1mask output_dir"
-read -r $inputvars <<<"$@"
-makeabs $inputvars
-envvars="FREESURFER_HOME ANTSPATH ANTSSRC"
-log "Inputs:"
-printvars $inputvars $envvars
 
-inputvars=${inputvars% *}  # remove output_dir
-checkexists $inputvars
-checkvars $envvars
+[ $# -gt 0 ] || { usage; exit 1; }
+
+while getopts "ho:-:" OPTION; do
+    case $OPTION in
+        h) usage; exit 1;;
+        o) output_dir=$OPTARG ;;
+        -) case "$OPTARG" in
+            mri) mri="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 )) ;;
+            dwi) dwi="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 )) ;;
+            dwimask) dwimask="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 )) ;;
+            t1) t1="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 )) ;;
+            t1mask) t1mask="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 )) ;;
+            t2) t2="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 )) ;;
+            t2mask) t2mask="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 )) ;;
+            *)
+                if [ "$OPTERR" = 1 ] && [ "${optspec:0:1}" != ":" ]; then
+                    echo "Unknown option --${OPTARG}" >&2
+                fi
+                ;;
+        esac;;
+        *)
+            if [ "$OPTERR" != 1 ] || [ "${optspec:0:1}" = ":" ]; then
+                echo "Non-option argument: '-${OPTARG}'" >&2
+            fi
+            ;;
+    esac
+done
+
+varsRequired="mri dwi dwimask t1 t1mask t2 output_dir"
+varsEnv="FREESURFER_HOME ANTSPATH ANTSSRC"
+
+assertVarsAreSet $varsRequired
+makeAbsolute $varsRequired 
+assertPathsExist ${varsRequired% *} $varsEnv
+if [ -n "${t2mask-}" ]; then
+    makeAbsolute t2mask
+    assertPathsExist t2mask
+fi
+
+log "Inputs:"
+prettyPrint $varsRequired t2mask $varsEnv
+
 startlogging
 
 log "Make and change to output directory"
 run "mkdir $output_dir" || { log_error "$output_dir already exists, delete it or choose another output folder name"; exit 1; }
 run pushd $output_dir >/dev/null
+
+if [ -z "${t2mask-}" ]; then
+    t2mask=t2mask.nrrd
+    $SCRIPTDIR/make_rigid_mask.sh $t1mask $t1 $t2 $t2mask
+fi
 
 log "Make brain.nii.gz and wmparc.nii.gz from their mgz versions"
 #$fsbin/mri_convert -rt nearest --in_type mgz --out_type nii --out_orientation LPI $mri/wmparc.mgz $mri/wmparc.nii.gz

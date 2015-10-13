@@ -362,6 +362,7 @@ stoplogging() {
     cp $_tmplog $1
     scrubcolors $1
 }
+
 printvarsOptional() {
     for var in "$@"; do
         if [ -n "${!var-}" ]; then

@@ -10,17 +10,19 @@ setupdo $@
 outputdir=$(mktemp -d)/$case.fsindwi_output
 
 if [ -n "${fsindwi_t2-}" ]; then  # use t2 in registration
-    inputvars_extra="\
-        fsindwi_t2 \
-        fsindwi_t2mask \
-        fsindwi_t1 \
-        fsindwi_t1mask"
-    for var in $inputvars_extra; do
-        [ -n "${!var-}" ] || { log_error "If using a t2, then also set '$var' in SetUpData.sh"; exit 1; }
+    inputvarsExtra="fsindwi_t1mask fsindwi_t1"
+    for var in $inputvarsExtra; do
+        [ -n "${!var-}" ] || { log_error "'${var}' needs to be set in SetUpData.sh"; exit 1; }
     done
-    redo-ifchange $(varvalues $inputvars_extra)
-    run scripts-pipeline/fs2dwi_T2.sh $fsindwi_fssubjectdir/mri $fsindwi_dwi $fsindwi_dwimask $fsindwi_t2 $fsindwi_t2mask $fsindwi_t1 $fsindwi_t1mask $outputdir
-    run "mv $outputdir/wmparc-in-bse.nrrd $3"  # TODO: not upsampled yet
+    redo-ifchange $t1mabs
+    run scripts-pipeline/fs2dwi_T2.sh --mri $fsindwi_fssubjectdir/mri \
+                                    --dwi $fsindwi_dwi \
+                                    --dwimask $fsindwi_dwimask \
+                                    --t2 $fsindwi_t2 \
+                                    --t1 $fsindwi_t1 \
+                                    --t1mask $t1mabs \
+                                    -o $outputdir
+    run "mv $outputdir/wmparc-in-bse.nrrd $3"
 else  # register t1 directly to dwi
     run scripts-pipeline/fs2dwi.sh $fsindwi_dwi $fsindwi_dwimask $fsindwi_fssubjectdir/mri $outputdir
     run "mv $outputdir/wmparc-in-bse-1mm.nrrd $3"

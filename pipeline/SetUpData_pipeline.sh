@@ -64,18 +64,6 @@ if [ -n "${DWIMASK_EDIT:-}" ]; then
 fi
 # ==========================================================
 
-
-#if [ -n "${DWIMASK_EDIT:-}" ]; then
-    #dwibetmask_edit=$diff/$case.dwibetmask.edited.nrrd  
-    #dwiepi_dwimask=$dwibetmask_edit
-    #ukf_dwimask=$dwibetmask_edit
-
-    #status_vars_extra="$status_vars_extra dwibetmask_edit"
-#else
-    #dwiepi_dwimask=$dwibetmask
-    #ukf_dwimask=$dwibetmask
-#fi
-
 if $EPICORRECTION; then
     status_vars_epi="t2 dwiepi dwiepimask"
     # ==========================================================
