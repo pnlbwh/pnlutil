@@ -11,6 +11,13 @@ echo -e "\
 
 Usage:
     qcquery [-v] [-f] [-p] [-u] [-o] <var>
+
+v) print if not QC'ed
+f) print failed
+p) print passed
+u) print up to date
+o) print out of date
+
 "
 }
 
