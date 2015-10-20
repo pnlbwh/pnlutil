@@ -66,7 +66,6 @@ if $LINEAR; then
 else
     $FAST && DOFAST="-m 1x1x1"
     run $ANTSSRC/Scripts/antsIntroduction.sh -d 3 -i $moving -r $fixed -o $pre -s $METRIC $DOFAST
-    #run $ANTSPATH/antsIntroduction.sh -d 3 -i $moving -r $fixed -o $pre -s $METRIC $DOFAST
     transforms="${pre}Warp.nii.gz ${pre}Affine.txt"
     transform="${pre}warp.nii.gz"
     run "$ANTSPATH/ComposeMultiTransform 3 "$transform" -R "$fixed" $transforms || true"  
