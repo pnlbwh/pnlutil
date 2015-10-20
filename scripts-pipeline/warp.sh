@@ -28,7 +28,7 @@ METRIC="MI"
 outtransform=""
 while getopts "hfrax:s:" flag; do
     case "$flag" in
-        h) usage 1;;
+        h) usage 1; exit 0;;
         f) FAST=true;;
         r) LINEAR=true; DORIGID="--do-rigid";;
         a) LINEAR=true;;
