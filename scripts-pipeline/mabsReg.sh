@@ -83,7 +83,7 @@ while read imgTraining; do
     xfm=${sPre}Transform.nii.gz
     imgTrainingWarped=${sPre}Warped.nii.gz
     #run $ANTSPATH/antsRegistrationSyNQuick.sh -d 3 -f $imgTarget -m $imgTraining -o $sPre -n 8  # '-n 8' => 8 cores
-    run $ANTSPATH/antsRegistrationSyN.sh -d 3 -f $imgTarget -m $imgTraining -o $sPre -n 8  # '-n 8' => 8 cores
+    run $ANTSSRC/Scripts/antsRegistrationSyN.sh -d 3 -f $imgTarget -m $imgTraining -o $sPre -n 8  # '-n 8' => 8 cores
     run "$ANTSPATH/ComposeMultiTransform 3 "$xfm" -R "$imgTarget" "$xfmWarp" "$xfmRigid" || true"  
     fMI=$(mi $imgTarget $imgTrainingWarped)
     log "Result for '$imgTraining'"
