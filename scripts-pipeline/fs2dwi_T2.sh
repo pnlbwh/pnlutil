@@ -145,7 +145,7 @@ run $SCRIPTDIR/warp.sh -x t1-to-t2-rigid.txt -r $maskedt1 $maskedt2 t1-in-t2.nrr
 
 log "Compute warp from T2 to DWI baseline"
 #warp $maskedt2 $maskedbse1mm "t2-to-bse-"
-run $SCRIPTDIR/warp.sh -x t2-to-bse-warp.nii.gz $maskedt2 $maskedbse1mm t2-in-bse.nrrd  # '-x': makes t2-to-bse-warp.nii.gz
+run $SCRIPTDIR/warp.sh -x t2-to-bse-warp.nii.gz -s CC $maskedt2 $maskedbse1mm t2-in-bse.nrrd  # '-x': makes t2-to-bse-warp.nii.gz
 #run mv t2-to-bse-deformed.nii.gz t2-in-bse.nii.gz 
 
 log "Apply transformations to wmparc.nii.gz to create wmparc-in-bse.nii.gz"
