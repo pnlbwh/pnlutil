@@ -67,7 +67,7 @@ for var in $vars; do
         continue
     fi
     tsvResult=".tables/$var.tsv"
-    header=caseid${delim}path${delim}origin${delim}spacedir${delim}space${delim}encoding
+    header=caseid${delim}${var}_path${delim}${var}_space${delim}${var}_spacedir${delim}${var}_origin${delim}${var}_encoding
     echo -e $header > $tsvResult
 
     for case in $($SCRIPTDIR/cases); do
@@ -87,7 +87,7 @@ for var in $vars; do
             encoding=$(getEncoding "$nhdr")
         fi
 
-        row=$case${delim}$path${delim}$origin${delim}$space${delim}$spacedir${delim}$encoding
+        row=$case${delim}$path${delim}$space${delim}$spacedir${delim}$origin${delim}$encoding
         echo -e "$row" >> "$tsvResult"
     done
     echo "Made '$tsvResult'" >&2
