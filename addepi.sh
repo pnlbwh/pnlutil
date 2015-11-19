@@ -8,10 +8,10 @@ SetUpData_vars="\
 # --------------------------------------------------------------------------
 # EPI
 # Input
-export ANTSPATH_epi=/projects/schiz/software/deprecated/ANTs-1.9.y-Linux/bin/
-dwiepi_dwi=\$case/\$case-dwi.nrrd 
-dwiepi_dwimask=\$case/\$case-dwimask.nrrd
-dwiepi_t2=\$case/\$case-t2masked.nrrd # preferably masked
+dwiepi_dwi=\$dwied
+dwiepi_dwimask=\$dwimask
+dwiepi_t2=\$t2raw
+dwiepi_t2mask=\$t2rawmask
 # Output
 dwiepi=\$case/diff/\$case.dwi-epi.nrrd
 # ---------------------------------------------------------------------------"

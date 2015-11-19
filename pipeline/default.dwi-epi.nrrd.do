@@ -5,6 +5,7 @@ inputvars="\
     dwiepi_dwi \
     dwiepi_dwimask \
     dwiepi_t2 \
+    dwiepi_t2mask \
     "
 setupdo $@
 scripts-pipeline/epi.sh $(varvalues $inputvars) $3
