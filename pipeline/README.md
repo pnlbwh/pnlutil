@@ -25,8 +25,7 @@ you specify the file paths of your T1's and DWI's in a config file and then run
 ## Software Requirements
 
 The intrust pipeline requires the following software be installed on your on
-your system.  In the future we plan to offer a virtual machine with the
-prerequisite software already installed.
+your system.
 
 ### System Software 
 
@@ -36,103 +35,33 @@ These should already be installed on standard linux/mac distributions.
 * Python 2.7 (you will need to install this if your system only comes with 2.6)
 
 ### Software Packages
+* Freesurfer (http://surfer.nmr.mgh.harvard.edu/fswiki/DownloadAndInstall)
+* FSL bet (http://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FSL)
 * redo (https://github.com/mildred/redo)
 * pnlutil (https://github.com/pnlbwh/pnlutil)
-* Freesurfer (http://surfer.nmr.mgh.harvard.edu/fswiki/DownloadAndInstall)
 * tract-querier (https://github.com/demianw/tract_querier)
 * measureTracts.py (https://github.com/pnlbwh/measuretracts)
-* FSL bet (http://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FSL)
 * ConvertBetweenFileFormats (https://github.com/BRAINSia/BRAINSTools)
 * TEEM unu (http://teem.sourceforge.net/unrrdu/)
 * ukftractography (https://github.com/pnlbwh/ukftractography)
 * ANTs (https://github.com/stnava/ANTs)
 
-The last five are provided by
-[NAMICExternalProjects](https://github.com/BRAINSia/NAMICExternalProjects.git),
-so starting from scratch means you'll need to install eight software packages.
 
-If you would like to use DWI EPI correction, you will also need version 1.9 of
-ANTs:
+### Installation
 
-* ANTs 1.9 (http://sourceforge.net/projects/advants/files/ANTS/ANTS_1_9_x/)
+To install FSL and Freesurfer, follow the instructions on their websites:
 
-Afterwards, your filesystem tree should look something like this:
+    http://surfer.nmr.mgh.harvard.edu/fswiki/DownloadAndInstall
+    http://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FSL
 
-```
-~/software
-    - NAMICExternalProjects
-    - NAMICExternalProjects-build
-    - freesurfer5.3
-    - measuretracts
-    - pnlutil
-    - tract_querier
-    - redo
-```
+For the rest of the software, automated installation scripts are provided 
+by pnlutil.
 
-Here are the install instructions for each package.
-
-1. Redo
-
-    ```
-    git clone https://github.com/mildred/redo
-    cd redo 
-    redo install
-    ```
-
-2. pnlutil
-
-    ```
     git clone https://github.com/pnlbwh/pnlutil
-    # Add 'pnlutil' directory to your PATH
-    ```
+    cd install-software  # or wherever you want to install the software
+    all.sh  # downloads and compiles software in the current directory
+    source addpaths.sh  # adds the software's binaries and scripts to your PATH
 
-3. Freesurfer
-
-    ```
-    # Follow the instructions at http://surfer.nmr.mgh.harvard.edu/fswiki/DownloadAndInstall
-    ```
-
-4. Python, ConvertBetweenFileFormats (BRAINSTools), ANTs, unu (teem), UKFTractography
-
-    ```
-    git clone https://github.com/BRAINSia/NAMICExternalProjects.git
-    mkdir NAMICExternalProjects-build && cd NAMICExternalProjects-build 
-    cmake ../NAMICExternalProjects
-    make
-    # Add 'NAMICExternalProjects-build/bin' to your path
-    ```
-
-Some users have reported that the `UKFTractography` binary is not copied to `$NEP/bin`, in that case move
-it by running `cp UKF-build/ukf/UKFTractography bin/`.
-
-6. tract-querier
-
-    ```
-    git clone https://github.com/demianw/tract_querier
-    cd tract_querier 
-    python setup.py install
-    ```
-
-7. measureTracts
-
-    ```
-    git clone https://github.com/pnlbwh/measuretracts
-    # Add 'measuretracts' directory to your PATH
-    ```
-
-8. FSL bet
-
-    ```
-    # Follow install instructions at
-    # http://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FSL
-    ```
-
-9. (If using epi correction) ANTs 1.9
-
-    ```
-    # Follow directions at
-    # http://sourceforge.net/projects/advants/files/ANTS/ANTS_1_9_x/
-    ```
 
 ## Setup
 
