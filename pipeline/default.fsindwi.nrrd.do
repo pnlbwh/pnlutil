@@ -16,7 +16,7 @@ if [ -n "${fsindwi_t2-}" ]; then  # use t2 in registration
     done
     echo "Dependencies (extra T2 dependencies):"
     printvars $inputvarsExtra
-    redo-ifchange $invputvarsExtra
+    redo-ifchange $(varvalues $inputvarsExtra)
     run scripts-pipeline/fs2dwi_T2.sh --mri $fsindwi_fssubjectdir/mri \
                                     --dwi $fsindwi_dwi \
                                     --dwimask $fsindwi_dwimask \
