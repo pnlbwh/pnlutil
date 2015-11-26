@@ -14,13 +14,15 @@ if [ -n "${fsindwi_t2-}" ]; then  # use t2 in registration
     for var in $inputvarsExtra; do
         [ -n "${!var-}" ] || { log_error "'${var}' needs to be set in SetUpData.sh"; exit 1; }
     done
-    redo-ifchange $t1mabs
+    echo "Dependencies (extra T2 dependencies):"
+    printvars $inputvarsExtra
+    redo-ifchange $invputvarsExtra
     run scripts-pipeline/fs2dwi_T2.sh --mri $fsindwi_fssubjectdir/mri \
                                     --dwi $fsindwi_dwi \
                                     --dwimask $fsindwi_dwimask \
                                     --t2 $fsindwi_t2 \
                                     --t1 $fsindwi_t1 \
-                                    --t1mask $t1mabs \
+                                    --t1mask $fsindwi_t1mask \
                                     -o $outputdir
     run "mv $outputdir/wmparc-in-bse.nrrd $3"
 else  # register t1 directly to dwi

@@ -99,7 +99,7 @@ if $EPICORRECTION; then
     fsindwi_dwi=$dwiepi
     fsindwi_dwimask=$dwiepimask
     # ==========================================================
-else
+else # no epi correction
     # ==========================================================
     # UKF
     # Inputs
@@ -122,6 +122,11 @@ fi
 # Freesurfer to DWI registration
 # Inputs
 fsindwi_fssubjectdir=$fs
+if [ -n "${t2-}" ]; then
+    fsindwi_t1=$t1xc
+    fsindwi_t1mask=$t1mabs
+    fsindwi_t2=$t2
+fi
 # Output
 fsindwi=$diff/$case.fsindwi.nrrd
 # ==========================================================
