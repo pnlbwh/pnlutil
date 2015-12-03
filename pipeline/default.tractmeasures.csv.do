@@ -1,6 +1,7 @@
 #!/bin/bash -eu
 
-source scripts-pipeline/util.sh
+dirScripts="scripts-pipeline/tractmeasures"
+source "$dirScripts"/util.sh
 inputvars="\
     tractmeasures_tracts \
     "

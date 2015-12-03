@@ -1,6 +1,7 @@
 #!/bin/bash -eu
 
-source scripts-pipeline/util.sh
+dirScripts="scripts-pipeline/dwiepi/"
+source "$dirScripts"/util.sh
 inputvars="\
     dwiepi_dwi \
     dwiepi_dwimask \
@@ -8,5 +9,5 @@ inputvars="\
     dwiepi_t2mask \
     "
 setupdo $@
-scripts-pipeline/epi.sh $(varvalues $inputvars) $3
+"$dirScripts"/epi.sh $(varvalues $inputvars) $3
 log_success "Made '$1'"

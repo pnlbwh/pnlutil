@@ -25,7 +25,7 @@ rm $tmpdir/masks.txt $tmpdir/t1s.txt
 #pushd $pipelinedir
 #cp -LR $(ls . | grep -v trainingdata) $tmpdir
 cp -LR  $pipelinedir/*  $tmpdir
-sed -i "s,SCRIPTDIR,$(readlink -m "$1")\/scripts-pipeline," $tmpdir/SetUpData.sh
+#sed -i "s,SCRIPTDIR,$(readlink -m "$1")\/scripts-pipeline," $tmpdir/SetUpData.sh
 
 [ -d "$dir" ] || mkdir "$dir"
 

@@ -1,8 +1,9 @@
 #!/bin/bash -eu
 
-source scripts-pipeline/util.sh
+dirScripts="scripts-pipeline/fsstatsall"
+source "$dirScripts"/util.sh
 
-cp scripts-pipeline/fsstats_header.csv $3
+cp "$dirScripts"/fsstats_header.csv $3
 for case in $(cases); do
     source SetUpData.sh
     [ -f "$fsstats" ] || { echo "'$fsstats' doesn't exist, skippping"; continue; }

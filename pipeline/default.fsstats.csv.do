@@ -1,10 +1,11 @@
 #!/bin/bash -eu
 
-source scripts-pipeline/util.sh
+dirScripts="scripts-pipeline/fsstats"
+source "$dirScripts"/util.sh
 inputvars="\
     fsstats_fs\
 "
 setupdo $@
 
-./scripts-pipeline/fsstats.sh $case $fs > $3
+"$dirScripts"/fsstats.sh $case $fs > $3
 log_success "Made '$1'"
