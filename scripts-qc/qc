@@ -63,10 +63,9 @@ printvars() {
     done
 }
 setslicer() {
+    slicer=Slicer
     if [ -e "$SCRIPTDIR/config.sh" ]; then
-        source $SCRIPTDIR/config.sh
-    else
-        slicer=Slicer
+        source $SCRIPTDIR/config.sh  # can set slicer here
     fi
     sliceropts="--disable-cli-modules --disable-scripted-loadable-modules" 
     slicer="$slicer $sliceropts"
