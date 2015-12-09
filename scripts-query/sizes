@@ -1,0 +1,28 @@
+#!/bin/bash
+
+SCRIPT=$(readlink -m $(type -p "$0"))
+SCRIPTDIR=${SCRIPT%/*}      
+source $SCRIPTDIR/util.sh
+
+HELP="
+${0##*/}: Prints sizes for <var>
+
+$queryscript_helpmsg"
+
+queryscript_parseargs "$@"
+
+for img in $(all "$var" $cases); do
+    if [ ! -f $img ]; then
+        echo "doesn't exist"
+        continue
+    elif [[ "${img##*.}" != "nrrd" && "${img##*.}" != "nhdr" ]]; then
+        echo "$img not a nrrd"
+        continue
+    fi
+    header=$(unu head $img 2>/dev/null)
+    if test -z "$header"; then
+        echo "Bad nrrd"
+    else
+        echo "$header" | grep "sizes"
+    fi
+done

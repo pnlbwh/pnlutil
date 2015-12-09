@@ -1,1 +1,1 @@
-../scripts-pipeline/freesurfer-stats/fsstats.sh
+../scripts-pipeline/fsstats.sh

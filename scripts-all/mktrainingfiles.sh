@@ -1,1 +1,1 @@
-../pipeline/trainingdata/mktrainingfiles.sh
+../trainingDataT1/mktrainingfiles.sh
