@@ -13,6 +13,7 @@ are modular, you can run them individually or as a complete pipeline.
 3. [Redo Overview](#redo-overview)
 4. [PNL Pipeline Implementation](#pnl-pipeline-implementation)
 5. [Repo Organization](#repo-organization)
+6. [Issues](#issues)
 
 
 # Quick Walkthrough
@@ -25,6 +26,13 @@ are modular, you can run them individually or as a complete pipeline.
     # edit SetUpData_config.sh and make file called 'caselist' with your case id's, one per line 
     redo  # begins pipeline by running the default do script 'all.do'
 
+If you only want part of the pipeline:
+
+    cd your/project/
+    addukf.sh .  # or addfs.sh, addmabs.sh, addepi.sh, addfsindwi.sh
+    # edit SetUpData.sh to set your input variables for 'ukf'
+    missing ukf | xargs redo -k
+
 ## Query progress
 
 The query scripts in `scripts-query` query the file paths of the variables
@@ -32,7 +40,7 @@ defined in your data schema, `SetUpData.sh`.  At the PNL we use a set of standar
 variable names and file paths for the pipeline's output, as defined in
 `SetUpData_pipeline.sh`:
 
-    t1atlasmask=$case/strct/$case.t1atlasmask.nrrd  # generated t1 mask
+    t1mabs=$case/strct/$case.t1mabs.nrrd  # generated t1 MABS mask
     fs=$case/strct/$case.freesurfer # freesurfer subject directory
     dwied=$case/diff/$case.dwi-Ed.nrrd  # eddy current corrected DWI
     ukf=$case/diff/$case.ukf_2T.vtk.gz  # whole brain tractography
@@ -45,10 +53,10 @@ The data is queried thus:
 
     vars  # convenient way of listing variables in the data schema SetUpData.sh
     completed dwied # lists eddy current corrected DWI's generated so far
-    missing t1atlasmask  # lists missing t1 masks
+    missing t1mabs  # lists missing t1 masks
     all ukf # lists paths of all tractography files that are to be generated; this will be same size as your case list file
     casestatus 01009  # shows what files are and are not generated for case 01009
-    logstatus  # shows progress of each variable in 'status_vars' (and saves the result to .statuslog.csv)
+    logstatus  # shows progress of each variable in 'status_vars' (and saves the result to statuslog.csv)
 
 `logstatus` is one you'll use frequently to track the pipeline's progress.
 
@@ -211,3 +219,14 @@ and execute the pipeline.
 
 Contains symlinks to all other scripts so that you can access them by simply
 referencing this folder (for example by putting it on your PATH).
+
+# Issues
+
+## Running `redo` hangs
+This will happen when a redo process is interrupted unexpectedly and leaves behind
+a lock file.  To fix this, first make sure no-one else is running redo in your project,
+then run
+
+    find . -name "*.lock" -exec rm {} \;
+
+This will clean up the stale lock files which lets redo know it can run again.
