@@ -1,0 +1,1 @@
+../addwmql.sh
