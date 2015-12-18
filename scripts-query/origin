@@ -1,28 +1,11 @@
-#!/bin/bash
+#!/bin/bash -eu
 
 SCRIPT=$(readlink -m $(type -p "$0"))
 SCRIPTDIR=${SCRIPT%/*}      
-source $SCRIPTDIR/util.sh
 
-HELP="
-${0##*/}: Prints origins for <var>
+descrip="space origins"
+filtfunc() {
+    printf "$1" | grep "origin" | sed 's/space origin: //'
+}
 
-$queryscript_helpmsg"
-
-queryscript_parseargs "$@"
-
-for img in $(all "$var" $cases); do
-    if [ ! -f $img ]; then
-        echo "doesn't exist"
-        continue
-    elif [[ "${img##*.}" != "nrrd" && "${img##*.}" != "nhdr" ]]; then
-        echo "$img not a nrrd"
-        continue
-    fi
-    header=$(unu head $img 2>/dev/null)
-    if test -z "$header"; then
-        echo "Bad nrrd"
-    else
-        echo "$header" | grep "origin" | sed 's/space origin: //'
-    fi
-done
+source "$SCRIPTDIR"/nrrdinfo.sh

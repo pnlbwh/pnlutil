@@ -2,19 +2,10 @@
 
 SCRIPT=$(readlink -m $(type -p "$0"))
 SCRIPTDIR=${SCRIPT%/*}      
-source $SCRIPTDIR/util.sh
 
-HELP="
-${0##*/}: Prints space directions for <var>
+descrip="space directions"
+filtfunc() {
+    printf "$1" | grep "space direction" | sed 's/space directions: //'
+}
 
-$queryscript_helpmsg"
-
-queryscript_parseargs "$@"
-
-for img in $(all "$var" $cases); do
-    if [[ "${img##*.}" != "nrrd" && "${img##*.}" != "nhdr" ]]; then
-        echo "$img not a nrrd"
-    else
-        unu head $img | grep "space direction"
-    fi
-done
+source "$SCRIPTDIR"/nrrdinfo.sh
