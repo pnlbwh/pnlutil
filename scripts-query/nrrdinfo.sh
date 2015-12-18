@@ -45,7 +45,11 @@ nrrdInfo() {
     fi
 }
 
-join() { local IFS="$1"; shift; echo "$*"; }
+join() { 
+    local IFS="$1"; shift; echo "$*"; 
+    #delim=$1; shift;
+    #printf "%s%s\n" "$delim" "$*"
+}
 
 delim=","
 # Parse args
@@ -73,7 +77,7 @@ for case in $cases; do
     source SetUpData.sh
     info=()
     for var in $vars; do
-        info+=($(nrrdInfo "${!var}"))
+        info+=("$(nrrdInfo "${!var}")")
     done
     join "$delim" "${info[@]}"
 done
