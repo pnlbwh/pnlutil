@@ -65,6 +65,7 @@ shift $((OPTIND-1))
 
 # Get positional arguments (vars) and make sure they are set in SetUpData.sh
 vars=$@
+[ -f SetUpData.sh ] || { echo "Run in directory with SetUpData.sh."; usage; exit 1; }
 case=000 && source SetUpData.sh
 for var in $vars; do
     [ -n "${!var-}" ] || { usage; exit 1; }
