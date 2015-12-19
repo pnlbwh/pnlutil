@@ -5,10 +5,10 @@ source $SCRIPTDIR/util.sh
 HELP="\
 Prints $descrip for SetUpData.sh variables.
 Usage:
-    ${0##*/} [-d delimiter] [-c \"case1 case2 ..\"] [-f mycaselist.txt] <var1> <var2> ... <varN>
+    ${0##*/} [-c] [-d delimiter] [-l \"case1 case2 ..\"] [-f mycaselist.txt] <var1> <var2> ... <varN>
 E.g.
     ${0##*/} dwied fsindwi
-    ${0##*/} -d\" \" -c case001 dwied dwimask fsindwi
+    ${0##*/} -c -d\" \" -l case001 dwied dwimask fsindwi
 "
 usage() { echo -e "$HELP"; exit 1; }
 
@@ -52,12 +52,14 @@ join() {
 }
 
 delim=","
+printcaseids=false
 # Parse args
-while getopts "hd:c:f:" flag; do
+while getopts "hd:cl:f:" flag; do
 case "$flag" in
     h) usage;;
     d) delim=$OPTARG;; 
-    c) argcases=$OPTARG;;
+    l) argcases=$OPTARG;;
+    c) printcaseids=true;;
     f) argcaselist=$OPTARG;;
 esac
 done
@@ -77,6 +79,9 @@ setcases
 for case in $cases; do
     source SetUpData.sh
     info=()
+    if $printcaseids; then
+        info+="$case"
+    fi
     for var in $vars; do
         info+=("$(nrrdInfo "${!var}")")
     done

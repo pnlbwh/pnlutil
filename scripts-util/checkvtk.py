@@ -4,21 +4,26 @@
 #  ConvertBetweenFileformats
 #  tract_querier, numpy, nibabel
 
+import optparse
 from optparse import OptionParser
 
 def run(cmd):
     print cmd
     os.system(cmd)
 
+example="""Example use:
+case=006_ACT_002 && source SetUpData.sh
+bse $dwied /tmp/bse.nrrd
+checkvtk.py -m $dwimask -t $ukf -r $dwied
+"""
+
 if __name__ == "__main__":
+    print example
     parser = OptionParser(
             description='''\
 Checks the overlap between a vtk and a mask (or labelmap), by printing the \
 number of vtk points that pass through each label, usually 0 and 1.''',
-        usage=" %prog -m mask -t vtk",
-        epilog="""E.g.
-case=006_ACT_002 && source SetUpData.sh &&
-checkvtk.py -m $dwimask -t $ukf -r $dwied""")
+        usage=" %prog -m mask -t vtk")
 
     parser.add_option("-t", dest="vtk", help="whole brain tractography vtk")
     parser.add_option("-m", dest="mask", help="mask (nrrd or nifti)")
@@ -35,11 +40,11 @@ checkvtk.py -m $dwimask -t $ukf -r $dwied""")
         cleanup = True
         dirTmp=tempfile.mkdtemp()
         maskNii = dirTmp + "/mask.nii.gz"
-        run("ConvertBetweenFileFormats %s %s &>/dev/null" % (options.mask, maskNii))
+        run("ConvertBetweenFileFormats %s %s >/dev/null" % (options.mask, maskNii))
         if options.ref and options.ref.endswith('.nrrd') or options.ref.endswith('.nhdr'):
             cleanup = True
             refNii = dirTmp + "/ref.nii.gz"
-            run("ConvertBetweenFileFormats %s %s &>/dev/null" % (options.ref, refNii))
+            run("ConvertBetweenFileFormats %s %s >/dev/null" % (options.ref, refNii))
         else:
             refNii = options.ref
     else:
@@ -72,7 +77,7 @@ checkvtk.py -m $dwimask -t $ukf -r $dwied""")
     # Check that vtk points are inside volume
     if ( any(((pointsijk[:, i] >= mask_data.shape[i]).any() for i in xrange(3))) or
      (pointsijk < 0).any()):
-        print "Tract points fall outside the image"
+        print "FAIL: Tract points fall outside the image"
         sys.exit(1)
 
     # Check that
