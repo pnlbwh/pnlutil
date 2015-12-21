@@ -41,7 +41,7 @@ number of vtk points that pass through each label, usually 0 and 1.''',
         dirTmp=tempfile.mkdtemp()
         maskNii = dirTmp + "/mask.nii.gz"
         run("ConvertBetweenFileFormats %s %s >/dev/null" % (options.mask, maskNii))
-        if options.ref and options.ref.endswith('.nrrd') or options.ref.endswith('.nhdr'):
+        if options.ref is not None and (options.ref.endswith('.nrrd') or options.ref.endswith('.nhdr')):
             cleanup = True
             refNii = dirTmp + "/ref.nii.gz"
             run("ConvertBetweenFileFormats %s %s >/dev/null" % (options.ref, refNii))
