@@ -78,6 +78,9 @@ number of vtk points that pass through each label, usually 0 and 1.''',
     if ( any(((pointsijk[:, i] >= mask_data.shape[i]).any() for i in xrange(3))) or
      (pointsijk < 0).any()):
         print "FAIL: Tract points fall outside the image"
+        print("# points < 0: %d" % np.count_nonzero(mask_data))
+        for i in range(3):
+            print("# points >= %d: %d" % (mask_data.shape[i],np.count_nonzero( pointsijk[:,i] >= mask_data.shape[i])))
 
     # Check that
     labels = mask_data[tuple(pointsijk.T)]
