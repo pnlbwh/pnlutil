@@ -1,5 +1,5 @@
 #!/bin/bash -eu
 
-read -r firstcsv _ <<<$(ls "$@")
-head -n 1 "$firstcsv"
-cat "$@" | grep -iv case
+read csvFirst csvRest <<< $@
+sed -n 1p "$csvFirst"
+for i in $@; do sed '1d' $i; done
