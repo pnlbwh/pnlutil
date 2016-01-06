@@ -5,7 +5,7 @@ SCRIPTDIR=$(dirname $SCRIPT)
 
 SetUpData_vars="\
 # -----------------------------------------------------------------
-## Freesurfer
+## Freesurfer to DWI registration
 # Input
 fsindwi_dwi=\$dwied
 fsindwi_dwimask=\$dwimask

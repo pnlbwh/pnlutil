@@ -14,6 +14,6 @@ fs_mask=\$case/\$case-t1mask.nrrd  # optional
 fs=\$case/strct/\$case.freesurfer
 # -----------------------------------------------------------------"
 doscript="default.freesurfer.do"
-scripts=fs
+var=fs
 
 source $SCRIPTDIR/add.sh

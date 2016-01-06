@@ -10,7 +10,7 @@ SetUpData_vars="\
 t2mabs_target=\$t2  # make sure you define t1 above
 t2mabs_trainingcsv=trainingDataT2Masks.csv
 # Output
-t1mabs=\$case/strct/\$case.t2mabs.nrrd
+t2mabs=\$case/strct/\$case.t2mabs.nrrd
 # -----------------------------------------------------------------
 "
 doscript="default.t2mabs.nrrd.do"
