@@ -1,1 +1,1 @@
-rm -rf fsindwi
+rm -r fsindwi0 fsindwi1
