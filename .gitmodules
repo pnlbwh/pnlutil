@@ -1,3 +1,6 @@
 [submodule "pipeline-trainingdata"]
 	path = trainingDataT1
 	url = https://github.com/pnlbwh/pipeline-trainingdata
+[submodule "trainingDataT2Masks"]
+	path = trainingDataT2Masks
+	url = https://github.com/pnlbwh/trainingDataT2Masks.git
