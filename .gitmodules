@@ -4,3 +4,6 @@
 [submodule "trainingDataT2Masks"]
 	path = trainingDataT2Masks
 	url = https://github.com/pnlbwh/trainingDataT2Masks.git
+[submodule "trainingDataT1AHCC"]
+	path = trainingDataT1AHCC
+	url = https://github.com/pnlbwh/trainingDataT1AHCC.git

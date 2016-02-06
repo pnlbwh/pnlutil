@@ -14,31 +14,6 @@ mi() {
     $ANTSPATH/MeasureImageSimilarity 3 2 $1 $2 | head -n 1 | cut -d' ' -f6 || true
 }
 
-normalize() {
-    mis=$@
-    max=$(echo "$mis" | sort -nr | head -n1)
-    min=$(echo "$mis" | sort -n | head -n1)
-    range=$(echo "$max - $min" | bc)
-    #factor=$(echo "-l(0.2)/$range" | bc -l)
-    factor=$(echo "40/$range" | bc -l)
-
-    weights=()
-    for mi in $mis; do
-        weights+=($(echo "e($factor*($min - $mi))" | bc -l))
-    done
-    # Compute normalize weights
-    sum=0
-    for weight in "${weights[@]}"; do
-        sum=$(echo "$sum + $weight" | bc)
-    done
-    normalized_weights=()
-    for weight in "${weights[@]}"; do
-        normalized_weights+=($(echo "$weight/$sum" | bc -l))
-    done
-
-    echo "${normalized_weights[@]}" | sed 's/\./0./g' | tr ' ' '\n'
-}
-
 [ -z "${DEBUG-}" ] || set -x
 
 ## Parse args
@@ -59,7 +34,10 @@ for arg in txtTrainingImages imgTarget; do
 done
 
 ## Check ANTSPATH is set
-[ -n "${ANTSPATH-}" ] || { echo "Set ANTSPATH environment variable first"; exit 1; }
+[ -n "${ANTSPATH-}" ] || { echo "Set ANTSPATH environment variable first (the directory that has the ANTS binaries)"; exit 1; }
+[ -n "${ANTSSRC-}" ] || { echo "Set ANTSSRC environment variable first (the ANTS folder that has subdirectory 'Scripts/')"; exit 1; }
+
+startlogging
 
 ## Print input
 echo "Target:"
@@ -67,34 +45,42 @@ echo "* $imgTarget"
 echo "Training data:"
 cat $txtTrainingImages | xargs ls -1
 echo "Output directory:"
-echo "* $outdir"
+echo "* $outdir/transforms.csv"
+echo "* $outdir/?_to_targetTransform.nii.gz"
+echo "* $outdir/?_to_targetWarped.nii.gz"
 
-## Make output directory if it doesn't exist
-mkdir -p "$outdir" || true
-echo "Saving registrations to '$outdir'"
+log "Make output directory and copy labelmap making scripts"
+run mkdir -p "$outdir" || true
+run cp -r "$SCRIPTDIR/mabsTransforms-template/*" "$outdir"
 
-## Compute transforms and MI for each training image, and save filenames and MI to a csv file
+log "Compute transforms for each training image"
 csvTransforms="$outdir/transforms.csv" && rm -f $csvTransforms >/dev/null
 iTraining="1"
+header="imgTraining,imgTarget,xfm,imgTrainingWarped,MI"
+echo $header > $csvTransforms
 while read imgTraining; do
     sPre=$outdir/${iTraining}_to_target
     xfmRigid=${sPre}0GenericAffine.mat
     xfmWarp=${sPre}1Warp.nii.gz
     xfm=${sPre}Transform.nii.gz
     imgTrainingWarped=${sPre}Warped.nii.gz
+
+    log "Compute warp from training image $iTraining to target image '$imgTarget'" 
     #run $ANTSPATH/antsRegistrationSyNQuick.sh -d 3 -f $imgTarget -m $imgTraining -o $sPre -n 8  # '-n 8' => 8 cores
     run $ANTSSRC/Scripts/antsRegistrationSyN.sh -d 3 -f $imgTarget -m $imgTraining -o $sPre -n 8  # '-n 8' => 8 cores
     run "$ANTSPATH/ComposeMultiTransform 3 "$xfm" -R "$imgTarget" "$xfmWarp" "$xfmRigid" || true"  
-    fMI=$(mi $imgTarget $imgTrainingWarped)
-    log "Result for '$imgTraining'"
-    printf "imgTraining,imgTarget,xfm,fMI\n"
-    printf "$imgTraining,$imgTarget,$xfm,$fMI\n" | tee -a $csvTransforms
+
+    log "Compute mutual information between warped training image and target image"
+    MI=$(mi "$imgTarget" "$imgTrainingWarped")
+
+    log "Save the input and output paths to '$csvTransforms'"
+    echo $header
+    printf "$imgTraining,$imgTarget,$xfm,$imgTrainingWarped,$MI\n" | tee -a $csvTransforms
+
     (( iTraining++ ))
 done < $txtTrainingImages
+log_success "Computed registrations"
 
-# Normalize the MI and add it as a column to the csv
-tmpfile=$(mktemp)
-normalize $(cat $csvTransforms | cut -d, -f4) | paste -d, $csvTransforms - > $tmpfile
-mv $tmpfile $csvTransforms
+stoplogging "$outdir/log"
 
 log_success "Made '$outdir'"
