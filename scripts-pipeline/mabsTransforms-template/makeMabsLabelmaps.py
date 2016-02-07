@@ -44,6 +44,7 @@ def linecount(filepath):
 
 def warp(moving, xfm, fixed, out):
     run("$ANTSPATH/antsApplyTransforms -d 3 -i %s -o %s -r %s -t %s" % (moving, out, fixed, xfm))
+    run("unu save -e gzip -f nrrd -i %s -o %s" % (out, out))
 
 def warpLabelmaps(txt, dirOut):
     with open(CSV) as f:
