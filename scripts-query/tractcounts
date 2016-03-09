@@ -1,0 +1,47 @@
+#!/bin/bash -eu
+
+HELP="
+Usage:
+    ${0##*/} [-f caselist.txt] [-l case1 case2 ...] tractmeasures
+
+where 'tractmeasures' is the variable set in your SetUpData.sh
+"
+
+usage() { echo -e "$HELP"; exit 1; }
+
+setcases() {
+    if [ -n "${argcases-}" ]; then 
+        cases=$argcases
+    elif [ -n "${argcaselist-}" ] && [ -f "$argcaselist" ]; then 
+        cases=$(cat "$argcaselist" | awk '{print $1}')
+    else
+        case=000 && source SetUpData.sh
+        if [ ! -n "${caselist-}" ]; then
+            echo -e "Set variable 'caselist' (a text file) or 'cases' (a string of case ids) in 'SetUpData.sh', \nor pass them as arguments on the commandline."
+            usage; exit 1;
+        fi
+        cases=$(cat "$caselist" | awk '{print $1}')
+    fi
+}
+
+# Parse args
+while getopts "hl:f:" flag; do
+case "$flag" in
+    h) usage;;
+    l) argcases=$OPTARG;;
+    f) argcaselist=$OPTARG;;
+esac
+done
+shift $((OPTIND-1))
+
+# Get positional arguments (vars) and make sure they are set in SetUpData.sh
+[ $# -eq 1 ] || usage
+var=$1
+[ -f SetUpData.sh ] || { echo "Run in directory with SetUpData.sh."; usage; exit 1; }
+case=000 && source SetUpData.sh
+[ -n "${!var-}" ] || { usage; exit 1; }
+
+# Get the cases to get results for
+setcases
+
+completed $var $cases | xargs tractcounts.sh
