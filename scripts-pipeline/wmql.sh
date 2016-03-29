@@ -5,14 +5,17 @@ SCRIPTDIR=$(dirname $SCRIPT)
 source "$SCRIPTDIR/util.sh"
 
 HELP="
-A wrapper to 'tract_querier' that can operate on a nrrd lablemap
+A wrapper to 'tract_querier' that can operate on a nrrd labelmap
 and a gzipped tractography file.
 
 Usage:
 
-    ${0##*/}  <tractography.vtk[.gz]> <wmparc.[nrrd,nii]> <queryfile> <outdir> <case>
+    ${0##*/}  <tractography.vtk[.gz]> <fsindwi.[nrrd,nii]> <queryfile> <outdir> <case>
 
-Creates '<outdir>/<case>_*.vtk'
+Creates '<outdir>/<case>_*.vtk'.
+
+Tractography file must be in RAS space, with the same origin as the labelmap.
+
 "
 
 [ $# -ne 5 ] || [[  $1 == "-h" || $1 == "--help" ]] && usage 1
