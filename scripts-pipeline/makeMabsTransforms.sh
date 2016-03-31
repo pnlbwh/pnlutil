@@ -67,7 +67,7 @@ while read imgTraining; do
 
     log "Compute warp from training image $iTraining to target image '$imgTarget'" 
     #run $ANTSPATH/antsRegistrationSyNQuick.sh -d 3 -f $imgTarget -m $imgTraining -o $sPre -n 8  # '-n 8' => 8 cores
-    run $ANTSSRC/Scripts/antsRegistrationSyN.sh -d 3 -f $imgTarget -m $imgTraining -o $sPre -n 8  # '-n 8' => 8 cores
+    run $ANTSSRC/Scripts/antsRegistrationSyN.sh -d 3 -f $imgTarget -m $imgTraining -o $sPre -n 16
     run "$ANTSPATH/ComposeMultiTransform 3 "$xfm" -R "$imgTarget" "$xfmWarp" "$xfmRigid" || true"  
 
     log "Compute mutual information between warped training image and target image"
