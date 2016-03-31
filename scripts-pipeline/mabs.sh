@@ -12,7 +12,7 @@ Usage
 
 ## Parse args
 DEBUG=false
-ALPHA=0.45
+ALPHA=0.0
 while getopts "hda:t:i:o:" OPTION; do
     case $OPTION in
         d) DEBUG=true;;
