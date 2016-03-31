@@ -44,7 +44,8 @@ t2inbse="$tmp/$(base "$t2")-in-bse-rigid.nrrd"
 epiwarp="$tmp/$(base "$dwi")_in_$(base "$t2")-epiwarp.nii.gz"
 
 log "1. Extract and mask the DWI baseline"
-run "unu slice -a 3 -p 0 -i "$dwi" | unu 3op ifelse "$dwimask" - 0 -o "$bse""
+#run "unu slice -a 3 -p 0 -i "$dwi" | unu 3op ifelse "$dwimask" - 0 -o "$bse""
+run "$SCRIPTDIR/bse.sh -m "$dwimask" "$dwi" "$bse""
 log_success "1. Made masked baseline: '$bse'"
 
 log "2. Mask the T2"
