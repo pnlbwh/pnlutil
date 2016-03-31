@@ -1,23 +1,40 @@
-#!/bin/bash -e
+#!/bin/bash -eu
 
 SCRIPT=$(readlink -m $(type -p $0))
 SCRIPTDIR=${SCRIPT%/*}      
 source $SCRIPTDIR/util.sh
 
 HELP="
-${0##*/}: Prints all <var> filepaths that don't exist for a given set of cases.
+Prints all <var> filepaths that don't exist for a given set of cases.
+Run in directory with 'SetUpData.sh' that has '<var>=/path/to/\$case-file'
+defined in it.  The set of cases must either be defined in SetUpData.sh (e.g.
+as caselist=mycaselist.txt or cases=\"case1 case2.. caseN\"), or on the
+commandline (see below).
 
-$queryscript_helpmsg"
+Usage:
+    ${0##*/} [-c] [-l \"case1 case2 ..\"] [-f mycaselist.txt] <var> 
 
-queryscript_parseargs "$@"
+-c                      Prints case id's, not file paths
+-f <caselist>           Uses case id's from <caselist> (one per line, but can include comments)
+-l case1 case2 ..caseN  Use these case id's instead of a caselist file
 
-if $selectcases; then
-    case_if_not_exists() {
-        local case=$1; source SetUpData.sh;
-        [ -e "${!var}" ] || echo $case
-    }
-    map "case_if_not_exists" $cases
-else
-    mypred() { test ! -e "$1" -a ! -L "$1"; }
-    filter "mypred" $($SCRIPTDIR/all $var $cases)
-fi
+Examples:
+    missing -c t1
+    missing -l \"case01 case02 case03\" dwied
+    missing -f newcaselist.txt ukf
+"
+
+source $SCRIPTDIR/queryscript.sh
+
+var=$1
+for case in $cases; do
+    source SetUpData.sh
+    if [ ! -e "${!var}" -a ! -L "${!var}" ]; then
+        if $printcaseids; then
+            output="$case"
+        else
+            output=("${!var}")
+        fi
+        echo "$output"
+    fi
+done

@@ -1,24 +1,44 @@
-#!/bin/bash -e
+#!/bin/bash -eu
 
 SCRIPT=$(readlink -m $(type -p $0))
 SCRIPTDIR=${SCRIPT%/*}      
 source $SCRIPTDIR/util.sh
 
-HELP="
-${0##*/}: Prints all <var> filepaths that exist for a given set of cases.
+HELP="\
+Prints all <var> filepaths that exist for a given set of cases.
+Run in directory with 'SetUpData.sh' that has '<var>=/path/to/\$case-file'
+defined in it.  The set of cases must either be defined in SetUpData.sh (e.g.
+as caselist=mycaselist.txt or cases=\"case1 case2.. caseN\"), or on the
+commandline (see below).
 
-$queryscript_helpmsg"
+Usage:
+    ${0##*/} [-c] [-d delimiter] [-l \"case1 case2 ..\"] [-f mycaselist.txt] <var1> <var2> ... <varN>
 
-queryscript_parseargs "$@"
+-c                      Prints case id's, not file paths
+-f <caselist>           Uses case id's from <caselist> (one per line, but can include comments)
+-l case1 case2 ..caseN  Use these case id's instead of a caselist file
 
-if $selectcases; then # doesn't work on remote file paths
-    case_if_exists() {
-        local case=$1
-        source SetUpData.sh
-        [ ! -e "${!var}" ] || echo $case
-    }
-    map "case_if_exists" $cases
-else
-    mypred() { test -e "$1" -o -L "$1"; }
-    filter "mypred" $($SCRIPTDIR/all $var $cases)
-fi
+Examples:
+    completed -c t1
+    completed -d\" \" t1 t2  # if both t1 and t2 exist, print their paths separated by a space
+"
+
+source $SCRIPTDIR/queryscript.sh
+
+for case in $cases; do
+    source SetUpData.sh
+    allexist=true
+    output=()
+    for var in $vars; do
+        [ -e "${!var}" ] || { allexist=false; break; }
+        output+=("${!var}")
+    done
+    if ! $allexist; then 
+        continue
+    fi
+    if $printcaseids; then
+        echo $case
+        continue
+    fi
+    join "$delim" "${output[@]}"
+done
