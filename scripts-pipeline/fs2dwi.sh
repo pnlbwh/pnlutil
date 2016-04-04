@@ -51,7 +51,7 @@ log "Create masked baseline"
 bse=$(basename "$dwi")
 bse="${bse%%.*}-bse.nrrd"
 maskedbse=$(basename ${bse%%.*}-masked.nrrd)
-$SCRIPTDIR/bse.sh -m $dwimask $dwi $maskedbse
+$SCRIPTDIR/bse.sh -m $dwimask -i $dwi -o $maskedbse
 #run "unu slice -a 3 -p 0 -i $dwi | unu 3op ifelse $dwimask - 0 | unu save -e gzip -f nrrd -o $maskedbse"
 log_success "Made masked baseline: '$maskedbse'"
 
