@@ -1,1 +1,0 @@
-../../../scripts-pipeline/mabsApply.sh

@@ -1,1 +1,0 @@
-../../../scripts-pipeline/mabsReg.sh
