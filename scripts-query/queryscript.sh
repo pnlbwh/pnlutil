@@ -43,7 +43,7 @@ vars=$@
 [ -f SetUpData.sh ] || { echo "Run in directory with SetUpData.sh."; usage; exit 1; }
 case=000 && source SetUpData.sh
 for var in $vars; do
-    [ -n "${!var-}" ] || { echo "Specify a variable in SetUpData.sh."; usage; exit 1; }
+    [ -n "${!var-}" ] || { echo "Set '$var' in SetUpData.sh first."; usage; exit 1; }
 done
 
 
