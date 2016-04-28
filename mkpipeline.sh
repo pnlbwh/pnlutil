@@ -42,7 +42,7 @@ else
 fi
 
 goodbyeMsg() {
-    echo "Now make 'SetUpData_config.sh' and 'caselist' in '$dir' and run 'redo'"
+    echo "Now make 'SetUpData_config.sh' and 'caselist.txt' in '$dir' and run 'redo'"
 }
 
 echo "Copy files to '$dir'?"

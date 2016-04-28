@@ -72,7 +72,7 @@ of the pipeline for your project.  You do this by running `mkpipeline.sh`:
 
 This copies the files from `pipeline/` to your project folder.  Once this is
 done you need to make two files, `SetUpData_config.sh`, which needs the file
-paths to your T1's and DWI's, and `caselist`, a text file with a list of
+paths to your T1's and DWI's, and `caselist.txt`, a text file with a list of
 your case id's, one per line.  For the former, use
 `SetUpData_config.sh.example` in your project folder as a template.
 

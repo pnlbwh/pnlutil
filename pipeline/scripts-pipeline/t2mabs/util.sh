@@ -1,1 +1,1 @@
-../../../scripts-pipeline/util.sh
+../../../util.sh

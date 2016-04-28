@@ -5,7 +5,10 @@ source "$dirScripts"/util.sh
 inputvars="\
     t2mabs_trainingcsv \
     t2mabs_target \
-    "
+"
+
+case=000 && source SetUpData.sh
+[ -n "${t2mabs_target-}" ] || { echo "If you're running this as part of the full pipeline, make sure you set 't2' in SetUpData_config.sh"; }
 setupdo $@
 
 startlogging

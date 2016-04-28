@@ -11,7 +11,7 @@ setupdo $@
 outputdir=$(mktemp -d)/$case.fsindwi_output
 
 if [ -n "${fsindwi_t2-}" ]; then  # use t2 in registration
-    inputvarsExtra="fsindwi_t1mask fsindwi_t1"
+    inputvarsExtra="fsindwi_t2 fsindwi_t1mask fsindwi_t1"
     for var in $inputvarsExtra; do
         [ -n "${!var-}" ] || { log_error "'${var}' needs to be set in SetUpData.sh"; exit 1; }
     done
