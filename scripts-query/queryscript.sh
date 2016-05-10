@@ -11,15 +11,23 @@ join() {
 setcases() {
     if [ -n "${argcases-}" ]; then 
         cases=$argcases
-    elif [ -n "${argcaselist-}" ] && [ -f "$argcaselist" ]; then 
+    elif [ -n "${argcaselist-}" ]; then 
+        [ -f "$argcaselist" ] || { echo "'$argcaselist' doesn't exist."; exit 1; }
         cases=$(cat "$argcaselist" | awk '{print $1}')
     else
         case=000 && source SetUpData.sh
-        if [ ! -n "${caselist-}" ]; then
+        if [ ! -n "${caselist-}" ] && [ ! -n "${cases-}" ]; then 
             echo -e "Set variable 'caselist' (a text file) or 'cases' (a string of case ids) in 'SetUpData.sh', \nor pass them as arguments on the commandline."
-            usage; exit 1;
+            exit 1
         fi
-        cases=$(cat "$caselist" | awk '{print $1}')
+        if [ -n "${caselist-}" ] && [ -n "${cases-}" ]; then 
+            echo "You have set both 'caselist' and 'cases' in your SetUpData.sh, just set just one."
+            exit 1
+        fi
+        if [ -n "${caselist-}" ]; then
+            [ -f "$caselist" ] || { echo "Your caselist '$caselist' isn't an existing file."; exit 1; }
+            cases=$(cat "$caselist" | awk '{print $1}')
+        fi
     fi
 }
 
