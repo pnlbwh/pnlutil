@@ -47,7 +47,7 @@ if [ -n "${T2MABS-}" ] && $T2MABS; then
     ## T1 mask registration
     # Input
     t1rigidmask_t2mask=$t2mabs
-    t1rigidmask_t2="${t2-}"
+    t1rigidmask_t2="${t2xc-}"
     t1rigidmask_t1=$t1xc
     # Output
     t1rigidmask=$strct/$case.t1rigidmask.nrrd
