@@ -34,10 +34,9 @@ inputvars="dwi dwimask mri output_dir"
 read -r $inputvars <<<"$@"
 envvars="FREESURFER_HOME ANTSPATH ANTSSRC"
 log "Inputs:"
-printvars $inputvars $envvars
-
 inputvars=${inputvars% *}  # remove output_dir
 makeabs $inputvars # make relative paths absolute
+printvars $inputvars $envvars
 checkexists $inputvars
 checkvars $envvars
 startlogging
