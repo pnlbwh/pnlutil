@@ -1,0 +1,285 @@
+#!/usr/bin/env python
+from optparse import OptionParser
+import os
+import sys
+
+def main():
+    parser = OptionParser(
+        version=0.1,
+        usage="usage: %prog -t tractography_file -a atlas_file "
+        "-q queries -o result_prefix"
+    )
+    parser.add_option("-t", "--tractography", dest="tractography_file_name",
+                      help="name of the tractography file")
+    parser.add_option("-a", "--atlas", dest="atlas_file_name",
+                      help="name of the atlas file")
+    parser.add_option("-q", "--queries", dest="queries_string",
+                      help="query to run")
+    parser.add_option('-o', "--output", dest="output_file_name",
+                      help="clustering output file prefix")
+    parser.add_option('-I',  dest="include",
+                      help="folders to include query files")
+    parser.add_option(
+        '--threshold', dest='threshold', default=2,
+        help="Minimum percentage of the tract to be "
+        "considered inside of the label default %default %"
+    )
+    parser.add_option('--length_threshold', dest='length_threshold', default=0,
+                      help="Minimum length of the tract to be considered (in mm) "
+                      "default %default %"
+                      )
+    parser.add_option('--query_selection', dest='query_selection', default='',
+                      help="Query selection %default %")
+    parser.add_option('--interactive', dest='interactive',
+                      default=False, action="store_true",
+                      help="Interactive prompt"
+                      )
+    parser.add_option(
+        '--bounding_box_affine_transform', dest='bounding_box_affine_transform',
+        help="Bounding box to apply to the image affine transform and tracts "
+        "to put both in AC-PC coordinate space"
+    )
+
+    (options, args) = parser.parse_args()
+
+    if (
+        not options.tractography_file_name or
+        not options.atlas_file_name or
+        not options.queries_string or
+        not options.output_file_name
+    ):
+        parser.error("incorrect number of arguments")
+
+    options.threshold = float(options.threshold)
+    options.length_threshold = float(options.length_threshold)
+
+    global np
+    global tract_querier
+
+    import numpy as np
+    import nibabel
+
+    import tract_querier
+
+    if options.bounding_box_affine_transform:
+        try:
+            bounding_box_affine_transform = np.fromstring(
+                options.bounding_box_affine_transform, sep=','
+            ).reshape(4, 4)
+            print "Affine transform:"
+            print bounding_box_affine_transform
+        except ValueError:
+            parser.error("Matrix format not valid")
+    else:
+        bounding_box_affine_transform = None
+
+    print "Loading files"
+
+    # Search order precidence for .qry files
+    # 1. Command line options specified are respected first
+    # 2. Current directory is respected second
+    # 3. Default query location thrid
+    # 4. Source Tree 4th
+    qry_search_folders = []
+    if options.include:
+        command_line_qry_folders = options.include.split(':')
+        ## Check that all commandline provided folders are valid paths
+        for folder in command_line_qry_folders:
+            if not (os.path.exists(folder) and os.path.isdir(folder)):
+                parser.error("Error in include folder %s" % folder)
+        qry_search_folders.extend(command_line_qry_folders)
+
+    qry_search_folders.extend([os.getcwd()])
+
+    if os.path.exists(tract_querier.default_queries_folder):
+        qry_search_folders.extend([tract_querier.default_queries_folder])
+
+    ## Source Tree Data
+    source_tree_data_path = os.path.abspath(
+        os.path.join(
+        os.path.dirname(os.path.dirname(__file__)),
+        'tract_querier','data')
+    )
+    if os.path.exists(source_tree_data_path):
+        qry_search_folders.extend([source_tree_data_path])
+
+
+    try:
+        if os.path.exists(options.queries_string):
+            query_script = file(options.queries_string).read()
+            query_filename = options.queries_string
+        else:
+            found = False
+            for folder in qry_search_folders:
+                file_ = os.path.join(folder, options.queries_string)
+                if os.path.exists(file_):
+                    found = True
+                    break
+            if found:
+                query_script = file(file_).read()
+                query_filename = file_
+            else:
+                query_script = options.queries_string
+                query_filename = '<script>'
+
+        query_file_body = tract_querier.queries_preprocess(
+            query_script,
+            filename=query_filename,
+            include_folders=qry_search_folders
+        )
+
+        tract_querier.queries_syntax_check(query_file_body)
+    except tract_querier.TractQuerierSyntaxError, e:
+        parser.error(e.value)
+
+    labels_nii = nibabel.load(options.atlas_file_name)
+    img = labels_nii.get_data()
+
+    tr = tract_querier.tractography.tractography_from_file(
+        options.tractography_file_name
+    )
+
+    tractography_extension = os.path.splitext(options.tractography_file_name)[-1]
+    if tractography_extension == '.trk':
+        tractography_extra_kwargs = {
+            'affine': tr.affine,
+            'image_dimensions': tr.image_dims
+        }
+    input_split = os.path.splitext(options.tractography_file_name)
+    output_split = os.path.splitext(options.output_file_name)
+    if len(output_split[-1]) > 0:
+        options.output_file_name = output_split[0]
+        tractography_extension = output_split[1]
+    else:
+        tractography_extension = input_split[1]
+
+    if tractography_extension == '.trk':
+        if input_split[-1] == '.trk':
+            tractography_extra_kwargs = {
+                'affine': tr.affine,
+                'image_dimensions': tr.image_dims
+            }
+        else:
+            tractography_extra_kwargs = {
+                'affine': labels_nii.get_affine(),
+                'image_dimensions': img.shape
+            }
+    else:
+        tractography_extra_kwargs = {}
+
+    print "Calculating labels and crossings"
+    affine_ijk_2_ras = labels_nii.get_affine()
+    tracts = tr.tracts()
+
+    if bounding_box_affine_transform is not None:
+        tracts = [
+            affine_transform_tract(np.linalg.inv(bounding_box_affine_transform), tract)
+            for tract in tracts
+        ]
+
+        affine_ijk_2_ras = np.dot(bounding_box_affine_transform, affine_ijk_2_ras)
+
+    tractography_spatial_indexing = tract_querier.TractographySpatialIndexing(
+        tracts, img, affine_ijk_2_ras, options.length_threshold, options.threshold
+    )
+
+    if not options.interactive:
+        print "Computing queries"
+        evaluated_queries = tract_querier.eval_queries(
+            query_file_body,
+            tractography_spatial_indexing,
+        )
+
+        query_names = evaluated_queries.keys()
+        if options.query_selection != '':
+            selected_queries = set(options.query_selection.lower().split(','))
+            query_names = list(set(query_names) & set(selected_queries))
+
+        query_names.sort()
+
+        for query_name in query_names:
+            save_query(
+                query_name, tr, options, evaluated_queries,
+                extension=tractography_extension, extra_kwargs=tractography_extra_kwargs
+            )
+    else:
+        query_save = (
+            lambda query_name, query_result:
+            save_query(
+                query_name, tr, options, {query_name: query_result},
+                extension=tractography_extension, extra_kwargs=tractography_extra_kwargs
+            )
+        )
+
+        interactive_shell = tract_querier.TractQuerierCmd(
+            tractography_spatial_indexing,
+            initial_body=query_script,
+            save_query_callback=query_save,
+            include_folders=qry_search_folders
+        )
+
+        interactive_shell.cmdloop()
+
+
+def save_query(query_name, tractography, options, evaluated_queries, extension='.vtk', extra_kwargs={}):
+    tract_numbers = evaluated_queries[query_name]
+    print "\tQuery %s: %.6d" % (query_name, len(tract_numbers))
+    if tract_numbers:
+        filename = options.output_file_name + "_" + query_name + extension
+        save_tractography_file(
+            filename,
+            tractography,
+            tract_numbers,
+            extra_kwargs=extra_kwargs
+        )
+        return filename
+
+
+def save_tractography_file(
+    filename, tractography, tract_numbers, extra_kwargs={}
+):
+    tract_numbers = list(tract_numbers)
+
+    original_tracts = tractography.original_tracts()
+
+    tracts_to_save = [original_tracts[i] for i in tract_numbers]
+
+    if len(tracts_to_save) == 0:
+        return
+
+    tracts_data_to_save = {}
+    for key, data in tractography.original_tracts_data().items():
+        tracts_data_to_save[key] = [data[f] for f in tract_numbers]
+
+    if (
+        'ActiveTensors' not in tracts_data_to_save and
+        'Tensors_' in tracts_data_to_save
+    ):
+        tracts_data_to_save['ActiveTensors'] = 'Tensors_'
+    if (
+        'ActiveVectors' not in tracts_data_to_save and
+        'Vectors_' in tracts_data_to_save
+    ):
+        tracts_data_to_save['ActiveVectors'] = 'Vectors_'
+
+    tract_querier.tractography.tractography_to_file(
+        filename,
+        tract_querier.tractography.Tractography(
+            tracts_to_save,
+            tracts_data_to_save
+        ),
+        **extra_kwargs
+    )
+
+
+def affine_transform_tract(affine_transform, tract):
+    import numpy as np
+
+    tract = np.dot(affine_transform[:3, :3], tract.T).T
+    tract += affine_transform[-1, :3]
+
+    return tract
+
+if __name__ == "__main__":
+    main()
+    sys.exit()
