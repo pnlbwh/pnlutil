@@ -3,7 +3,8 @@
 SCRIPT=$(readlink -m $(type -p $0))
 SCRIPTDIR=$(dirname $SCRIPT)
 source "$SCRIPTDIR/util.sh"
-export PYTHONPATH=$SCRIPTDIR/tract_querier/lib
+export PYTHONPATH=$SCRIPTDIR/tract_querier/lib:$PYTHONPATH
+BIN=$SCRIPTDIR/tract_querier/scripts-2.7
 
 HELP="
 A wrapper to 'tract_querier' that can operate on a nrrd labelmap
@@ -39,7 +40,7 @@ fi
 
 log "Remove tracts with only one point"
 tmpvtk_pruned=$tmp/$case-pruned.vtk
-run tract_math $vtk  tract_remove_short_tracts 2 $tmpvtk_pruned
+run $BIN/tract_math $vtk  tract_remove_short_tracts 2 $tmpvtk_pruned
 vtk=$tmpvtk_pruned
 
 log "Make temporary nifti from $wmparc"
@@ -48,7 +49,7 @@ run ConvertBetweenFileFormats "$wmparc" "$tmpnii" >/dev/null && log_success "Mad
 
 log "Run tract_querier"
 run mkdir -p "$outdir"
-cmd="tract_querier -t "$vtk" -a $tmpnii -q $query -o "$outdir/$case""
+cmd="$BIN/tract_querier -t "$vtk" -a $tmpnii -q $query -o "$outdir/$case""
 run "$cmd" || { log_error "tract_querier failed: $cmd"; rmdir "$outdir"; exit 1; }
 log_success "Made '$outdir'"
 
