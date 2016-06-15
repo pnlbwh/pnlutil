@@ -1,1 +1,1 @@
-../scripts-pipeline/wmql.sh
+../scripts-pipeline/wmql/wmql.sh
