@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 """
 Makes DTI scalar measure images and masks them.  Outputs all have the same na
-and are placed in folders based on image type.  Flexibly can take several combin
-of DTI, DWI, mask.
+and are placed in folders based on image type.  Flexibly can take several combin of DTI, DWI, mask.
 
-category: tbss, nii, nrrd, file conversion, dti, tomb
+Dependencies:
+ - ConvertBetweenFileFormats
+ - DWItoDTIEstimation
+ - bet
 """
 
 import os
@@ -12,45 +14,56 @@ import sys
 import tempfile
 from glob import glob
 import re
-import slicerTools
-slicerTools.configure_libs() #enables use of Slicer tools in this script
-#SLICER_INSTALL = '/projects/schiz/software/Slicer3-3.6.4-beta-2011-10-19-linux-x86_64/'
-#SLICER_INSTALL = '/projects/schiz/software/Slicer3-3.6.3-beta-2010-11-03-linux-x86_64/'
-#SLICER_INSTALL = '/projects/schiz/software/Slicer3-3.6.4-beta-2011-04-28-linux-x86_64/'
-#SLICER_INSTALL = '/projects/schiz/software/Slicer3-3.6.1-2010-08-23-linux-x86_64/'
-#SLICER_INSTALL = '/projects/schiz/software/Slicer3_forExternalLinking/'
-#SLICER_INSTALL = '/projects/schiz/software/Slicer3-3.7-alpha-2010-08-24-linux-x86_64/'
-#slicerTools.configure_libs(slicer_install=SLICER_INSTALL)
+import platform
+
+# def dwi2dti(dwi, out_dti, out_bse, mask=None):
+#     plat = platform.system()
+#     if plat == 'Darwin':
+#         cmd = "DWItoDTIEstimation -e WLS --shiftNeg " + dwi +" "+ out_dti +" "+ out_bse
+#     else:
+#         cmd =  "Slicer --launch DWItoDTIEstimation -e WLS --shiftNeg " + dwi +" "+ out_dti +" "+ out_bse
+#     run_command(cmd)
+
+def dwi2dti(dwi, dti_out):
+    cmd = "tend estim -B kvp -knownB0 -i " + dwi + " -o " + dti_out
+    run_command(cmd)
 
 def run_command(cmd):
     sys.stderr.write(cmd+'\n')
     os.system(cmd)
 
-def run_and_print_command(cmd):
-    os.system(cmd)
+t = run_command
 
 def getFileDict(case):
     """Given a case string, returns a dict containing file locations"""
     return files
 
-def tbssprep(dwi=None, outputfolder=None, tensorfile=None, tensormask=None, outputname=None, verbose=False, save_files=False, betf='.3', magic=True):
+def unucp(invol, outvol):
+    cmd = "unu save -e gzip -f nrrd -i " + invol + " -o "  + outvol
+    run_command(cmd)
+
+def tbssprep(dwi=None,
+             outputfolder=None,
+             tensorfile=None,
+             tensormask=None,
+             outputname=None,
+             verbose=False,
+             save_files=False,
+             betf='.3',
+             magic=True):
     """TBSS prep lots of ways"""
 
-    if dwi:
-        pass
-    elif tensorfile and tensormask:
-        pass
-    else:
+    if not dwi and not tensorfile:
+        print "Need a DWI or DTI volume"
         return False
 
     if dwi:
         dwi = os.path.abspath(dwi)
-    if outputfolder:
-        outputfolder = os.path.abspath(outputfolder)
-    else:
+    if not outputfolder:
         outputfolder = os.getcwd()
 
     outputfolder = os.path.abspath(outputfolder)
+
     if tensorfile:
         tensorfile = os.path.abspath(tensorfile)
     if tensormask:
@@ -68,11 +81,6 @@ def tbssprep(dwi=None, outputfolder=None, tensorfile=None, tensormask=None, outp
 
     float(betf)
     print type(betf)
-
-    if verbose:
-        t = run_command
-    else:
-        t = run_and_print_command
 
     # outputs:
     print 'outputname', outputname
@@ -108,54 +116,44 @@ def tbssprep(dwi=None, outputfolder=None, tensorfile=None, tensormask=None, outp
     #t('tend estim -i '+dwi+' -knownB0 true -B kvp -i '+dwi+' -o tensor.nrrd')
     print '-----------Tensor estimation--------------'
     if dwi:
-        t('DiffusionTensorEstimation '+dwi+' tensor.nrrd baseline.nrrd OtsuMask.nrrd --removeislands --shiftNeg -e WLS')
+        #t('DiffusionTensorEstimation '+dwi+' tensor.nrrd baseline.nrrd OtsuMask.nrrd --removeislands --shiftNeg -e WLS')
+        dwi2dti(dwi, 'tensor.nrrd')
     else:
-        t('unucp '+tensorfile+' tensor.nrrd')
+        unucp(tensorfile, 'tensor.nrrd')
     print tensormask
     print 'check'
+    tensorIsMasked = False
     if tensormask:
         if '.nii' in tensormask:
-            if magic:
-                t('ConvertBetweenFileFormats '+tensormask+' baselinemask.nrrd')
-            else:
-                t('ResampleVolume2 '+tensormask+' baselinemask.nrrd')
+            t('ConvertBetweenFileFormats '+tensormask+' baselinemask.nrrd')
         else:
             t('unu save -e gz -f nrrd -i '+tensormask+' -o baselinemask.nrrd')
-    else:
-        if not dwi:
-            raise Exception("Needed a dwi")
-        if magic:
-            t('ConvertBetweenFileFormats baseline.nrrd baseline.nii.gz')
-        else:
-            t('ResampleVolume2 baseline.nrrd baseline.nii.gz')
+    elif dwi:
+        t('ConvertBetweenFileFormats baseline.nrrd baseline.nii.gz')
         t('bet baseline.nii.gz baseline-masked.nii.gz -m -f '+betf)
-        if magic:
-            t('ConvertBetweenFileFormats baseline-masked_mask.nii.gz baselinemask.nrrd')
-        else:
-            t('ResampleVolume2 baseline-masked_mask.nii.gz baselinemask.nrrd')
+        t('ConvertBetweenFileFormats baseline-masked_mask.nii.gz baselinemask.nrrd')
+    else:
+        assert tensorfile
+        tensorIsMasked = True
 
     print '------------FA--------------'
-    t('tend anvol -t -1 -a fa -i tensor.nrrd -o FA.nrrd')
-    #t('DiffusionTensorMathematics tensor.nrrd FA.nrrd -e FractionalAnisotropy')
-    t('unu 3op ifelse baselinemask.nrrd FA.nrrd 0 -o maskedFA.nrrd -t FLOAT')
-    if magic:
-        t('ConvertBetweenFileFormats maskedFA.nrrd fa.nii.gz float')
+    if tensorIsMasked:
+        t('tend anvol -t -1 -a fa -i tensor.nrrd -o maskedFA.nrrd')
     else:
-        t('unu convert -i maskedFA.nrrd -o magicFAtemp.nrrd -t float')
-        t('ResampleVolume2 magicFAtemp.nrrd fa.nii.gz')
+        t('tend anvol -t -1 -a fa -i tensor.nrrd -o FA.nrrd')
+        t('unu 3op ifelse baselinemask.nrrd FA.nrrd 0 -o maskedFA.nrrd -t FLOAT')
+    t('ConvertBetweenFileFormats maskedFA.nrrd fa.nii.gz float')
     t('fslswapdim fa RL PA IS fa')
     t('fslswapdim fa LR PA IS fa')
     t('cp fa.nii.gz '+FAmap)
- 
+
     print '------------Axial --------------'
-    t('tend eval -c 0 -i tensor.nrrd -o axial.nrrd')
-    #t('DiffusionTensorMathematics tensor.nrrd axial.nrrd -e ParallelDiffusivity')
-    t('unu 3op ifelse baselinemask.nrrd axial.nrrd 0 -o maskedAxial.nrrd -t FLOAT')
-    if magic:
-        t('ConvertBetweenFileFormats maskedAxial.nrrd axial.nii.gz float')
+    if tensorIsMasked:
+        t('tend eval -c 0 -i tensor.nrrd -o maskedAxial.nrrd')
     else:
-        t('unu convert -i maskedAxial.nrrd -o magicAxialTemp.nrrd -t float')
-        t('ResampleVolume2 magicAxialTemp.nrrd axial.nii.gz')
+        t('tend eval -c 0 -i tensor.nrrd -o axial.nrrd')
+        t('unu 3op ifelse baselinemask.nrrd axial.nrrd 0 -o maskedAxial.nrrd -t FLOAT')
+    t('ConvertBetweenFileFormats maskedAxial.nrrd axial.nii.gz float')
     t('fslswapdim axial RL PA IS axial')
     t('fslswapdim axial LR PA IS axial')
     t('cp axial.nii.gz '+axial)
@@ -164,44 +162,24 @@ def tbssprep(dwi=None, outputfolder=None, tensorfile=None, tensormask=None, outp
     t('tend eval -c 1 -i tensor.nrrd -o l2.nrrd')
     t('tend eval -c 2 -i tensor.nrrd -o l3.nrrd')
     t('unu 2op + l2.nrrd l3.nrrd -o tempsum.nrrd -t FLOAT')
-    t('unu 2op / tempsum.nrrd 2 -o radial.nrrd -t FLOAT')
-    #t('DiffusionTensorMathematics tensor.nrrd radial.nrrd -e PerpendicularDffusivity')
-    t('unu 3op ifelse baselinemask.nrrd radial.nrrd 0 -o maskedRadial.nrrd -t FLOAT')
-    if magic:
-        t('ConvertBetweenFileFormats maskedRadial.nrrd radial.nii.gz float')
+    if tensorIsMasked:
+        t('unu 2op / tempsum.nrrd 2 -o maskedRadial.nrrd -t FLOAT')
     else:
-        t('unu convert -i maskedRadial.nrrd -o magicRadialTemp.nrrd -t float')
-        t('ResampleVolume2 magicRadialTemp.nrrd radial.nii.gz')
-
+        t('unu 2op / tempsum.nrrd 2 -o radial.nrrd -t FLOAT')
+        t('unu 3op ifelse baselinemask.nrrd radial.nrrd 0 -o maskedRadial.nrrd -t FLOAT')
+    t('ConvertBetweenFileFormats maskedRadial.nrrd radial.nii.gz float')
     t('fslswapdim radial RL PA IS radial')
     t('fslswapdim radial LR PA IS radial')
     t('cp radial.nii.gz '+radial)
 
-    #t('unu 3op ifelse '+tensormask+' l2.nrrd 0 -o maskedL2.nrrd -t FLOAT')
-    #t('DiffusionTensorMathematics tensor.nrrd l2.nrrd -e MidEigenvalue')
-    #t('unu 3op ifelse '+tensormask+' l2.nrrd 0 -o maskedL2.nrrd -t FLOAT')
-    #t('ConvertBetweenFileFormats maskedL2.nrrd l2.nii.gz FLOAT')
-    #t('fslswapdim l2 RL PA IS l2')
-    #t('fslswapdim l2 LR PA IS l2')
-    #t('cp l2.nii.gz '+l2)
-
-    #t('DiffusionTensorMathematics tensor.nrrd l3.nrrd -e MinEigenvalue')
-    #t('unu 3op ifelse '+tensormask+' l3.nrrd 0 -o maskedL3.nrrd -t FLOAT')
-    #t('ConvertBetweenFileFormats maskedL3.nrrd l3.nii.gz float')
-    #t('fslswapdim l3 RL PA IS l3')
-    #t('fslswapdim l3 LR PA IS l3')
-    #t('cp l3.nii.gz '+l3)
-
     print '------------Trace --------------'
-    t('tend anvol -t -1 -a tr -i tensor.nrrd -o trace.nrrd')
-    #t('DiffusionTensorMathematics tensor.nrrd trace.nrrd -e Trace')
-    t('unu 3op ifelse baselinemask.nrrd trace.nrrd 0 -o maskedTrace.nrrd -t FLOAT')
-    if magic:
-        t('ConvertBetweenFileFormats maskedTrace.nrrd trace.nii.gz float')
+    if tensorIsMasked:
+        t('tend anvol -t -1 -a tr -i tensor.nrrd -o maskedTrace.nrrd')
     else:
-        t('unu convert -i maskedTrace.nrrd -o magicTraceTemp.nrrd -t float')
-        t('ResampleVolume2 magicTraceTemp.nrrd trace.nii.gz')
+        t('tend anvol -t -1 -a tr -i tensor.nrrd -o trace.nrrd')
+        t('unu 3op ifelse baselinemask.nrrd trace.nrrd 0 -o maskedTrace.nrrd -t FLOAT')
 
+    t('ConvertBetweenFileFormats maskedTrace.nrrd trace.nii.gz float')
     t('fslswapdim trace RL PA IS trace')
     t('fslswapdim trace LR PA IS trace')
     t('cp trace.nii.gz '+trace)
@@ -211,25 +189,20 @@ def tbssprep(dwi=None, outputfolder=None, tensorfile=None, tensormask=None, outp
     t('fslswapdim radialOverTrace RL PA IS radialOverTrace')
     t('fslswapdim radialOverTrace LR PA IS radialOverTrace')
     t('cp radialOverTrace.nii.gz '+radialOverTrace)
-    
+
     print '------------Axial over Trace --------------'
     t('fslmaths axial.nii.gz -div trace.nii.gz axialOverTrace.nii.gz')
     t('fslswapdim axialOverTrace RL PA IS axialOverTrace')
     t('fslswapdim axialOverTrace LR PA IS axialOverTrace')
     t('cp axialOverTrace.nii.gz '+axialOverTrace)
 
-    t('cp baselinemask.nrrd '+nrrdmask)
-
-    if magic:
+    if not tensorIsMasked:
+        t('cp baselinemask.nrrd '+nrrdmask)
         t('ConvertBetweenFileFormats baselinemask.nrrd mask.nii.gz')
-    else:
-        t('ResampleVolume2 baselinemask.nrrd mask.nii.gz')
-
-    t('cp mask.nii.gz '+undimswappedmask)
-
-    t('fslswapdim mask RL PA IS mask')
-    t('fslswapdim mask LR PA IS mask')
-    t('cp axialOverTrace.nii.gz '+mask)
+        t('cp mask.nii.gz '+undimswappedmask)
+        t('fslswapdim mask RL PA IS mask')
+        t('fslswapdim mask LR PA IS mask')
+        t('cp axialOverTrace.nii.gz '+mask)
 
     import time
     time.sleep(1)
@@ -256,18 +229,15 @@ def CLI():
 
     args = parser.parse_args()
 
-    if args.tensor:
-        if not (args.DWI or args.mask):
-            print 'In order to create the automatic mask, the DWI is required'
-            exit(1)
-
-    tbssprep(dwi=args.DWI, outputfolder=args.folder, tensorfile=args.tensor,
-        tensormask=args.mask, outputname=args.name, verbose=args.verbose,
-        save_files=args.save_files, betf=args.betf, magic=(not args.nomagic))
+    tbssprep(dwi=args.DWI,
+             outputfolder=args.folder,
+             tensorfile=args.tensor,
+             tensormask=args.mask,
+             outputname=args.name,
+             verbose=args.verbose,
+             save_files=args.save_files,
+             betf=args.betf,
+             magic=(not args.nomagic))
 
 if __name__ == '__main__':
     CLI()
-
-#from PNLTBSSprep import CLI
-#CLI()
-
