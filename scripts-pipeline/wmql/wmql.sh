@@ -3,7 +3,7 @@
 SCRIPT=$(readlink -m $(type -p $0))
 SCRIPTDIR=$(dirname $SCRIPT)
 source "$SCRIPTDIR/util.sh"
-export PYTHONPATH=$SCRIPTDIR/tract_querier/lib:$PYTHONPATH
+export PYTHONPATH=$SCRIPTDIR/tract_querier/lib:${PYTHONPATH:-}
 BIN=$SCRIPTDIR/tract_querier/scripts-2.7
 
 HELP="

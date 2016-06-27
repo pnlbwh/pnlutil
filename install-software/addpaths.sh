@@ -7,15 +7,16 @@ redo=$base/redo
 
 brainstools=$base/BRAINSTools-build/bin
 
-ants=$base/BRAINSTools-build/ANTs-build/bin
-antssrc=$base/BRAINSTools-build/ANTS
+#ants=$base/BRAINSTools-build/bin
+antssrc=$base/BRAINSTools-build/ANTs
 
 pnlutil=$base/../scripts-all
 
 #tract_querier # installed to your python installation, make sure bin folder is on path
 
-ukf=UKFTractography-build/UKFTractography-build/ukf/bin/
+ukf=$base/UKFTractography-build/UKFTractography-build/ukf/bin/
 
-unu=UKFTractography-build/bin/
+export PATH=$redo:$brainstools:$ants:$antssrc:$pnlutil:$ukf:$PATH
 
-export PATH=$redo:$brainstools:$ants:$antssrc:$pnlutil:$ukf:$unu:$PATH
+export ANTSPATH=$brainstools
+export ANTSSRC=$antssrc
