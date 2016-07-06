@@ -11,6 +11,6 @@ pnlutil=$base/../scripts-all
 ukf=$base/UKFTractography-build/UKFTractography-build/ukf/bin/
 measuretracts=$base/measuretracts
 
-export PATH=$redo:$brainstools:$ants:$antssrc:$pnlutil:$ukf:$measuretracts:$PATH
+export PATH=$redo:$brainstools:$antssrc:$pnlutil:$ukf:$measuretracts:$PATH
 export ANTSPATH=$brainstools
 export ANTSSRC=$antssrc
