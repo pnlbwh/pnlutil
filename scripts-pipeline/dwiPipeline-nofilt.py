@@ -113,6 +113,8 @@ for t in Transforms:
     i = i+1
 fd.close()
 
+os.system('tar cvzf '+rootdir+'/'+output[:-5]+'-xfms.tgz Diffusion-G*.txt')
+
 os.chdir(rootdir)
 os.system('unu save -f nrrd -e gzip -i '+wdir+'/EddyCorrect-DWI.nhdr -o '+output)
 if not os.path.exists(dirOutput):
@@ -120,5 +122,5 @@ if not os.path.exists(dirOutput):
 os.system('cp '+wdir+'/*.txt '+dirOutput)
 
 sys.stderr.write('Clean up\n')
-#shutil.rmtree(wdir)
+shutil.rmtree(wdir)
 
