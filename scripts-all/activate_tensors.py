@@ -1,1 +1,1 @@
-../scripts-pipeline/activate_tensors.py
+../scripts-pipeline/wmql/activate_tensors.py
