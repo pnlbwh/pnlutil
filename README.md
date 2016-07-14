@@ -8,6 +8,7 @@ are modular, you can run them individually or as a complete pipeline.
 
 # Table of Contents
 
+1. [Install](#install)
 1. [Quick Walkthrough](#quick-walkthrough)
 2. [Pipeline Scripts Overview](#pipeline-scripts-overview)
 3. [Redo Overview](#redo-overview)
@@ -15,6 +16,29 @@ are modular, you can run them individually or as a complete pipeline.
 5. [Repo Organization](#repo-organization)
 6. [Issues](#issues)
 
+# Install
+
+The pipeline requires that you have the following software packages pre-installed:
+
+1. Freesurfer (https://surfer.nmr.mgh.harvard.edu/fswiki/DownloadAndInstall)
+2. FSL (http://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FslInstallation)
+3. Python with VTK and numpy (easily obtained via anaconda: https://www.continuum.io/downloads)
+
+To install the rest of the dependencies, run the following.
+
+```sh
+git clone https://github.com/pnlbwh/pnlutil
+cd pnlutil/install-software
+./all.sh
+source ./addpaths.sh
+```
+
+That will install each of the following under the subdirectory `install-software`:
+
+1. BRAINSTools
+2. redo
+3. measureTracts
+4. UKFTractography
 
 # Quick Walkthrough
 
@@ -23,13 +47,13 @@ are modular, you can run them individually or as a complete pipeline.
 
     cd your/project/
     mkpipeline.sh .  # copies files in pipeline/ to your project folder
-    # edit SetUpData_config.sh and make file called 'caselist' with your case id's, one per line 
+    # edit SetUpData_config.sh and make file called 'caselist.txt' with your case id's, one per line 
     redo  # begins pipeline by running the default do script 'all.do'
 
 If you only want part of the pipeline:
 
     cd your/project/
-    addukf.sh .  # or addfs.sh, addmabs.sh, addepi.sh, addfsindwi.sh
+    addukf.sh .  # or addfs.sh, addmabs.sh, addepi.sh, addfsindwi.sh, etc. (these scripts are at `pnlutil/add*.sh`)
     # edit SetUpData.sh to set your input variables for 'ukf'
     missing ukf | xargs redo -k
 
@@ -228,5 +252,10 @@ a lock file.  To fix this, first make sure no-one else is running redo in your p
 then run
 
     find . -name "*.lock" -exec rm {} \;
+    
+or
 
-This will clean up the stale lock files which lets redo know it can run again.
+    cleanlocks.sh
+
+This will clean up the stale lock files which lets redo know it can safely build
+their associated outputs.
