@@ -32,5 +32,5 @@ dirOut=fsindwi1
 
 rm -rf $dirOut || true
 echo "PATH=$PATH"
-run $SCRIPT --mri $fs/mri --dwi $dwied --dwimask $dwiedmask --t2 $t2 --t1 $t1align --t1mask $alignmask -o $dirOut
+run $SCRIPT --mri $fs --dwi $dwied --dwimask $dwiedmask --t2 $t2 --t1 $t1align --t1mask $alignmask -o $dirOut
 verify $dirOut/wmparc-in-bse.nrrd 95eefebd155669e551814fd5afa6dd97

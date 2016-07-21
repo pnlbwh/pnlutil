@@ -43,9 +43,9 @@ prettyPrint() {
 }
 
 HELP="
-Usage: 
+Usage:
 
-   ${0##*/} --mri <freesurfer_mri_folder> --dwi <dwi> --dwimask <dwimask> --t2 <T2> [--t2mask <T2mask>] --t1 <T1> --t1mask <T1mask> -o <output_dir>
+   ${0##*/} --fsdir <freesurfer_directory> --dwi <dwi> --dwimask <dwimask> --t2 <T2> [--t2mask <T2mask>] --t1 <T1> --t1mask <T1mask> -o <output_dir>
 
 where <dwi> and <dwimask> are nrrd/nhdr files
 "
@@ -59,7 +59,7 @@ while getopts "ho:-:" OPTION; do
         h) usage; exit 1;;
         o) output_dir=$OPTARG ;;
         -) case "$OPTARG" in
-            mri) mri="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 )) ;;
+            fsdir) fsdir="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 )) ;;
             dwi) dwi="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 )) ;;
             dwimask) dwimask="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 )) ;;
             t1) t1="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 )) ;;
@@ -80,7 +80,7 @@ while getopts "ho:-:" OPTION; do
     esac
 done
 
-varsRequired="mri dwi dwimask t1 t1mask t2 output_dir"
+varsRequired="fsdir dwi dwimask t1 t1mask t2 output_dir"
 varsEnv="FREESURFER_HOME ANTSPATH ANTSSRC"
 
 assertVarsAreSet $varsRequired
@@ -105,6 +105,7 @@ if [ -z "${t2mask-}" ]; then
     $SCRIPTDIR/make_rigid_mask.sh $t1mask $t1 $t2 $t2mask
 fi
 
+mri=$fsdir/mri
 log "Make brain.nii.gz and wmparc.nii.gz from their mgz versions"
 #$fsbin/mri_convert -rt nearest --in_type mgz --out_type nii --out_orientation LPI $mri/wmparc.mgz $mri/wmparc.nii.gz
 #$fsbin/mri_convert -rt nearest --in_type mgz --out_type nii --out_orientation LPI $mri/brain.mgz $mri/brain.nii.gz

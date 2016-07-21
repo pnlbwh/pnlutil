@@ -30,7 +30,7 @@ warp() {
 [ $# -ne 4 ] && usage 1
 
 export SUBJECTS_DIR=
-inputvars="dwi dwimask mri output_dir"
+inputvars="dwi dwimask fsdir output_dir"
 read -r $inputvars <<<"$@"
 envvars="FREESURFER_HOME ANTSPATH ANTSSRC"
 log "Inputs:"
@@ -46,6 +46,7 @@ run mkdir $output_dir || { log_error "$output_dir already exists, delete it or c
 run pushd $output_dir >/dev/null
 
 log "Create 'brain.nii.gz' and 'wmparc.nii.gz' from their mgz versions"
+mri=$fsdir/mri
 #$fsbin/mri_convert -rt nearest --in_type mgz --out_type nii --out_orientation LPI $mri/wmparc.mgz $mri/wmparc.nii.gz
 #$fsbin/mri_convert -rt nearest --in_type mgz --out_type nii --out_orientation LPI $mri/brain.mgz $mri/brain.nii.gz
 run $FREESURFER_HOME/bin/mri_vol2vol --mov $mri/brain.mgz --targ $mri/brain.mgz --regheader --o brain.nii.gz
