@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eu
 
 # Author: Chuck Theobald, March 2012
 # This script depends upon DCMTK's dcmdump program.
@@ -9,17 +9,17 @@
 # script.
 
 function usage {
-  echo "Usage: $0 -D <DICOM directory>"
+  echo "Usage: ${0##*/} -i <DICOM directory>"
   echo "          -o Output directory"
-  echo "          -m Move instead of copy"
+  #echo "          -m Move instead of copy"
   echo "          -h This page"
 }
 
-cmd="mv"
-while getopts "hD:o:m" flag
+cmd=""
+while getopts "hi:o:m" flag
 do
   case "$flag" in
-    D)
+    i)
       DICOMDIR=$OPTARG
       ;;
     o)
@@ -50,8 +50,13 @@ else
 fi
 
 tmp=$(mktemp)
+dirTmp=$(mktemp -d)
+
+# Recurse input dicom directory and copy each dicom to a temporary directory for processing. Dicoms are named
+# as their md5 hash
+find $DICOMDIR -type f | while read file ; do cp "$file" $dirTmp/"$(md5sum $file | awk '{ print $1 }' )" ; done
 # Select each file in given DICOM directory.
-for d in ${DICOMDIR}/*
+for d in ${dirTmp}/*
 do
   echo -n .
 
@@ -90,18 +95,12 @@ do
 # 
   rm $tmp
 
-
-  # PNAME="${PID}_${StudyDate}_${NUMBER}_${PP}"
-  # PNAME="${PID}_${StudyDate}_${NUMBER}_${StudyDesc}_${SeriesDesc}"
-  # PNAME="${PID}_${StudyDate}_${NUMBER}_${Modality}_${SeriesDesc}"
-  # PNAME="${PID}_${StudyDate}_${NUMBER}_${Modality}_${SID}_${SeriesDesc}"
   PNAME="${PID}_${StudyDate}_${NUMBER}_${Modality}_${UUID}_${SeriesDesc}"
   DESTDIR=${OUTDIR}/${PNAME}
- if [ ! -d ${DESTDIR} ]; then
-   mkdir ${DESTDIR}
- fi
-  $cmd ${d} ${DESTDIR}/${FNAME}
+  if [ ! -d ${DESTDIR} ]; then
+      mkdir ${DESTDIR}
+  fi
+  mv ${d} ${DESTDIR}/${FNAME}
 done
-# ls ${OUTDIR}
 
-
+rm -rf "$dirTmp"
