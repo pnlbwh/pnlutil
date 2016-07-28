@@ -62,7 +62,7 @@ prepare_log_for_nonterminal() {
 
 scrubcolors() {
     sed -i "s/[[:cntrl:]]\[[0-9;]*m//g" $1
-} 
+}
 
 log() {
     local log_text="$1"
@@ -114,7 +114,7 @@ log_captains()  {
     else
         log "$1";
     fi
-    
+
     log_speak "$1";
 
     return 0;

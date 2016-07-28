@@ -1,8 +1,7 @@
 #!/bin/bash -eu
 
-SCRIPT=$(readlink -m $(type -p $0))
-SCRIPTDIR=${SCRIPT%/*}
-source "$SCRIPTDIR/util.sh"
+SCRIPTDIR=$( cd $(dirname "$0") ; pwd -P )
+. "$SCRIPTDIR/loglib.sh"
 
 usage () {
 echo -e "\
