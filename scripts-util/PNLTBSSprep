@@ -4,9 +4,10 @@ Makes DTI scalar measure images and masks them.  Outputs all have the same na
 and are placed in folders based on image type.  Flexibly can take several combin of DTI, DWI, mask.
 
 Dependencies:
+ - tend estim
  - ConvertBetweenFileFormats
- - DWItoDTIEstimation
  - bet
+ - bse.sh
 """
 
 import os
@@ -15,7 +16,11 @@ import tempfile
 from glob import glob
 import re
 import platform
+from subprocess import call
 
+SCRIPTDIR = os.path.dirname(os.path.realpath(__file__))
+
+#t('DiffusionTensorEstimation '+dwi+' tensor.nrrd baseline.nrrd OtsuMask.nrrd --removeislands --shiftNeg -e WLS')
 # def dwi2dti(dwi, out_dti, out_bse, mask=None):
 #     plat = platform.system()
 #     if plat == 'Darwin':
@@ -24,15 +29,27 @@ import platform
 #         cmd =  "Slicer --launch DWItoDTIEstimation -e WLS --shiftNeg " + dwi +" "+ out_dti +" "+ out_bse
 #     run_command(cmd)
 
-def dwi2dti(dwi, dti_out):
-    cmd = "tend estim -B kvp -knownB0 -i " + dwi + " -o " + dti_out
-    run_command(cmd)
+def dwi2dti(dwi, dti_out, use_lls):
+    if use_lls:
+        # cmd = "tend estim -est lls -B kvp -knownB0 true -i " + dwi + " -o " + dti_out
+        cmd = ["tend","estim","-est","lls","-B","kvp","-knownB0","true","-i",dwi,"-o",dti_out]
+    else:
+        # cmd = "tend estim -est wls -B kvp -knownB0 true -i " + dwi + " -o " + dti_out
+        cmd = ["tend","estim","-est","wls","-B","kvp","-knownB0","true","-i",dwi,"-o",dti_out]
+    run(cmd)
 
 def run_command(cmd):
     sys.stderr.write(cmd+'\n')
     os.system(cmd)
 
 t = run_command
+
+def run(cmd):
+    sys.stderr.write(' '.join(cmd)+'\n')
+    return_code = call(cmd)
+    if return_code > 0:
+        print("Command returned non-zero exit status.")
+        sys.exit()
 
 def getFileDict(case):
     """Given a case string, returns a dict containing file locations"""
@@ -50,7 +67,7 @@ def tbssprep(dwi=None,
              verbose=False,
              save_files=False,
              betf='.3',
-             magic=True):
+             use_lls=False):
     """TBSS prep lots of ways"""
 
     if not dwi and not tensorfile:
@@ -113,15 +130,11 @@ def tbssprep(dwi=None,
     tmp = tempfile.mkdtemp()
     print '--------tmpdir ' + tmp
     os.chdir(tmp)
-    #t('tend estim -i '+dwi+' -knownB0 true -B kvp -i '+dwi+' -o tensor.nrrd')
     print '-----------Tensor estimation--------------'
     if dwi:
-        #t('DiffusionTensorEstimation '+dwi+' tensor.nrrd baseline.nrrd OtsuMask.nrrd --removeislands --shiftNeg -e WLS')
-        dwi2dti(dwi, 'tensor.nrrd')
+        dwi2dti(dwi, 'tensor.nrrd', use_lls)
     else:
         unucp(tensorfile, 'tensor.nrrd')
-    print tensormask
-    print 'check'
     tensorIsMasked = False
     if tensormask:
         if '.nii' in tensormask:
@@ -129,6 +142,9 @@ def tbssprep(dwi=None,
         else:
             t('unu save -e gz -f nrrd -i '+tensormask+' -o baselinemask.nrrd')
     elif dwi:
+        bse_sh = os.path.join(SCRIPTDIR,'..','scripts-all','bse.sh')
+        print bse_sh
+        run([bse_sh,'-i',dwi,'-o','baseline.nrrd'])
         t('ConvertBetweenFileFormats baseline.nrrd baseline.nii.gz')
         t('bet baseline.nii.gz baseline-masked.nii.gz -m -f '+betf)
         t('ConvertBetweenFileFormats baseline-masked_mask.nii.gz baselinemask.nrrd')
@@ -225,7 +241,7 @@ def CLI():
     parser.add_argument('-d', '--debug', default=False, action='store_true', help="Run code in a debugger")
     parser.add_argument('--save_files', default=False, action='store_true', help="Don't delete temp files")
     parser.add_argument('-f', '--betf', default='.3', help='bet (brain extraction tool) -f parameter to use; default is .3')
-    parser.add_argument('--nomagic', default=False, action='store_true', help='bet (brain extraction tool) -f parameter to use; default is .3')
+    parser.add_argument('--lls', default=False, action='store_true', help='Use least linear squares for DTI estimation instead of weighted least squares')
 
     args = parser.parse_args()
 
@@ -237,7 +253,7 @@ def CLI():
              verbose=args.verbose,
              save_files=args.save_files,
              betf=args.betf,
-             magic=(not args.nomagic))
+             use_lls=args.lls)
 
 if __name__ == '__main__':
     CLI()
