@@ -1,3 +1,4 @@
 config.sh
 .redo
 test/out
+*.pyc
