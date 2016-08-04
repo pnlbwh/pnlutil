@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 SCRIPT=$(readlink -m $(type -p $0))
-SCRIPTDIR=${SCRIPT%/*}      
+SCRIPTDIR=${SCRIPT%/*}
 source $SCRIPTDIR/util.sh
 
 HELP="
@@ -19,7 +19,7 @@ commandline (see below).
 -q \"<var> ...\"           Vars to be loaded and QC'ed
 
 Examples:
-    ${0##*/} -r dwi -q fsindwi 
+    ${0##*/} -r dwi -q fsindwi
     ${0##*/} -f caseslist_notchecked.txt -q \"t1raw t2raw dwiraw\"
     ${0##*/} -q \"t1align t1alignmask dwi fsindw\" # operate on the caselist file defined by '\$caselist' in SetUpData.sh
     ${0##*/} -l \"01009 01010\" -r t2 -q t2atlasmask
@@ -28,16 +28,16 @@ Examples:
 parseargs() {
     while getopts "hsr:f:l:q:" flag; do
         case "$flag" in
-            h) 
+            h)
                 echo -e "$HELP"; exit 0;;
-            r) 
+            r)
                 reference_vars=$OPTARG;;
-            f) 
+            f)
                 [ -f "$OPTARG" ] || { echo "$OPTARG doesn't exist"; exit 1; }
-                cases=$(cat "$caselist" | awk '{print $1}');;
-            l) 
+                cases=$(cat "$OPTARG" | awk '{print $1}');;
+            l)
                 cases=$OPTARG;;
-            q) 
+            q)
                 qc_vars=$OPTARG;;
         esac
     done
@@ -102,6 +102,7 @@ record_qc() {
         row="$case,$(date),$passfail,$(md5sum ${!qc_var} | cut -d' ' -f1),$reference_var,$(md5sum ${!reference_var} | cut -d' ' -f1),$note"
         echo "$row" >> "${!qc_var}-qc.csv"
     done
+    log "Made to '${!qc_var}-qc.csv'"
 }
 
 uptodate() {
@@ -112,7 +113,7 @@ uptodate() {
 
 qcedAndUpToDate() {
     for qcvar in $@; do
-        csv="${!qcvar}-qc.csv" 
+        csv="${!qcvar}-qc.csv"
         [ -f "$csv" ] || return 1
         # It has been qc'ed - read in qc values
         hdr="caseid datetime passfail md5sum reference_var reference_md5sum note"
@@ -153,12 +154,12 @@ for case in $cases; do
     for qc_var in $qc_vars; do
         prompt="
 Did '$qc_var: ${!qc_var}' pass
-[p]ass) 
-[f]ail) 
-[P]ass, write note) 
-[F]ail, write note) 
-[s]kip) 
-[q]uit) 
+[p]ass)
+[f]ail)
+[P]ass, write note)
+[F]ail, write note)
+[s]kip)
+[q]uit)
 ? "
         read -r -n 1 -p "$prompt" response
         case $response in
