@@ -4,15 +4,30 @@ SCRIPT=$(readlink -m "$(type -p $0)")
 SCRIPTDIR=$(dirname "$SCRIPT")
 source "$SCRIPTDIR/util.sh"
 
+DEBUG=false
+ALPHA=0.0
+TMPDIR=/tmp/mabsrun.$$
+
 usage() {
 echo -e "\
 Usage
     ${0##*/} [-d] [-a alpha] -t <trainingData.csv> -i <target> -o <outMask> "
 }
 
+cleanup() {
+    echo "here"
+    echo $DEBUG
+    echo $TMPDIR
+    if [ "$DEBUG" = false ]; then
+        echo "Clean up, remove '$TMPDIR'"
+        [ -d "$TMPDIR" ] && rm -r "$TMPDIR"
+        echo "Done"
+    fi
+    exit 1
+}
+trap cleanup SIGHUP SIGINT SIGTERM
+
 ## Parse args
-DEBUG=false
-ALPHA=0.0
 while getopts "hda:t:i:o:" OPTION; do
     case $OPTION in
         d) DEBUG=true;;
@@ -45,15 +60,16 @@ for i in $(seq $colcount); do
 done
 
 log "Compute training transforms"
-dirReg=/tmp/mabsTransforms.$$
-txtTrainingImages=/tmp/trainingImages-$$.txt
+dirReg=$TMPDIR/mabsTransforms
+mkdir -p $dirReg
+txtTrainingImages=$TMPDIR/trainingImages.txt
 run "cat $csvTrainingData | cut -d, -f1 > $txtTrainingImages"
 run $SCRIPTDIR/makeMabsTransforms.sh -t $txtTrainingImages -i $imgTarget -o $dirReg
 
 log "Apply training transforms to training labelmap(s) and compute predicted labelmap"
-dirLbl=/tmp/mabsWarpedLabelmaps.$$
+dirLbl=$TMPDIR/mabsWarpedLabelmaps
 for i in $(seq 2 $colcount); do
-    txtTrainingLabelmaps=/tmp/trainingLabelmaps-$$.txt
+    txtTrainingLabelmaps=$TMPDIR/trainingLabelmaps.txt
     run cut -d, -f $i $csvTrainingData > $txtTrainingLabelmaps
     run $dirReg/makeMabsLabelmaps.py -t $txtTrainingLabelmaps  -o $dirLbl-$i
     run $dirLbl-$i/makeLabelmap.py --alpha $ALPHA -o $dirLbl-$i/labelmap.nrrd
@@ -62,15 +78,11 @@ done
 
 # merge predicted labelmaps if more than one
 log "If there is more than one predicted labelmap, merge them"
-run cp $dirLbl-2/labelmap.nrrd /tmp/labelmap-$$.nrrd
+labelPredicted=$TMPDIR/labelmap.nrrd
+run cp $dirLbl-2/labelmap.nrrd $labelPredicted
 for i in $(seq 3 $colcount); do
     label=$(( i-- ))
-    run "unu 3op ifelse "$dirLbl-$i/labelmap.nrrd" $label 0 | unu 2op + - "/tmp/labelmap-$$.nrrd" | unu save -e gzip -f nrrd -o /tmp/labelmap-$$.nrrd"
+    run "unu 3op ifelse "$dirLbl-$i/labelmap.nrrd" $label 0 | unu 2op + - "$labelPredicted" | unu save -e gzip -f nrrd -o $labelPredicted"
 done
-run mv /tmp/labelmap-$$.nrrd "$maskOut"
+run mv "$labelPredicted" "$maskOut"
 log_success "Made '$maskOut'"
-
-#cleanup
-if [ ! $DEBUG ]; then
-    rm -r "$dirReg" ${dirLbl}*
-fi
