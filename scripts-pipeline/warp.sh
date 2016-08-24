@@ -76,7 +76,10 @@ log "Made '$transform'"
 log "Transform moving to fixed space to make '$out'"
 #run WarpImageMultiTransform 3 "$moving" "$out" -R "$fixed" "$transform" 
 run $ANTSPATH/antsApplyTransforms -d 3 -i "$moving" -o "$out" -r "$fixed" -t "$transform"
-run unu save -e gzip -f nrrd -i $out -o $out
+if [[ $out == *nrrd ]]; then
+    log "Output is nrrd, gzip it"
+    run unu save -e gzip -f nrrd -i $out -o $out
+fi
 
 run popd
 
