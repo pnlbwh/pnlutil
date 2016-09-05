@@ -7,3 +7,6 @@
 [submodule "trainingDataT1AHCC"]
 	path = trainingDataT1AHCC
 	url = https://github.com/pnlbwh/trainingDataT1AHCC.git
+[submodule "test/pipelineTestData"]
+	path = test/pipelineTestData
+	url = https://github.com/pnlbwh/pipelineTestData

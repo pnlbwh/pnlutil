@@ -19,4 +19,4 @@ var=wmqltracts
 
 source $SCRIPTDIR/add.sh
 
-cp $SCRIPTDIR/pipeline/wmql_query.txt "$dirProj"
+cp $SCRIPTDIR/pipeline/wmql-2.0.qry "$dirProj"

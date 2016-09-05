@@ -173,7 +173,7 @@ fsindwi=$diff/$case.fsindwi.nrrd
 # Inputs
 wmqltracts_tractography=$ukf
 wmqltracts_wmparc=$fsindwi
-wmqltracts_query=wmql_query.txt
+wmqltracts_query=wmql-2.0.txt
 # Output
 wmqltracts=$diff/$case.wmqltracts
 # ----------------------------------------------------------

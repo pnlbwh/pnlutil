@@ -97,7 +97,7 @@ Examples:
     redo `missing dwibetmask`  # Generated DWI masks
     redo `missing ukf` # Generate whole brain tractography 
     redo `missing fsindwi`  # Generate freesurfer labelmap in DWI space
-    redo `missing wmql` # Generate wmql tracts (uses the queries in wmql_query.txt)
+    redo `missing wmql` # Generate wmql tracts (uses the queries in wmql-2.0.qry)
 
 You don't need to run these separately, any missing dependencies will be
 generated automatically.  For example, running 
