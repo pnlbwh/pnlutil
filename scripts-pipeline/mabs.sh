@@ -93,4 +93,6 @@ else
    for i in $(seq 2 $colcount); do
         labelOut=${maskOut%.*}-col$i.nrrd
         run "cp "$dirLbl-$i/labelmap.nrrd" $labelOut"
-    done
+   done
+    log_success "Made '${maskOut%.*}-col?.nrrd'"
+fi
