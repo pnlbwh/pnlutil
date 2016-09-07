@@ -84,10 +84,14 @@ do
 
   SID=$(cat $tmp | grep -e '^(0020,000d)' | sed -e 's/^(0020,000d).*\[\(.*\)\].*/\1/')
 #  echo $SeriesDesc
+  SeriesNumber=$(cat $tmp | grep -e '^(0020,0011)' | sed -e 's/^(0020,0011).*\[\(.*\)\].*/\1/')
+#  echo $SeriesNumber
   Modality=$(cat $tmp | grep -e '^(0008,0060)' | sed -e 's/^(0008,0060).*\[\(.*\)\].*/\1/')
 # (0020,000d)
-  UUID=$(cat $tmp | grep -e '^(0008,0018)' | sed -e 's/^(0008,0018).*\[\(.*\)\].*/\1/')
+#  UUID=$(cat $tmp | grep -e '^(0008,0018)' | sed -e 's/^(0008,0018).*\[\(.*\)\].*/\1/')
+  UUID=$(cat $tmp | grep -e '^(0020,000e)' | sed -e 's/^(0020,000e).*\[\(.*\)\].*/\1/')
   # UUID=$(cat 3008.txt | grep -e '^(0008,0018)' | sed -e 's/^(0008,0018).*\[\(.*\)\].*/\1/')
+  UUID=$(echo $UUID | sed -e 's/\(.*\)\.\(.*\)$/\1/')
   UUID=$(echo $UUID | sed -e 's/\(.*\)\.\(.*\)$/\1/')
   UUID=$(echo $UUID | sed -e 's/\(.*\)\.\(.*\)$/\1/')
   INSTANCE=$(cat $tmp | grep -e '^(0020,0013)' | sed -e 's/^(0020,0013).*\[\(.*\)\].*/\1/')
@@ -95,7 +99,8 @@ do
 # 
   rm $tmp
 
-  PNAME="${PID}_${StudyDate}_${NUMBER}_${Modality}_${UUID}_${SeriesDesc}"
+#  PNAME="${PID}_${StudyDate}_${NUMBER}_${Modality}_${UUID}_${SeriesDesc}"
+  PNAME="${PID}_${StudyDate}_${UUID}_${SeriesNumber}_${SeriesDesc}"
   DESTDIR=${OUTDIR}/${PNAME}
   if [ ! -d ${DESTDIR} ]; then
       mkdir ${DESTDIR}
