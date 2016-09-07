@@ -6,12 +6,13 @@ source "$SCRIPTDIR/util.sh"
 
 DEBUG=false
 ALPHA=0.0
+MERGE=true
 TMPDIR=/tmp/mabsrun.$$
 
 usage() {
 echo -e "\
 Usage
-    ${0##*/} [-d] [-a alpha] -t <trainingData.csv> -i <target> -o <outMask> "
+    ${0##*/} [-d] [-a alpha] [-s] -t <trainingData.csv> -i <target> -o <outMask> "
 }
 
 cleanup() {
@@ -28,9 +29,10 @@ cleanup() {
 trap cleanup SIGHUP SIGINT SIGTERM
 
 ## Parse args
-while getopts "hda:t:i:o:" OPTION; do
+while getopts "hdsa:t:i:o:" OPTION; do
     case $OPTION in
         d) DEBUG=true;;
+        s) MERGE=false;; # separate predicted labelmaps, don't merge them
         h) usage; exit 0;;
         t) csvTrainingData=$OPTARG;;
         i) imgTarget=$OPTARG;;
@@ -76,13 +78,21 @@ for i in $(seq 2 $colcount); do
     run rm $txtTrainingLabelmaps
 done
 
-# merge predicted labelmaps if more than one
-log "If there is more than one predicted labelmap, merge them"
-labelPredicted=$TMPDIR/labelmap.nrrd
-run cp $dirLbl-2/labelmap.nrrd $labelPredicted
-for i in $(seq 3 $colcount); do
-    label=$(( i-- ))
-    run "unu 3op ifelse "$dirLbl-$i/labelmap.nrrd" $label 0 | unu 2op + - "$labelPredicted" | unu save -e gzip -f nrrd -o $labelPredicted"
-done
-run mv "$labelPredicted" "$maskOut"
-log_success "Made '$maskOut'"
+if $MERGE; then
+    log "Merging option is on: if there is more than one predicted labelmap, merge them"
+    run cp $dirLbl-2/labelmap.nrrd $TMPDIR/labelmap.nrrd  # index of labelmaps starts at 2
+    for i in $(seq 3 $colcount); do
+        log "Merge labelmap $i"
+        label=$(( i-- ))
+        run "unu 3op ifelse "$dirLbl-$i/labelmap.nrrd" $label 0 | unu 2op + - "$TMPDIR/labelmap.nrrd" | unu save -e gzip -f nrrd -o $TMPDIR/labelmap.nrrd"
+    done
+    run mv $TMPDIR/labelmap.nrrd "${maskOut%.*}.nrrd"
+    log_success "Made '$maskOut'"
+else
+   log "Merging option is off: "
+   for i in $(seq 2 $colcount); do
+        labelOut=${maskOut%.*}-col$i.nrrd
+        run "cp "$dirLbl-$i/labelmap.nrrd" $labelOut"
+   done
+    log_success "Made '${maskOut%.*}-col?.nrrd'"
+fi
