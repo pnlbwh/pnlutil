@@ -35,13 +35,13 @@ do
   esac
 done
 
-if [ -z "${DICOMDIR}" ]; then
+if [ -z "${DICOMDIR-}" ]; then
   echo "DICOMDIR is required"
   usage
   exit 2
 fi
 
-if [ -z "${OUTDIR}" ]; then
+if [ -z "${OUTDIR-}" ]; then
   echo "OUTDIR is required"
   usage
   exit 3
