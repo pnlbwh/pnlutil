@@ -11,8 +11,9 @@ with 'SetUpData.sh' that has '<var>=/path/to/\$case-file' defined for each
 caselist=mycaselist.txt or cases=\"case1 case2..  caseN\"), or on the
 commandline (see below).
 
-    ${0##*/} [-f <caselist>, -l \"<case1> .. <caseN>\"] [-r \"<var> ...\"] -q \"<var1> .. <varN>\"
+    ${0##*/} [-F] [-f <caselist>, -l \"<case1> .. <caseN>\"] [-r \"<var> ...\"] -q \"<var1> .. <varN>\"
 
+-F                        Force a qc even if already been done
 -f <caselist>             Uses case id's from <caselist> (one per line, but can include comments)
 -l \"<case1> .. <caseN>\"   List case id's within quotes
 -r \"<var> ...\"           Vars to be loaded as reference volumes but you won't be asked if they passed QC
@@ -25,8 +26,10 @@ Examples:
     ${0##*/} -l \"01009 01010\" -r t2 -q t2atlasmask
 "
 
+force="false"
+
 parseargs() {
-    while getopts "hsr:f:l:q:" flag; do
+    while getopts "hsr:f:l:q:F" flag; do
         case "$flag" in
             h)
                 echo -e "$HELP"; exit 0;;
@@ -39,6 +42,8 @@ parseargs() {
                 cases=$OPTARG;;
             q)
                 qc_vars=$OPTARG;;
+            F)
+                force="true";;
         esac
     done
 
@@ -135,7 +140,7 @@ for case in $cases; do
     printvars $reference_vars
     echo
 
-    if qcedAndUpToDate "$qc_vars"; then
+    if qcedAndUpToDate "$qc_vars" && [ "$force" -ne "true" ]; then
         echo "Already QC'ed and up to date, skipping"
         continue
     fi
