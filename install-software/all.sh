@@ -5,6 +5,6 @@ SCRIPTDIR=$(dirname $SCRIPT)
 
 "$SCRIPTDIR"/redo.sh
 "$SCRIPTDIR"/measuretracts.sh
-"$SCRIPTDIR"/UKFTractograpy.sh
+"$SCRIPTDIR"/UKFTractography.sh
 "$SCRIPTDIR"/BRAINSTools.sh
 # "$SCRIPTDIR"/VTK.sh
