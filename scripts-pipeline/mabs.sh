@@ -11,8 +11,20 @@ TMPDIR=/tmp/mabsrun.$$
 
 usage() {
 echo -e "\
-Usage
-    ${0##*/} [-d] [-a alpha] [-s] -t <trainingData.csv> -i <target> -o <outMask> "
+Multi-atlas brain segmentation.  Given a set of training images and labelmaps, computes
+a new labelmap for a target image.
+
+Usage:
+    ${0##*/} [-d] [-a alpha] [-s] -t <trainingData.csv> -i <target> -o <outMask>
+
+Options:
+    -d             Debug, do not remove temporary directories.
+    -a <alpha>     Set the alpha parameter used in weighting the training labelmaps.
+    -s             Separate labelmap predictions, otherwise the predicted labelmaps from each column in trainingData.csv are merged.
+    -t <train.csv> A csv whose first column is a set of training images, and subsequent columns are corresponding training labelmaps.
+    -i <target>    The target image for the predicted labelmap(s).
+    -o <out>       The prefix for the output labelmaps.
+"
 }
 
 cleanup() {
