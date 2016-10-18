@@ -41,6 +41,13 @@ while getopts "hdsa:t:i:o:" OPTION; do
     esac
 done
 
+if [ -n "${maskOut%.*}" ]; then
+    maskOutPre=${maskOut%.*}
+else
+    maskOutPre=$maskOut
+fi
+maskOut=$maskOutPre.nrrd
+
 for arg in csvTrainingData imgTarget maskOut; do
     [ -n "${!arg-}" ] || { usage; exit 1; }
 done
