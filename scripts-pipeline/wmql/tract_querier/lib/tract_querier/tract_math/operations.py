@@ -49,7 +49,7 @@ def length_mean_std(optional_flags, tractography):
 
 @tract_math_operation('<volume unit>: calculates the volume of a tract based on voxel occupancy of a certain voxel volume')
 def tract_volume(optional_flags, tractography, resolution):
-    return tensor_operations.compute_all_measures(tractography, ['tract volume'], None, resolution)
+    return tensor_operations.compute_all_measures(tractography, ['tract volume'], resolution=resolution)
 
 
 @tract_math_operation('<scalar>: calculates mean and std of a scalar quantity that has been averaged along each tract', needs_one_tract=False)
@@ -745,7 +745,7 @@ def tract_prototype_mean(optional_flags, tractography, smooth_order, file_output
             from scipy import interpolate
 
             tck, u = interpolate.splprep(mean_tract.T)
-            mean_tract = numpy.transpose(interpolate.splev(u, tck))
+            mean_tract = numpy.ascontiguousarray(numpy.transpose(interpolate.splev(u, tck)))
         except ImportError:
             warn("A smooth order larger than 0 needs scipy installed")
 
