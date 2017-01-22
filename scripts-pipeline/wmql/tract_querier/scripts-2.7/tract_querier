@@ -1,4 +1,4 @@
-#!/data/pnl/soft/python-env27/bin/python
+#!/usr/bin/env python
 from optparse import OptionParser
 import os
 import sys

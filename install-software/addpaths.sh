@@ -11,6 +11,8 @@ pnlutil=$base/../scripts-all
 ukf=$base/UKFTractography-build/UKFTractography-build/ukf/bin/
 measuretracts=$base/measuretracts
 
-export PATH=$redo:$brainstools:$antssrc:$pnlutil:$ukf:$measuretracts:$PATH
+tractquerier=$base/../scripts-pipeline/wmql/tract_querier/scripts-2.7
+export PYTHONPATH=$base/../scripts-pipeline/wmql/tract_querier/lib
+export PATH=$redo:$brainstools:$antssrc:$pnlutil:$ukf:$measuretracts:$tractquerier:$PATH
 export ANTSPATH=$brainstools
 export ANTSSRC=$antssrc

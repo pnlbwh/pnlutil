@@ -1,4 +1,4 @@
-#!/data/pnl/soft/python-env27/bin/python
+#!/usr/bin/env python
 import sys
 import itertools
 from argparse import ArgumentParser, FileType, REMAINDER

@@ -33,7 +33,9 @@ pdw = vtk.vtkPolyDataWriter()
 pdw.SetFileTypeToBinary()
 pdw.SetFileName(outfile)
 pdw.SetTensorsName('tensor1')
-pdw.SetInput(out)
-#pdw.SetInputData(out)
+try:
+    pdw.SetInput(out)
+except AttributeError:
+    pdw.SetInputData(out)
 pdw.Write()
 pdw.Update()
