@@ -1,7 +1,8 @@
-#!/bin/bash -eu
+#!/usr/bin/env bash
+set -eu
 
 SCRIPT=$(readlink -m $(type -p $0))
-SCRIPTDIR=${SCRIPT%/*}      
+SCRIPTDIR=${SCRIPT%/*}
 source $SCRIPTDIR/util.sh
 
 HELP="Prints which filepaths are completed per case.
@@ -13,7 +14,7 @@ HELP="Prints which filepaths are completed per case.
 [[ $1 == "-h" || $1 == "--help" ]] && usage 0
 
 # check SetUpData.sh exists
-[ ! -f SetUpData.sh ] && { echo "Run in directory with 'SetUpData.sh'"; usage; exit 1; } 
+[ ! -f SetUpData.sh ] && { echo "Run in directory with 'SetUpData.sh'"; usage; exit 1; }
 
 # check vars in status_vars are valid
 case=000 && source SetUpData.sh
@@ -31,7 +32,7 @@ for case in $@; do
     source SetUpData.sh
     for var in $status_vars; do
         status="[X]"
-        [ -e ${!var} ] || status="[ ]" 
+        [ -e ${!var} ] || status="[ ]"
         echo "$status ${!var}"
     done
 done

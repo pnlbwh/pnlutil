@@ -1,4 +1,5 @@
-#!/bin/bash -eu
+#!/usr/bin/env bash
+set -eu
 
 usage() {
     echo -e "\
@@ -30,7 +31,7 @@ tmp=$(mktemp -d)
 img2d="$tmp/img.nrrd"
 lbl2d="$tmp/lbl.nrrd"
 # if it's a dwi, collapse it into a 3d volume first
-if unu head $img | grep -q 'dimension: 4'; then  
+if unu head $img | grep -q 'dimension: 4'; then
     img3d="$tmp/img3d.nrrd"
     #unu project -a 3 -m mean -i $img -o $img3d
     unu slice -a 3 -p 0 -i $img -o $img3d

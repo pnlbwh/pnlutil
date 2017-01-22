@@ -1,4 +1,5 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
+set -e
 
 SCRIPT=$(readlink -m $(type -p "$0"))
 SCRIPTDIR="${SCRIPT%/*}"
@@ -12,16 +13,16 @@ usage() {
     The path to 'whitematteranalysis/bin' needs to be set as WMPATH in in
     $SCRIPTDIR/config.sh.  You can also set 'slicer' to point to your 'Slicer'
     excecutable you would like to use.  Otherwise, the default is just
-    'Slicer'.  " 
+    'Slicer'.  "
 }
 
 [ $# -gt 0 ] || { usage; exit 1; }
 
 # default Slicer
 slicer=Slicer
-sliceropts="--disable-cli-modules --disable-scripted-loadable-modules" 
+sliceropts="--disable-cli-modules --disable-scripted-loadable-modules"
 
-# source config file that may set 'slicer' and add path to whitematteranalyis 
+# source config file that may set 'slicer' and add path to whitematteranalyis
 if [ -e "$SCRIPTDIR/config.sh" ]; then
     source "$SCRIPTDIR/config.sh"  # can set slicer here
 fi
@@ -40,4 +41,3 @@ python "$WMPATH"/wm_create_mrml_file.py "$dirTmp"
 export PYTHONPATH=
 export LD_LIBRARY_PATH=
 "$slicer" "$sliceropts" "$dirTmp"/scene.mrml
-

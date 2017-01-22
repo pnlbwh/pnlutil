@@ -1,4 +1,5 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
+set -e
 
 SCRIPT=$(readlink -m $(type -p $0))
 SCRIPTDIR=${SCRIPT%/*}
@@ -49,7 +50,7 @@ parseargs() {
 
     # check input is ok
     [ -n "${qc_vars-}" ] || { usage; exit 1; }
-    [ ! -f SetUpData.sh ] && { echo "Run in directory with 'SetUpData.sh'"; usage; exit 1; } 
+    [ ! -f SetUpData.sh ] && { echo "Run in directory with 'SetUpData.sh'"; usage; exit 1; }
     case=000 && source SetUpData.sh
     for var in $reference_vars $qc_vars; do
         [ -n "${!var-}" ] || { echo "Define '${var}' in SetUpData.sh first."; exit 1; }
@@ -62,7 +63,7 @@ printvars() {
     for var in "$@"; do
         if [ -n "${!var-}" ]; then
             printf "* %s=%s\n" $var ${!var}
-        else 
+        else
             printf "* %s=\n" $var
         fi
     done
@@ -72,7 +73,7 @@ setslicer() {
     if [ -e "$SCRIPTDIR/config.sh" ]; then
         source $SCRIPTDIR/config.sh  # can set slicer here
     fi
-    sliceropts="--disable-cli-modules --disable-scripted-loadable-modules" 
+    sliceropts="--disable-cli-modules --disable-scripted-loadable-modules"
     slicer="$slicer $sliceropts"
 }
 

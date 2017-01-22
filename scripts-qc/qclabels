@@ -1,4 +1,5 @@
-#!/bin/bash -eu
+#!/usr/bin/env bash
+set -eu
 
 SCRIPT=$(readlink -m $(type -p "$0"))
 SCRIPTDIR=$(dirname "$SCRIPT")
@@ -35,7 +36,7 @@ log "Make '$3'"
 for case in $cases; do
     source SetUpData.sh
     if [[ -f ${!1} && -f ${!2} ]]; then
-        if [ -n "${scale-}" ]; then 
+        if [ -n "${scale-}" ]; then
             run qclabel -a $axis -s \"$scale\" ${!1} ${!2} "$tmp/$case.png"
         else
             run qclabel -a $axis ${!1} ${!2} "$tmp/$case.png"

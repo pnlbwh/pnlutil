@@ -1,7 +1,8 @@
-#!/bin/bash -eu
+#!/usr/bin/env bash
+set -eu
 
 SCRIPT=$(readlink -m $(type -p $0))
-SCRIPTDIR=${SCRIPT%/*}      
+SCRIPTDIR=${SCRIPT%/*}
 source $SCRIPTDIR/util.sh
 
 HELP="\
@@ -33,7 +34,7 @@ for case in $cases; do
         [ -e "${!var}" ] || { allexist=false; break; }
         output+=("${!var}")
     done
-    if ! $allexist; then 
+    if ! $allexist; then
         continue
     fi
     if $printcaseids; then

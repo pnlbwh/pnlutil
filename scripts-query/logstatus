@@ -1,7 +1,8 @@
-#!/bin/bash -eu
+#!/usr/bin/env bash
+set -eu
 
 SCRIPT=$(readlink -m $(type -p $0))
-SCRIPTDIR=${SCRIPT%/*}      
+SCRIPTDIR=${SCRIPT%/*}
 source $SCRIPTDIR/util.sh
 
 

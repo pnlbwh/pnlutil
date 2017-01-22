@@ -1,10 +1,11 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
+set -e
 
 SCRIPT=$(readlink -m $(type -p $0))
-SCRIPTDIR=${SCRIPT%/*}      
+SCRIPTDIR=${SCRIPT%/*}
 source $SCRIPTDIR/util.sh
 
-HELP="Prints progress ('done/total') for <var>.  
+HELP="Prints progress ('done/total') for <var>.
 $standard_var_help
 Usage:
 

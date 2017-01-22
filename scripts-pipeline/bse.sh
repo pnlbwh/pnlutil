@@ -1,16 +1,17 @@
-#!/bin/bash -eu
+#!/usr/bin/env bash
+set -eu
 
 SCRIPTDIR=$( cd $(dirname "$0") ; pwd -P )
 . "$SCRIPTDIR/loglib.sh"
 
 usage () {
 echo -e "\
-Extracts the baseline of a DWI.  
+Extracts the baseline of a DWI.
 
 Usage:
     ${0##*/} [-m <dwimask>] -i <dwi> -o <out>
 
-<dwi>       a nrrd volume (nrrd/nhdr) 
+<dwi>       a nrrd volume (nrrd/nhdr)
 <dwimask>   (optional) if given then the baseline is masked"
 }
 

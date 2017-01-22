@@ -1,11 +1,13 @@
-#!/bin/bash -eu
+#!/usr/bin/env bash
+set -e
+set -u
 
 SCRIPT=$(readlink -m $(type -p $0))
-SCRIPTDIR=${SCRIPT%/*}      
+SCRIPTDIR=${SCRIPT%/*}
 source $SCRIPTDIR/util.sh
 
 HELP="\
-Prints all <var> file paths. 
+Prints all <var> file paths.
 Run in directory with 'SetUpData.sh' that has '<var>=/path/to/\$case-file'
 defined in it.  The set of cases must either be defined in SetUpData.sh (e.g.
 as caselist=mycaselist.txt or cases=\"case1 case2.. caseN\"), or on the
