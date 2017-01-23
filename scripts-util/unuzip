@@ -9,7 +9,7 @@ usage() {
 nrrd="$1"
 [ ! -f "$nrrd" ] && { echo "'$nrrd' doesn't exist."; usage; exit 1; }
 
-if unu head "$nrrd" | grep -q "raw"; then
+if unu head "$nrrd" | grep -q "encoding: raw"; then
     echo "$nrrd is in raw format, gzipping.."
     unu save -e gzip -f nrrd -i "$nrrd" -o "$nrrd"
     echo "Done."
