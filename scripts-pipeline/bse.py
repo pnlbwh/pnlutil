@@ -53,6 +53,11 @@ def main():
         description="Extracts the baseline (b0) from a nrrd DWI.  Assumes \
         the diffusion volumes are indexed by the last axis.")
 
+    argparser.add_argument('-m'
+                           ,'--mask'
+                           , help='DWI mask'
+                           , required=False)
+
     argparser.add_argument('-i'
                            ,'--infile'
                            , help='DWI nrrd image'
@@ -64,18 +69,27 @@ def main():
                            , required=True)
 
     args = argparser.parse_args()
+    dwimask = abspath(args.mask)
     dwi = abspath(args.infile)
     out = abspath(args.outfile)
+    if not exists(dwi):
+        print dwi + ' doesn\'t exist'
+        sys.exit(1)
+
+
+    if dwimask and not exists(dwimask):
+        print dwimask + ' doesn\'t exist'
+        sys.exit(1)
 
     hdr = read_hdr(dwi)
     idx = get_b0_index(hdr)
-    t("unu slice -a 3 -p " + str(idx) +
+    if dwimask:
+        t("unu slice -a 3 -p " + str(idx) +
+              " -i " + dwi + " | unu 3op ifelse -w 1 " +
+          dwimask + " - 0 | unu save -e gzip -f nrrd -o " + out)
+    else:
+        t("unu slice -a 3 -p " + str(idx) +
               " -i " + dwi + " | unu save -e gzip -f nrrd -o " + out)
-
-
-    if not exists(dwi):
-        print imageIn + ' doesn\'t exist'
-        sys.exit(1)
 
 
 if __name__ == '__main__':
