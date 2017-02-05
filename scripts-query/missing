@@ -1,7 +1,8 @@
-#!/bin/bash -eu
+#!/usr/bin/env bash
+set -eu
 
 SCRIPT=$(readlink -m $(type -p $0))
-SCRIPTDIR=${SCRIPT%/*}      
+SCRIPTDIR=${SCRIPT%/*}
 source $SCRIPTDIR/util.sh
 
 HELP="
@@ -12,7 +13,7 @@ as caselist=mycaselist.txt or cases=\"case1 case2.. caseN\"), or on the
 commandline (see below).
 
 Usage:
-    ${0##*/} [-c] [-l \"case1 case2 ..\"] [-f mycaselist.txt] <var> 
+    ${0##*/} [-c] [-l \"case1 case2 ..\"] [-f mycaselist.txt] <var>
 
 -c                      Prints case id's, not file paths
 -f <caselist>           Uses case id's from <caselist> (one per line, but can include comments)
@@ -28,12 +29,13 @@ source $SCRIPTDIR/queryscript.sh
 
 var=$1
 for case in $cases; do
-    source SetUpData.sh
-    if [ ! -e "${!var}" -a ! -L "${!var}" ]; then
+    source $SetUpData
+    filepath="${!var}"
+    if [ ! -e "${filepath}" -a ! -L "${filepath}" ]; then
         if $printcaseids; then
             output="$case"
         else
-            output=("${!var}")
+            output=("${filepath}")
         fi
         echo "$output"
     fi

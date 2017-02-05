@@ -1,7 +1,8 @@
-#!/bin/bash -eu
+#!/usr/bin/env bash
+set -eu
 
 SCRIPT=$(readlink -m $(type -p $0))
-SCRIPTDIR=${SCRIPT%/*}      
+SCRIPTDIR=${SCRIPT%/*}
 source $SCRIPTDIR/util.sh
 
 usage() {
@@ -10,11 +11,11 @@ Lists variables defined in './SetUpData.sh ./dataEnv.sh' or
 '/path/to/data/SetUpData.sh'
 
 Usage:
-    ${0##*/} 
+    ${0##*/}
     ${0##*/} path/to/data/
 
-e.g. 
-    ${0##*/} 
+e.g.
+    ${0##*/}
     ${0##*/} \$intrust
     ${0##*/} \$szes
     ${0##*/} \$nfl
