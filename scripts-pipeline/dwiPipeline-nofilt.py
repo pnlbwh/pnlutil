@@ -16,6 +16,14 @@ import glob
 import shutil
 import numpy as np
 import tempfile
+from subprocess import Popen, PIPE, check_call
+
+def t(cmd):
+    if isinstance(cmd, list):
+        cmd = ' '.join(cmd)
+    print "* " + cmd
+    check_call(cmd, shell=True)
+
 
 rootdir = os.getcwd()
 args = sys.argv;
@@ -40,21 +48,21 @@ os.chdir(wdir)
 sys.stderr.write('Dice the volume\n')
 os.system('unu convert -t int16 -i dwijoined.nhdr | unu dice -a 3 -o Diffusion-G')
 
-sys.stderr.write('Convert to Nifty\n')
+sys.stderr.write('Convert to Nifti\n')
 files = glob.glob('Diffusion-G*.nrrd')
 files.sort()
-ref = files[0].replace('.nrrd','')
+
+t("bse.py -i dwijoined.nhdr -o b0.nrrd")
+t('ConvertBetweenFileFormats b0.nrrd b0.nii.gz short')
+
 for fnrrd in files:
     fnii = fnrrd.replace('nrrd','nii.gz')
     sys.stderr.write('Convert to Nifti\n')
-    #os.system('/projects/schiz/software/bin_linux64/magicScalarFileConvert --outputtype short '+
-              #fnrrd+' '+fnii)
-    #os.system('magicScalarFileConvert --outputtype short ' + fnrrd + ' ' + fnii)
     os.system('ConvertBetweenFileFormats ' + fnrrd + ' ' + fnii + ' short')
     f = fnii.replace('.nii.gz','')
     sys.stderr.write('Run FSL flirt affine registration\n')
     os.system('flirt -interp sinc -sincwidth 7 -sincwindow blackman -in '+
-              f+' -ref '+ref+' -nosearch -o '+f+' -omat '+f+'.txt -paddingsize 1')
+              f+' -ref b0.nii.gz -nosearch -o '+f+' -omat '+f+'.txt -paddingsize 1')
 os.system('fslmerge -t EddyCorrect-DWI Diffusion-G*.nii.gz')
 
 #Get the resulting Transforms
