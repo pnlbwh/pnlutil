@@ -69,7 +69,6 @@ def main():
                            , required=True)
 
     args = argparser.parse_args()
-    dwimask = abspath(args.mask)
     dwi = abspath(args.infile)
     out = abspath(args.outfile)
     if not exists(dwi):
@@ -77,13 +76,15 @@ def main():
         sys.exit(1)
 
 
-    if dwimask and not exists(dwimask):
-        print dwimask + ' doesn\'t exist'
-        sys.exit(1)
+    if args.mask:
+	dwimask = abspath(args.mask)
+        if dwimask and not exists(dwimask):
+            print dwimask + ' doesn\'t exist'
+            sys.exit(1)
 
     hdr = read_hdr(dwi)
     idx = get_b0_index(hdr)
-    if dwimask:
+    if args.mask:
         t("unu slice -a 3 -p " + str(idx) +
               " -i " + dwi + " | unu 3op ifelse -w 1 " +
           dwimask + " - 0 | unu save -e gzip -f nrrd -o " + out)
