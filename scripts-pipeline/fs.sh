@@ -48,10 +48,10 @@ set -eu
 
 get_if_remote t1
 
-if [[ $t1 != *nii && $t1 != *nii.gz ]]; then
+if [[ "$t1" != *nii && "$t1" != *nii.gz ]]; then
     tmpnii=/tmp/$(base "$t1").nii.gz
     log "t1 is nrrd, convert to nifti: '$tmpnii'"
-    run ConvertBetweenFileFormats $t1 $tmpnii
+    run ConvertBetweenFileFormats "$t1" $tmpnii
     t1=$tmpnii
 fi
 
@@ -72,7 +72,7 @@ fi
 # If mask is given, then mask the img
 if [ -f "${mask}" ]; then
     log "Mask t1"
-    run $SCRIPTDIR/mask $t1 $mask /tmp/t1masked.nii.gz
+    run $SCRIPTDIR/mask "$t1" "$mask" /tmp/t1masked.nii.gz
     t1=/tmp/t1masked.nii.gz
     # If we are masking the img already, no need to skullstrip further
     noskullstrip='-noskullstrip'
