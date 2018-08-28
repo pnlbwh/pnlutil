@@ -51,8 +51,8 @@ get_if_remote t1
 if [[ "$t1" != *nii && "$t1" != *nii.gz ]]; then
     tmpnii=/tmp/$(base "$t1").nii.gz
     log "t1 is nrrd, convert to nifti: '$tmpnii'"
-    run ConvertBetweenFileFormats "$t1" $tmpnii
-    t1=$tmpnii
+    run ConvertBetweenFileFormats "$t1" "$tmpnii"
+    t1="$tmpnii"
 fi
 
 case=$(base "$t1")
