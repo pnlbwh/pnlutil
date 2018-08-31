@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 set -eu
 
+set -x
+
 SCRIPTDIR=$( cd $(dirname "$0") ; pwd -P )
 . "$SCRIPTDIR/loglib.sh"
-
 usage () {
 echo -e "\
 Extracts the baseline of a DWI.
@@ -48,7 +49,7 @@ shift $((OPTIND-1))
 isValidNrrd $dwi || { echo "The DWI is not a valid nrrd."; exit 1; }
 [ -z "$dwimask" ] || isValidNrrd "$dwimask"
 
-regex="DWMRI_gradient_\([0-9]*\):= *0\(\.0*\)\{0,1\}  *0\(\.0*\)\{0,1\}  *0\(\.0*\)\{0,1\}"
+regex="DWMRI_gradient_\([0-9]*\):=\s+*0\(\.0*\)\{0,1\}\s+*0\(\.0*\)\{0,1\}\s+*0\(\.0*\)\{0,1\}"
 direction=$(unu head $dwi | sed -n "s|$regex|\1|p" | head -n 1)
 log "Found baseline at gradient direction '$direction'"
 if [ -n "$dwimask" ]; then
@@ -58,3 +59,6 @@ else
 fi
 
 log_success "Made $out'"
+
+
+set +x

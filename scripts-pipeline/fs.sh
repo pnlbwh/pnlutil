@@ -14,18 +14,19 @@ Usage:
 Runs freesurfer on <t1>
 
 Options:
--h          help
--i  <t1>    t1 image in nifti or nrrd format (nrrd, nhdr, nii, nii.gz)
--s          tells freesurfer to skull strip the t1
--m <mask>   use <mask> to mask the t1 before running freesurfer      
--f          force a re-run even if a subject folder already exists
--o  <output_folder>  (default: <t1>-freesurfer)
+-h                      help
+-i  <t1>                t1 image in nifti or nrrd format (nrrd, nhdr, nii, nii.gz)
+-s                      tells freesurfer to skull strip the t1
+-m <mask>               use <mask> to mask the t1 before running freesurfer
+-f                      force a re-run even if a subject folder already exists
+-o  <output_folder>     (default: <t1>-freesurfer)
 EOF
 }
 
 noskullstrip="-noskullstrip"
 output_folder="."
 force=false
+
 while getopts "hm:i:sfo:" OPTION; do
     case $OPTION in
         h) usage; exit 1;;
@@ -47,11 +48,11 @@ set -eu
 
 get_if_remote t1
 
-if [[ $t1 != *nii || $t1 != *nii.gz ]]; then
+if [[ "$t1" != *nii && "$t1" != *nii.gz ]]; then
     tmpnii=/tmp/$(base "$t1").nii.gz
     log "t1 is nrrd, convert to nifti: '$tmpnii'"
-    run ConvertBetweenFileFormats $t1 $tmpnii
-    t1=$tmpnii
+    run ConvertBetweenFileFormats "$t1" "$tmpnii"
+    t1="$tmpnii"
 fi
 
 case=$(base "$t1")
@@ -68,9 +69,13 @@ this directory already exists. Delete it first and re-run the script, or pass
     fi
 fi
 
-if [ -n "${mask-}" ]; then
+# If mask is given, then mask the img
+if [ -f "${mask}" ]; then
     log "Mask t1"
-    run $SCRIPTDIR/mask "$t1" "$mask" "$t1"
+    run $SCRIPTDIR/mask "$t1" "$mask" /tmp/t1masked.nii.gz
+    t1=/tmp/t1masked.nii.gz
+    # If we are masking the img already, no need to skullstrip further
+    noskullstrip='-noskullstrip'
     log_success "Made masked t1: '$t1'"
 fi
 
