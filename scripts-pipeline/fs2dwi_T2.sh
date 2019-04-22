@@ -149,11 +149,16 @@ log "Compute warp from T2 to DWI baseline"
 run $SCRIPTDIR/warp.sh -x t2-to-bse-warp.nii.gz -s CC $maskedt2 $maskedbse1mm t2-in-bse.nrrd  # '-x': makes t2-to-bse-warp.nii.gz
 #run mv t2-to-bse-deformed.nii.gz t2-in-bse.nii.gz 
 
-log "Apply transformations to wmparc.nii.gz to create wmparc-in-bse.nii.gz"
-#run $ANTSPATH/antsApplyTransforms -d 3 -i wmparc.nii.gz -o wmparc-in-bse.nrrd -r "$maskedbse" -n NearestNeighbor -t t2-to-bse-Warp.nii.gz t2-to-bse-Affine.txt t1-to-t2-rigid.txt fs-to-t1-rigid.txt
-run $ANTSPATH/antsApplyTransforms -d 3 -i wmparc.nii.gz -o wmparc-in-bse.nrrd -r "$maskedbse1mm" -n NearestNeighbor -t t2-to-bse-warp.nii.gz t1-to-t2-rigid.txt fs-to-t1-rigid.txt
-run ConvertBetweenFileFormats wmparc-in-bse.nrrd wmparc-in-bse.nrrd short
-log_success "Made 'wmparc-in-bse.nrrd'"
+log "Apply warp to wmparc.nii.gz to create wmparc-in-bse-1mm.nii.gz"
+run $ANTSPATH/antsApplyTransforms -d 3 -i wmparc.nii.gz -o wmparc-in-bse-1mm.nrrd -r "$maskedbse1mm" -n NearestNeighbor -t t2-to-bse-warp.nii.gz t1-to-t2-rigid.txt fs-to-t1-rigid.txt
+run ConvertBetweenFileFormats wmparc-in-bse-1mm.nrrd wmparc-in-bse-1mm.nrrd short
+log_success "Made 'wmparc-in-bse-1mm.nrrd'"
+
+log "Downsample wmparc-in-bse-1mm.nii.gz to DWI's resolution"
+new_size=$(unu head $maskedbse | grep "sizes:" | sed 's/sizes:\s*//')
+run "unu resample -k cheap -s $new_size -i wmparc-in-bse-1mm.nrrd | unu save -e gzip -f nrrd -o wmparc-in-bse.nrrd"
+ConvertBetweenFileFormats wmparc-in-bse.nrrd wmparc-in-bse.nrrd short
+log_success "Downsampled wmparc: 'wmparc-in-bse.nrrd'"
 
 popd
 

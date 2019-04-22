@@ -24,6 +24,7 @@ Options:
     -t <train.csv> A csv whose first column is a set of training images, and subsequent columns are corresponding training labelmaps.
     -i <target>    The target image for the predicted labelmap(s).
     -o <out>       The prefix for the output labelmaps.
+    -f <tmpFolder> Specify a tmp folder other than default /tmp
 "
 }
 
@@ -41,15 +42,16 @@ cleanup() {
 trap cleanup SIGHUP SIGINT SIGTERM
 
 ## Parse args
-while getopts "hdsa:t:i:o:" OPTION; do
+while getopts "hdsa:t:i:o:f:" OPTION; do
     case $OPTION in
         d) DEBUG=true;;
         s) MERGE=false;; # separate predicted labelmaps, don't merge them
         h) usage; exit 0;;
         t) csvTrainingData=$OPTARG;;
         i) imgTarget=$OPTARG;;
-        a) alpha=$OPTARG;;
+        a) ALPHA=$OPTARG;;
         o) maskOut=$OPTARG;;
+        f) TMPDIR=$OPTARG;;
     esac
 done
 
